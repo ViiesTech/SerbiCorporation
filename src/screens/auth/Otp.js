@@ -8,17 +8,20 @@ import { Image, View } from 'react-native';
 import { images } from '../../assets/images';
 import { colors } from '../../assets/colors';
 import { responsiveHeight } from '../../utils';
+import { useNavigation } from '@react-navigation/native';
 
 const Otp = () => {
   const [showLoginSuccess, setShowLoginSuccess] = useState(false);
-  
+  const nav = useNavigation();
+
   useEffect(() => {
 
       setTimeout(() => {
             setShowLoginSuccess(false)
+            nav.navigate('userRoutes')
       },5000)
 
-  },[showLoginSuccess])
+  },[showLoginSuccess, nav])
 
   return (
     !showLoginSuccess ? (

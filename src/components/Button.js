@@ -3,7 +3,7 @@ import AppText from './AppText';
 import { colors } from '../assets/colors';
 import { responsiveHeight, responsiveWidth } from '../utils';
 
-const Button = ({ onPress, title, style, titleColour, width, color,icon }) => {
+const Button = ({ onPress, title, style, textTransform, titleColour, width, color,icon }) => {
   return (
     <TouchableOpacity
       style={[
@@ -24,6 +24,7 @@ const Button = ({ onPress, title, style, titleColour, width, color,icon }) => {
         size={1.9}
         fontWeight={'bold'}
         align={'center'}
+        textTransform={textTransform}
         title={title}
       /> 
       </View>

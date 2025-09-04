@@ -21,7 +21,27 @@ export const responsiveWidth = (w) => {
   return width * (w / 100)
 }
 
- 
+export const AppColors = {
+  BLACK: "#000000",
+  WHITE: "#FFFFFF",
+  BTNCOLOURS: "#DEDEDE",
+  // LIGHTGRAY: "#D9D9D9",
+  GRAY: "#777777",
+  BLUE: "#001AB0",
+  DARKGRAY: "#939393",
+  PEACHCOLOUR: "#F7D794",
+  INPUTBG: "#F5F5F5",
+  BGCOLOURS: "#80FF45",
+  BGCOLOURS2: "#FE3F9B",
+  PRIMARY: "#A0CCD9",
+  TEXTCOLOR: "#494949",
+  LIGHTGRAY: "#5D5D5D",
+  rightArrowCOlor: "#3D56F0",
+  ThemeBlue: '#0893fa',
+  Yellow: '#FF9C12',
+};
+
+
 export const slides = [
   {
     key: 1,
