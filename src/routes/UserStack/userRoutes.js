@@ -3,6 +3,10 @@ import { createStackNavigator } from '@react-navigation/stack';
 import UserHome from '../../screens/user/main/UserHome';
 import Services from '../../screens/user/main/Services';
 import ServicesProfile from '../../screens/user/main/ServicesProfile';
+import WorkDone from '../../screens/user/main/WorkDone';
+import Payment from '../../screens/user/main/Payment';
+import PaymentSuccess from '../../screens/user/main/PaymentSuccess';
+import PestTechnician from '../../screens/user/main/PestTechnician';
 
 const Stack = createStackNavigator();
 
@@ -14,6 +18,10 @@ const userRoutes = () => {
       <Stack.Screen name="UserHome" component={UserHome} />
       <Stack.Screen name="Services" component={Services} />
       <Stack.Screen name="ServicesProfile" component={ServicesProfile} />
+      <Stack.Screen name="WorkDone" component={WorkDone} />
+      <Stack.Screen name="Payment" component={Payment} />
+      <Stack.Screen name="PaymentSuccess" component={PaymentSuccess} />
+      <Stack.Screen name="PestTechnician" component={PestTechnician} />
     </Stack.Navigator>
   );
 };

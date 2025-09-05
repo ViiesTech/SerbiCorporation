@@ -20,6 +20,7 @@ const AppTextInput = ({
   borderRadius,
   borderBottomWidth,
   borderBottomColor,
+  editable,
 }) => {
   return (
     <View
@@ -42,6 +43,7 @@ const AppTextInput = ({
         placeholder={inputPlaceHolder}
         value={value}
         onChangeText={onChangeText}
+        editable={editable}
         placeholderTextColor={
           placeholderTextColor ? placeholderTextColor : AppColors.BLACK
         }

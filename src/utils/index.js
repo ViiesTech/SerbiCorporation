@@ -36,6 +36,7 @@ export const AppColors = {
   PRIMARY: "#A0CCD9",
   TEXTCOLOR: "#494949",
   LIGHTGRAY: "#5D5D5D",
+  LIGHTESTGRAY: "#EDEDED",
   rightArrowCOlor: "#3D56F0",
   ThemeBlue: '#0893fa',
   Yellow: '#FF9C12',
