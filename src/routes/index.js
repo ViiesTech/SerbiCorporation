@@ -8,6 +8,7 @@ import Profile from './../screens/Profile';
 import AppSettings from '../screens/AppSettings'
 import Chat from '../screens/Chat'
 import IncomingCall from '../screens/IncomingCall'
+import VendorStack from './VendorStack/vendorRoutes'
 
 
 const Stack = createStackNavigator()
@@ -17,11 +18,12 @@ const Routes = () => {
     <>
       <AppStatusBar />
       <NavigationContainer>
-        <Stack.Navigator initialRouteName='userRoutes' screenOptions={{
+        <Stack.Navigator initialRouteName='vendorRoutes' screenOptions={{
           headerShown: false
         }}>
           <Stack.Screen name={'AuthStack'} component={AuthStack} />
           <Stack.Screen name={'userRoutes'} component={userRoutes} />
+          <Stack.Screen name={'vendorRoutes'} component={VendorStack} />
           <Stack.Screen name="Profile" component={Profile} />
           <Stack.Screen name="AppSettings" component={AppSettings} />
           <Stack.Screen name="Chat" component={Chat} />

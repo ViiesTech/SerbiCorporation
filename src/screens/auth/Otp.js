@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-inline-styles */
 import Container from '../../components/Container';
 import AppText from '../../components/AppText';
 import LineBreak from '../../components/LineBreak';

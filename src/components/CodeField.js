@@ -18,7 +18,7 @@ const CodeInput = () => {
               ref={ref}
               {...props}
               value={code}
-              onChangeText={setCode}
+              // onChangeText={setCode}
               cellCount={CELL_COUNT}
               rootStyle={styles.codeFieldRoot}
               keyboardType="number-pad"
