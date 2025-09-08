@@ -10,4 +10,7 @@ export const images = {
   payment: require('../images/payment.png'),
   locate_map: require('../images/locate_map.png'),
   pest_controller: require('../images/pest_controller.png'),
+  animation: require('../images/animation.png'),
+  dotsLeft: require('../images/dotsLeft.png'),
+  dotsRight: require('../images/dotsRight.png'),
 }

@@ -4,23 +4,31 @@ import AuthStack from './AuthStack/authStack'
 import { NavigationContainer } from '@react-navigation/native'
 import AppStatusBar from '../components/AppStatusBar'
 import userRoutes from './UserStack/userRoutes'
+import Profile from './../screens/Profile';
+import AppSettings from '../screens/AppSettings'
+import Chat from '../screens/Chat'
+import IncomingCall from '../screens/IncomingCall'
 
 
 const Stack = createStackNavigator()
 
 const Routes = () => {
   return (
-    <>  
+    <>
       <AppStatusBar />
-     <NavigationContainer>
+      <NavigationContainer>
         <Stack.Navigator initialRouteName='userRoutes' screenOptions={{
           headerShown: false
         }}>
-          <Stack.Screen name={'AuthStack'} component={AuthStack} /> 
-          <Stack.Screen name={'userRoutes'} component={userRoutes} /> 
+          <Stack.Screen name={'AuthStack'} component={AuthStack} />
+          <Stack.Screen name={'userRoutes'} component={userRoutes} />
+          <Stack.Screen name="Profile" component={Profile} />
+          <Stack.Screen name="AppSettings" component={AppSettings} />
+          <Stack.Screen name="Chat" component={Chat} />
+          <Stack.Screen name="IncomingCall" component={IncomingCall} />
         </Stack.Navigator>
-        </NavigationContainer>
-        </>
+      </NavigationContainer>
+    </>
 
   )
 }

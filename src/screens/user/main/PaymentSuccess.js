@@ -8,6 +8,9 @@ import AppText from '../../../components/AppText'
 import LineBreak from '../../../components/LineBreak'
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { useNavigation } from '@react-navigation/native'
+import AppButton from '../../../components/AppButton'
+import AppTextInput from '../../../components/AppTextInput'
+import Feather from 'react-native-vector-icons/Feather';
 
 const data = [
     { id: 1, title: 'Ref Number', subTitle: '000085752257' },
@@ -17,14 +20,19 @@ const data = [
     { id: 5, title: 'Amount', subTitle: '$ 49.00' },
 ]
 
-const PaymentSuccess = () => {
+const PaymentSuccess = ({ route }) => {
     const nav = useNavigation();
+    const pest_tech = route?.params?.pest_tech;
 
     useEffect(() => {
-        setTimeout(() => {
-            nav.navigate('PestTechnician');
-        }, 2000);
-    }, [nav])
+        if (pest_tech) {
+            null
+        } else {
+            setTimeout(() => {
+                nav.navigate('PestTechnician');
+            }, 2000);
+        }
+    }, [nav, pest_tech])
 
     return (
         <Container>
@@ -104,10 +112,44 @@ const PaymentSuccess = () => {
                                 )}
                             />
                         </View>
-
-
                     </View>
                 </View>
+                {
+                    pest_tech ? (
+                        <>
+                            <LineBreak val={3} />
+                            <View>
+                                <AppTextInput
+                                    inputPlaceHolder={'Leave feedback'}
+                                    borderRadius={30}
+                                    placeholderTextColor={AppColors.LIGHTGRAY}
+                                    borderColor={AppColors.DARKGRAY}
+                                    inputWidth={75}
+                                    logo={
+                                        <Feather
+                                            name="edit"
+                                            size={responsiveFontSize(3)}
+                                            color={colors.primary}
+                                        />
+                                    }
+                                />
+                            </View>
+                            <LineBreak val={2} />
+                            <AppButton
+                                title={"submit"}
+                                bgColor={colors.secondary_button}
+                                textColor={AppColors.BLACK}
+                                textFontWeight={'bold'}
+                                borderRadius={30}
+                                buttoWidth={90}
+                                textTransform={'uppercase'}
+                                handlePress={() => {
+                                    nav.navigate('UserHome');
+                                }}
+                            />
+                        </>
+                    ) : null
+                }
             </View>
         </Container>
     )

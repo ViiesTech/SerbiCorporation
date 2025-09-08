@@ -47,12 +47,21 @@ const options = [
     { id: 4, icon: icons.home, title: 'Bank' },
 ];
 
-const Payment = () => {
+const options2 = [
+    { id: 1, icon: icons.apple_pay, title: 'Apple Pay' },
+    { id: 2, icon: icons.paypal, title: 'PayPal' },
+    { id: 3, icon: icons.google_pay, title: 'Google Pay' },
+    { id: 4, icon: icons.home, title: 'Bank' },
+    { id: 5, icon: icons.dollar, title: 'COD (Cash on delivery)' },
+];
+
+const Payment = ({ route }) => {
     const nav = useNavigation();
     const sliderRef = useRef(null);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [addNewCarModal, setAddNewCarModal] = useState(false);
     const [selectedPayMethod, setSelectedPayMethod] = useState({ id: 1 });
+    const pest_tech = route?.params?.pest_tech;
 
     const renderDots = () => (
         <View
@@ -156,7 +165,7 @@ const Payment = () => {
                 />
 
                 <FlatList
-                    data={options}
+                    data={pest_tech ? options2 : options}
                     ListHeaderComponent={() => <LineBreak val={2} />}
                     ItemSeparatorComponent={() => <LineBreak val={2} />}
                     renderItem={({ item }) => {
@@ -203,7 +212,11 @@ const Payment = () => {
                         buttoWidth={92}
                         textTransform={'uppercase'}
                         handlePress={() => {
-                            nav.navigate('PaymentSuccess');
+                            if (pest_tech) {
+                                nav.navigate('PaymentSuccess', {pest_tech: true});
+                            } else {
+                                nav.navigate('PaymentSuccess');
+                            }
                         }}
                     />
                 </View>

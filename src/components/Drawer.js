@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unstable-nested-components */
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react';
-import {View, TouchableOpacity, FlatList} from 'react-native';
+import { View, TouchableOpacity, FlatList } from 'react-native';
 import Modal from 'react-native-modal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
@@ -54,6 +54,18 @@ const data = [
   {
     id: 4,
     icon: (
+      <AntDesign
+        name="heart"
+        size={responsiveFontSize(2.2)}
+        color={AppColors.BLACK}
+      />
+    ),
+    title: 'wishlist',
+    navTo: 'Wishlist',
+  },
+  {
+    id: 5,
+    icon: (
       <Feather
         name="settings"
         size={responsiveFontSize(2.2)}
@@ -61,7 +73,7 @@ const data = [
       />
     ),
     title: 'settings',
-    navTo: 'Settings',
+    navTo: 'AppSettings',
   },
 ];
 
@@ -89,7 +101,7 @@ const Drawer = ({
           backgroundColor: AppColors.WHITE,
         }}>
         <LineBreak val={1} />
-        <View style={{marginHorizontal: responsiveWidth(2)}}>
+        <View style={{ marginHorizontal: responsiveWidth(2) }}>
           <TouchableOpacity onPress={closeIconOnPress}>
             <Ionicons
               name="close"
@@ -101,21 +113,21 @@ const Drawer = ({
 
         <LineBreak val={12} />
 
-        <View style={{marginHorizontal: responsiveWidth(4)}}>
+        <View style={{ marginHorizontal: responsiveWidth(4) }}>
           <FlatList
             data={data}
             ItemSeparatorComponent={() => <LineBreak val={2} />}
-            renderItem={({item}) => {
+            renderItem={({ item }) => {
               return (
                 <TouchableOpacity
-                  style={{flexDirection: 'row', gap: 10, alignItems: 'center'}}
+                  style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}
                   onPress={() => {
-                    if(item.navTo){
-                      navigation.navigate(item.navTo, {screen: item.title});
+                    if (item.navTo) {
+                      navigation.navigate(item.navTo, { screen: item.title });
                       onBackdropPress();
                     }
                   }}
-                  >
+                >
                   {item.icon}
                   <AppText
                     title={item.title}
@@ -137,12 +149,12 @@ const Drawer = ({
             marginHorizontal: responsiveWidth(4),
           }}>
           <TouchableOpacity
-            style={{flexDirection: 'row', gap: 10, alignItems: 'center'}}
+            style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}
             onPress={() => {
               navigation.navigate('Auth');
               onBackdropPress();
             }}
-            >
+          >
             <MaterialIcons
               name="logout"
               size={responsiveFontSize(2.2)}

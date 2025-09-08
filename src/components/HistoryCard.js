@@ -123,12 +123,12 @@ const HistoryCard = ({
                     borderWidth: 1,
                     padding: 5,
                     borderRadius: 100,
-                    borderColor: AppColors.BLACK,
+                    borderColor: selectedCard?.id == item.id ? AppColors.BLACK : AppColors.PRIMARY,
                   }}>
                   <AntDesign
                     name={services || profiles ? 'hearto' : 'heart'}
                     size={responsiveFontSize(1.8)}
-                    color={AppColors.BLACK}
+                    color={selectedCard?.id == item.id ? AppColors.BLACK : AppColors.PRIMARY}
                   />
                 </TouchableOpacity>
               </View>
@@ -137,10 +137,10 @@ const HistoryCard = ({
                 title={item.status}
                 color={
                   selectedCard?.id == item.id
-                    ? AppColors.WHITE
+                    ? AppColors.BLACK
                     : homeComponent
                       ? AppColors.BLACK
-                      : AppColors.ThemeBlue
+                      : AppColors.PRIMARY
                 }
                 size={1.4}
                 fontWeight={'bold'}
@@ -176,7 +176,7 @@ const HistoryCard = ({
                       key={index}
                       name="star"
                       size={responsiveFontSize(1.3)}
-                      color={AppColors.Yellow}
+                      color={selectedCard?.id == item.id ? AppColors.WHITE : AppColors.Yellow}
                     />
                   ))}
                 </View>
@@ -198,13 +198,7 @@ const HistoryCard = ({
                 }>
                 <AppButton
                   title="view details"
-                  textColor={
-                    selectedCard?.id == item.id
-                      ? services
-                        ? AppColors.BLACK
-                        : AppColors.ThemeBlue
-                      : AppColors.BLACK
-                  }
+                  textColor={AppColors.BLACK}
                   bgColor={
                     selectedCard?.id == item.id
                       ? AppColors.WHITE
@@ -313,28 +307,20 @@ const HistoryCard = ({
                       size={responsiveFontSize(1.8)}
                       color={
                         selectedCard?.id == item.id
-                          ? AppColors.WHITE
-                          : AppColors.DARKGRAY
+                          ? AppColors.BLACK
+                          : AppColors.GRAY
                       }
                     />
                   )}
                   <AppText
                     title={item.location}
-                    color={
-                      selectedCard?.id == item.id
-                        ? AppColors.WHITE
-                        : AppColors.GRAY
-                    }
+                    color={AppColors.GRAY}
                     size={1.3}
                   />
                 </View>
                 <AppText
                   title={item.date}
-                  color={
-                    selectedCard?.id == item.id
-                      ? AppColors.WHITE
-                      : AppColors.GRAY
-                  }
+                  color={AppColors.GRAY}
                   size={1.3}
                 />
               </View>
@@ -348,7 +334,8 @@ const HistoryCard = ({
                     backgroundColor: colors.primary,
                   }}
                   onPress={() =>
-                    nav.navigate('CallAndChatHistory', { screen: 'cALL hISTORY' })
+                    // nav.navigate('CallAndChatHistory', { screen: 'cALL hISTORY' })
+                    nav.navigate('IncomingCall')
                   }>
                   <Ionicons
                     name="call"
@@ -365,7 +352,8 @@ const HistoryCard = ({
                     backgroundColor: colors.primary,
                   }}
                   onPress={() =>
-                    nav.navigate('CallAndChatHistory', { screen: 'cHAT hISTORY' })
+                    // nav.navigate('CallAndChatHistory', { screen: 'cHAT hISTORY' })
+                    nav.navigate('Chat')
                   }>
                   <AntDesign
                     name="wechat"

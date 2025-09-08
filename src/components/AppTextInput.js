@@ -21,6 +21,7 @@ const AppTextInput = ({
   borderBottomWidth,
   borderBottomColor,
   editable,
+  borderColor,
 }) => {
   return (
     <View
@@ -35,7 +36,7 @@ const AppTextInput = ({
         borderWidth: borderBottomWidth ? 0 : 1,
         borderBottomWidth: borderBottomWidth,
         borderBottomColor: borderBottomColor,
-        borderColor: AppColors.PRIMARY,
+        borderColor: borderColor ? borderColor : AppColors.PRIMARY,
       }}>
       {logo}
 

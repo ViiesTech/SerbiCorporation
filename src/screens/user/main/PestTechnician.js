@@ -11,6 +11,7 @@ import { AppColors, responsiveHeight, responsiveWidth } from '../../../utils';
 import Icon from "react-native-vector-icons/Feather";
 import AppText from '../../../components/AppText';
 import { colors } from '../../../assets/colors';
+import AppButton from '../../../components/AppButton';
 
 const PestTechnician = () => {
     const nav = useNavigation();
@@ -85,31 +86,81 @@ const PestTechnician = () => {
             case 1:
                 return (
                     <View style={styles.centerContent}>
-                        <Text style={styles.arrivedTitle}>Technician Has Arrived</Text>
+                        <AppText
+                            title={'Your Pest Control Technician has arrived!'}
+                            color={AppColors.GRAY}
+                            size={1.8}
+                        />
+                        <LineBreak val={1} />
+                        <AppText
+                            title={'Technician Has Arrived'}
+                            color={AppColors.BLACK}
+                            size={3}
+                            fontWeight={'bold'}
+                        />
+                        <LineBreak val={2} />
                         {progressBar()}
-                        <Text style={styles.desc}>Your technician has arrived</Text>
+                        <LineBreak val={2} />
+                        <AppText
+                            title={'Your technician has arrived'}
+                            color={AppColors.GRAY}
+                            size={2}
+                        />
                     </View>
                 );
 
             case 2:
                 return (
                     <View style={styles.centerContent}>
-                        <Text style={styles.arrivedTitle}>Discussing Your Service</Text>
+                        <AppText
+                            title={'Your Pest Control Technician is arrived!'}
+                            color={AppColors.GRAY}
+                            size={1.8}
+                        />
+                        <LineBreak val={1} />
+                        <AppText
+                            title={'Discussing Your Service'}
+                            color={AppColors.BLACK}
+                            size={3}
+                            fontWeight={'bold'}
+                        />
+                        <LineBreak val={2} />
                         {progressBar()}
-                        <Text style={styles.desc}>
-                            Your technician is here and going over the plan with you.
-                        </Text>
+                        <LineBreak val={2} />
+                        <AppText
+                            title={'Your technician is here and going over the plan with you.'}
+                            color={AppColors.GRAY}
+                            size={2}
+                            textWidth={80}
+                            align={'center'}
+                        />
                     </View>
                 );
 
             case 3:
                 return (
                     <View style={styles.centerContent}>
-                        <Text style={styles.arrivedTitle}>Proceed to payment</Text>
+                        <AppText
+                            title={'Proceed to payment'}
+                            color={AppColors.BLACK}
+                            size={3}
+                            fontWeight={'bold'}
+                        />
+                        <LineBreak val={2} />
                         {progressBar()}
-                        <TouchableOpacity style={styles.paymentBtn}>
-                            <Text style={styles.paymentText}>PROCEED TO PAYMENT</Text>
-                        </TouchableOpacity>
+                        <LineBreak val={2} />
+                        <AppButton
+                            title={"Proceed to payment"}
+                            bgColor={colors.secondary_button}
+                            textColor={AppColors.BLACK}
+                            textFontWeight={'bold'}
+                            borderRadius={30}
+                            buttoWidth={92}
+                            textTransform={'uppercase'}
+                            handlePress={() => {
+                                nav.navigate('Payment', {pest_tech: true});
+                            }}
+                        />
                     </View>
                 );
 
@@ -150,9 +201,20 @@ const PestTechnician = () => {
 
             {renderContent()}
 
-            <TouchableOpacity onPress={nextStep} style={styles.nextBtn}>
-                <Text style={{ color: "#fff" }}>Next Step</Text>
-            </TouchableOpacity>
+            {step !== 3 ? (
+                <View style={{ paddingVertical: responsiveHeight(2), alignItems: 'center' }}>
+                    <AppButton
+                        title={"Next Step"}
+                        bgColor={colors.secondary_button}
+                        textColor={AppColors.BLACK}
+                        textFontWeight={'bold'}
+                        borderRadius={30}
+                        buttoWidth={92}
+                        textTransform={'uppercase'}
+                        handlePress={nextStep}
+                    />
+                </View>
+            ) : null}
         </Container>
     );
 };
