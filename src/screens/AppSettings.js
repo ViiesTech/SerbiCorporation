@@ -13,6 +13,7 @@ import Octicons from 'react-native-vector-icons/Octicons';
 import { AppColors, responsiveFontSize, responsiveHeight, responsiveWidth } from '../utils';
 import AppText from '../components/AppText';
 import { colors } from '../assets/colors';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 const menuOne = [
     {
@@ -148,6 +149,18 @@ const menuTwo = [
             />
         ),
     },
+    {
+        id: 5,
+        title: 'Logout',
+        navTo: 'AuthStack',
+        leftIcon: (
+            <MaterialIcons
+                name="logout"
+                size={responsiveFontSize(2.2)}
+                color={AppColors.BLACK}
+            />
+        ),
+    },
 ];
 
 const AppSettings = () => {
@@ -225,6 +238,11 @@ const AppSettings = () => {
                     renderItem={({ item, index }) => {
                         return (
                             <TouchableOpacity
+                                onPress={() => {
+                                    if (item.navTo) {
+                                        nav.navigate(item.navTo)
+                                    }
+                                }}
                                 style={{
                                     flexDirection: 'row',
                                     justifyContent: 'space-between',
@@ -232,7 +250,7 @@ const AppSettings = () => {
                                     marginHorizontal: responsiveWidth(5),
                                     marginVertical: responsiveHeight(0.5),
                                     paddingVertical: responsiveHeight(1),
-                                    borderBottomWidth: index == 3 ? 0 : 1,
+                                    borderBottomWidth: index == 4 ? 0 : 1,
                                     borderBottomColor: AppColors.DARKGRAY,
                                 }}>
                                 <View

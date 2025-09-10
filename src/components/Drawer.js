@@ -151,7 +151,7 @@ const Drawer = ({
           <TouchableOpacity
             style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}
             onPress={() => {
-              navigation.navigate('Auth');
+              navigation.navigate('AuthStack');
               onBackdropPress();
             }}
           >

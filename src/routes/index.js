@@ -18,7 +18,7 @@ const Routes = () => {
     <>
       <AppStatusBar />
       <NavigationContainer>
-        <Stack.Navigator initialRouteName='vendorRoutes' screenOptions={{
+        <Stack.Navigator initialRouteName='AuthStack' screenOptions={{
           headerShown: false
         }}>
           <Stack.Screen name={'AuthStack'} component={AuthStack} />

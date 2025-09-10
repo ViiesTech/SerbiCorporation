@@ -10,19 +10,30 @@ import { images } from '../../assets/images';
 import { colors } from '../../assets/colors';
 import { responsiveHeight } from '../../utils';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Otp = () => {
   const [showLoginSuccess, setShowLoginSuccess] = useState(false);
   const nav = useNavigation();
 
+  const goToRoute = async () => {
+    const type = await AsyncStorage.getItem('type');
+
+    if (type === 'User') {
+      setShowLoginSuccess(false)
+      nav.navigate('userRoutes')
+    } else {
+      setShowLoginSuccess(false)
+      nav.navigate('vendorRoutes')
+    }
+  }
+
   useEffect(() => {
+    setTimeout(() => {
+      goToRoute()
+    }, 3000)
 
-      setTimeout(() => {
-            setShowLoginSuccess(false)
-            nav.navigate('userRoutes')
-      },5000)
-
-  },[showLoginSuccess, nav])
+  }, [showLoginSuccess, nav])
 
   return (
     !showLoginSuccess ? (
@@ -39,8 +50,8 @@ const Otp = () => {
         <Button onPress={() => setShowLoginSuccess(true)} title="SUBMIT" />
       </Container>
     ) : (
-      <View style={{ justifyContent: 'center', alignItems: 'center', flex: 1,backgroundColor: colors.white }}>
-        <Image resizeMode='cover' style={{height: responsiveHeight(13),width: responsiveHeight(13)}} source={images.success} />
+      <View style={{ justifyContent: 'center', alignItems: 'center', flex: 1, backgroundColor: colors.white }}>
+        <Image resizeMode='cover' style={{ height: responsiveHeight(13), width: responsiveHeight(13) }} source={images.success} />
         <LineBreak val={2} />
         <AppText title={'Action Success'} />
         <LineBreak val={2} />

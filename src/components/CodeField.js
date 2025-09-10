@@ -5,39 +5,39 @@ import { colors } from '../assets/colors';
 import { responsiveHeight, responsiveWidth } from '../utils';
 
 const CodeInput = () => {  
-  const [code,setCode] = useState('')
+  const [value, setValue] = useState('');
   const CELL_COUNT = 4;
-   const ref = useBlurOnFulfill({ code, cellCount: CELL_COUNT });
+   const ref = useBlurOnFulfill({ value, cellCount: CELL_COUNT });
   const [props, getCellOnLayoutHandler] = useClearByFocusCell({
-    code,
-    setCode,
+    value,
+    setValue,
   });
 
   return (
-   <CodeField
-              ref={ref}
-              {...props}
-              value={code}
-              // onChangeText={setCode}
-              cellCount={CELL_COUNT}
-              rootStyle={styles.codeFieldRoot}
-              keyboardType="number-pad"
-              textContentType="oneTimeCode"
-              autoComplete={Platform.select({
-                android: 'sms-otp',
-                default: 'one-time-code',
-              })}
-              testID="my-code-input"
-              renderCell={({ index, symbol, isFocused }) => (
-                <Text
-                  key={index}
-                  style={[styles.cell, isFocused && styles.focusCell]}
-                  onLayout={getCellOnLayoutHandler(index)}>
-                  {symbol || (isFocused ? <Cursor /> : null)}
-                </Text>
-              )}
-            />
-  )
+  <CodeField
+    ref={ref}
+    {...props}
+    value={value}
+    onChangeText={setValue}
+    cellCount={CELL_COUNT}
+    rootStyle={styles.codeFieldRoot}
+    keyboardType="number-pad"
+    textContentType="oneTimeCode"
+    autoComplete={Platform.select({
+      android: 'sms-otp',
+      default: 'one-time-code',
+    })}
+    testID="my-code-input"
+    renderCell={({ index, symbol, isFocused }) => (
+      <Text
+        key={index}
+        style={[styles.cell, isFocused && styles.focusCell]}
+        onLayout={getCellOnLayoutHandler(index)}>
+        {symbol || (isFocused ? <Cursor /> : null)}
+      </Text>
+    )}
+  />
+);
 }
 
 export default CodeInput
