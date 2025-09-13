@@ -12,8 +12,8 @@ const SelectType = () => {
   const navigation = useNavigation()
 
   const onSelectType = async (type) => {
-        await AsyncStorage.setItem('type',type)
-        navigation.navigate('Signup')
+      //   await AsyncStorage.setItem('type',type)
+        navigation.navigate('Signup',{type: type})
   }
 
   return (

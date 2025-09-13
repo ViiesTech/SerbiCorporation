@@ -56,7 +56,7 @@ const OnBoarding = () => {
       }
         <Button onPress={() => {
           if(activeIndex === slides.length - 1) {
-            navigation.navigate('SelectType')
+            navigation.navigate('Login')
           } else {
             sliderRef.current?.goToSlide(activeIndex + 1,true)
           }

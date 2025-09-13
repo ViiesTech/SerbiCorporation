@@ -4,8 +4,8 @@ import { CodeField, Cursor, useBlurOnFulfill, useClearByFocusCell } from 'react-
 import { colors } from '../assets/colors';
 import { responsiveHeight, responsiveWidth } from '../utils';
 
-const CodeInput = () => {  
-  const [value, setValue] = useState('');
+const CodeInput = ({value,setValue}) => {  
+  // const [value, setValue] = useState('');
   const CELL_COUNT = 4;
    const ref = useBlurOnFulfill({ value, cellCount: CELL_COUNT });
   const [props, getCellOnLayoutHandler] = useClearByFocusCell({

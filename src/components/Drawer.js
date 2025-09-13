@@ -13,6 +13,9 @@ import LineBreak from './LineBreak';
 import { useNavigation } from '@react-navigation/native';
 import { AppColors, responsiveFontSize, responsiveWidth } from '../utils';
 import AppText from './AppText';
+import { useDispatch } from 'react-redux';
+import {resetUser} from '../redux/slices/index'
+import Toast from 'react-native-simple-toast'
 
 const data = [
   {
@@ -83,6 +86,8 @@ const Drawer = ({
   closeIconOnPress,
 }) => {
   const navigation = useNavigation();
+  const dispatch = useDispatch()
+
   return (
     <Modal
       isVisible={isVisible}
@@ -151,7 +156,9 @@ const Drawer = ({
           <TouchableOpacity
             style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}
             onPress={() => {
-              navigation.navigate('AuthStack');
+              dispatch(resetUser())
+              Toast.show('Logout successfully',2000,Toast.SHORT)
+              // navigation.navigate('AuthStack');
               onBackdropPress();
             }}
           >
@@ -159,7 +166,7 @@ const Drawer = ({
               name="logout"
               size={responsiveFontSize(2.2)}
               color={AppColors.BLACK}
-            />
+            />  
             <AppText
               title={'Logout'}
               color={AppColors.BLACK}

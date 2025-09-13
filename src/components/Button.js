@@ -2,8 +2,9 @@ import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import AppText from './AppText';
 import { colors } from '../assets/colors';
 import { responsiveHeight, responsiveWidth } from '../utils';
+import Loader from './Loader';
 
-const Button = ({ onPress, title, style, textTransform, titleColour, width, color,icon }) => {
+const Button = ({ onPress, title, style, textTransform, titleColour, width, color,icon,indicator }) => {
   return (
     <TouchableOpacity
       style={[
@@ -16,7 +17,9 @@ const Button = ({ onPress, title, style, textTransform, titleColour, width, colo
       ]}
       onPress={onPress}
     >
-      
+      {indicator ?
+        <Loader  />
+      :
     <View style={{flexDirection: icon && 'row'}}>  
       {icon}
       <AppText
@@ -28,6 +31,7 @@ const Button = ({ onPress, title, style, textTransform, titleColour, width, colo
         title={title}
       /> 
       </View>
+      }
     </TouchableOpacity>
   );
 };
