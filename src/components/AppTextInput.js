@@ -22,6 +22,7 @@ const AppTextInput = ({
   borderBottomColor,
   editable,
   borderColor,
+  keyboardType,
 }) => {
   return (
     <View
@@ -43,6 +44,7 @@ const AppTextInput = ({
       <TextInput
         placeholder={inputPlaceHolder}
         value={value}
+        keyboardType={keyboardType}
         onChangeText={onChangeText}
         editable={editable}
         placeholderTextColor={

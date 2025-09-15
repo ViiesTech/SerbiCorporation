@@ -24,6 +24,7 @@ import HistoryCard from './../../../components/HistoryCard';
 import { firstTimeVisit } from '../../../redux/slices';
 import { useDispatch, useSelector } from 'react-redux';
 import { colors } from '../../../assets/colors';
+import { IMAGE_URL } from '../../../redux/constant';
 const cardsData = [
   { id: 1, title: 'Roland Hopper' },
   { id: 2, title: 'Alexis Clark' },
@@ -41,7 +42,7 @@ const Home = ({ navigation }) => {
   ];
   const [currentCategory, setCurrentCategory] = useState('TODAY');
   const [currentCard, setCurrentCard] = useState('Roland Hopper');
-  const { firstVisit } = useSelector(state => state.persistedData);
+  const { firstVisit,user } = useSelector(state => state.persistedData);
 
   const dispatch = useDispatch();
 
@@ -78,8 +79,6 @@ const Home = ({ navigation }) => {
     return showLoginMessage();
   }
 
-  
-
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
@@ -109,7 +108,8 @@ const Home = ({ navigation }) => {
               width: responsiveWidth(16.4),
               height: responsiveHeight(7.5),
             }}
-            source={images.profile}
+            borderRadius={100}
+            source={user?.profileImage ? {uri:`${IMAGE_URL}${user.profileImage}`} : images.profile}
           />
           <View>
             <View style={{ flexDirection: 'row', gap: responsiveHeight(1) }}>
@@ -118,7 +118,7 @@ const Home = ({ navigation }) => {
             </View>
             <View style={{ flexDirection: 'row', gap: responsiveHeight(0.5) }}>
               <SVGIcon height={20} width={20} xml={icons.locationPin} />
-              <AppText color={'#777777'} title="California, United State" />
+              <AppText color={'#777777'} title={user?.location?.locationName || 'No location found'}/>
             </View>
           </View>
         </View>

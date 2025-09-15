@@ -86,8 +86,8 @@ export const {
   useLoginMutation,
   useForgetPasswordMutation,
   useVerifyOTPMutation,
-  useCreateProfileMutation,
   useResetPasswordMutation,
   useLazyGetProfileQuery,
   useLazyVerifyOTPPasswordQuery,
+  useCreateUpdateProfileMutation
 } = Apis;

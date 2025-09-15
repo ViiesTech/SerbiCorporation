@@ -1,8 +1,8 @@
-/* eslint-disable react-native/no-inline-styles */
 import React from 'react';
-import {View, Text, TouchableOpacity} from 'react-native';
+import {View, TouchableOpacity} from 'react-native';
 import { AppColors, responsiveWidth } from '../utils';
 import AppText from './AppText';
+import Loader from './Loader';
 
 
 const AppButton = ({
@@ -20,6 +20,7 @@ const AppButton = ({
   borderRadius,
   textTransform,
   padding,
+  isLoading,
 }) => {
   return (
     <TouchableOpacity
@@ -36,6 +37,10 @@ const AppButton = ({
         borderColor: borderColor,
         flexDirection: leftIcon ? 'row' : null,
       }}>
+     {isLoading  ?
+        <Loader />
+      :
+      <>
       {leftIcon}
       <View />
       <AppText
@@ -45,6 +50,8 @@ const AppButton = ({
         fontWeight={textFontWeight}
         textTransform={textTransform}
       />
+      </>
+      }
     </TouchableOpacity>
   );
 };

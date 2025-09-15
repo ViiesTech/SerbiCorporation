@@ -4,10 +4,6 @@ import LineBreak from '../../components/LineBreak';
 import Button from '../../components/Button';
 import CodeField from '../../components/CodeField';
 import { useState } from 'react';
-// import { Image, View } from 'react-native';
-// import { images } from '../../assets/images';
-// import { colors } from '../../assets/colors';
-// import { responsiveHeight } from '../../utils';
 import { useLazyVerifyOTPPasswordQuery, useVerifyOTPMutation } from '../../redux/services';
 import Toast from 'react-native-simple-toast';
 import { useDispatch } from 'react-redux';
@@ -97,24 +93,7 @@ const Otp = ({ route }) => {
         title="SUBMIT"
       />
     </Container>
-    // <View
-    //   style={{
-    //     justifyContent: 'center',
-    //     alignItems: 'center',
-    //     flex: 1,
-    //     backgroundColor: colors.white,
-    //   }}
-    // >
-    //   <Image
-    //     resizeMode="cover"
-    //     style={{ height: responsiveHeight(13), width: responsiveHeight(13) }}
-    //     source={images.success}
-    //   />
-    //   <LineBreak val={2} />
-    //   <AppText title={'Action Success'} />
-    //   <LineBreak val={2} />
-    //   <AppText fontWeight={'bold'} size={2.8} title={'LOGIN SUCCESS'} />
-    // </View>
+   
   );
 };
 

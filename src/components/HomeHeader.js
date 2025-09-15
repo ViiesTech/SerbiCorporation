@@ -10,6 +10,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 // import {APPICONS} from '../assets/icons/AppIcons';
 // import AppImages from '../assets/AppImages';
 import { AppColors, responsiveFontSize, responsiveHeight, responsiveWidth } from '../utils';
+import { useSelector } from 'react-redux';
 
 
 const HomeHeader = ({
@@ -19,6 +20,11 @@ const HomeHeader = ({
   diverHead,
   callOnPress,
 }) => {
+
+  const {user} = useSelector(state => state.persistedData)
+
+  console.log('user data ===>',user)
+  
   return (
     <View
       style={{
@@ -57,7 +63,7 @@ const HomeHeader = ({
               color={AppColors.PRIMARY}
             />
             <AppText
-              title={'California, United State'}
+              title={user?.location?.locationName || 'No location found'}
               textColor={AppColors.DARKGRAY}
               size={1.5}
             />
