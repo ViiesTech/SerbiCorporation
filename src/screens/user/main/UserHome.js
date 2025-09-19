@@ -23,9 +23,9 @@ import { firstTimeVisit } from '../../../redux/slices';
 import { colors } from '../../../assets/colors';
 
 const prefService = [
-  { id: 1, icon: icons.pest_one, title: 'Pest Control' },
-  { id: 2, icon: icons.pest_two, title: 'Termite control' },
-  { id: 3, icon: icons.pest_three, title: 'Mosquito Control' },
+  // { id: 1, icon: icons.pest_one, title: 'Pest Control' },
+  { id: 1, icon: icons.pest_two, title: 'Termite control' },
+  { id: 2, icon: icons.pest_three, title: 'Mosquito Control' },
 ];
 
 const UserHome = () => {
@@ -208,7 +208,7 @@ const UserHome = () => {
           </View>
           <View>
             <AppText
-              title={'Area to be Treated'}
+              title={'Type of Property'}
               color={AppColors.BLACK}
               size={1.7}
               fontWeight={'bold'}
@@ -248,7 +248,7 @@ const UserHome = () => {
               }
             />
           </View>
-          <View>
+          {/* <View>
             <AppText
               title={'Area Sq ft'}
               color={AppColors.BLACK}
@@ -257,7 +257,7 @@ const UserHome = () => {
             />
             <LineBreak val={0.5} />
             <AppTextInput inputPlaceHolder={'140 sq ft'} borderRadius={40} />
-          </View>
+          </View> */}
           <View>
             <AppText
               title={'Special Instructions or Notes'}

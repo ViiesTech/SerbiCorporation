@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import NormalHeader from '../components/NormalHeader';
 import {
   AppColors,
+  getShortFileName,
   responsiveFontSize,
   responsiveHeight,
   responsiveWidth,
@@ -24,6 +25,7 @@ import moment from 'moment';
 import ImageCropPicker from 'react-native-image-crop-picker';
 import { IMAGE_URL } from '../redux/constant';
 import DropDownPicker from 'react-native-dropdown-picker';
+import { pick, types } from '@react-native-documents/picker';
 
 const Profile = () => {
   const { user } = useSelector(state => state.persistedData);
@@ -37,20 +39,30 @@ const Profile = () => {
       lat: '',
       long: '',
     },
+    ss: user?.ss || '',
+    license: user?.license
+      ? {
+          file: user.license,
+          name: user.license.split('/').pop(),
+        }
+      : {
+          file: '',
+          name: '',
+        },
     workingHours: {
       startTime: user?.workingHours?.startTime || '09:00 AM',
       endTime: user?.workingHours?.endTime || '05: 00 PM',
     },
     service: user?.service || null,
-     portfolio: (user?.portfolio || []).map(file => {
-    if (typeof file === 'string') {
-      return {
-        path: `${IMAGE_URL}${file}`,   
-        filename: file,             
-      };
-    }
-    return file;
-  }),
+    portfolio: (user?.portfolio || []).map(file => {
+      if (typeof file === 'string') {
+        return {
+          path: `${IMAGE_URL}${file}`,
+          filename: file,
+        };
+      }
+      return file;
+    }),
     price: user?.price.toString() || '',
   });
   const [picker, setPicker] = useState({ visible: false, type: null });
@@ -80,6 +92,12 @@ const Profile = () => {
     data.append('price', parseInt(state.price));
     data.append('service', state.service);
     data.append('workingHours', JSON.stringify(state.workingHours));
+    data.append('ss',state.ss)
+    data.append('license',{
+      uri: state.license.file,
+      type: 'application/pdf',
+      name: state.license.name,
+    })
     if (state.image) {
       data.append('profileImage', {
         uri: state.image,
@@ -173,23 +191,57 @@ const Profile = () => {
     }
   };
 
-  const onPortfolioImage = () => {
-    ImageCropPicker.openPicker({
-      width: 300,
-      height: 400,
-      cropping: true,
-      mediaType: 'photo',
-    }).then(image => {
-      setState(prevState => ({
-        ...prevState,
+  // const onPortfolioImage = () => {
+  //   ImageCropPicker.openPicker({
+  //     width: 300,
+  //     height: 400,
+  //     cropping: true,
+  //     mediaType: 'photo',
+  //   }).then(image => {
+  //     setState(prevState => ({
+  //       ...prevState,
+  //       portfolio: [
+  //         ...prevState.portfolio,
+  //         { path: image.path, filename: image.filename },
+  //       ],
+  //     }));
+  //     console.log(image);
+  //   });
+  // };
+
+
+const onSelectFile = async (type) => {
+  try {
+    const [pickResult] = await pick({
+      type: type === 'license' ? [types.pdf] : [types.allFiles],     
+    });
+
+
+    if (type === 'license') {
+      setState(prev => ({
+        ...prev,
+        license: {
+          file: pickResult.uri,
+          name: pickResult.name || '',
+        },
+      }));
+    } else {
+      setState(prev => ({
+        ...prev,
         portfolio: [
-          ...prevState.portfolio,
-          { path: image.path, filename: image.filename },
+          ...prev.portfolio,
+          {
+            uri: pickResult.uri,
+            name: pickResult.name,
+            type: pickResult.type,
+          },
         ],
       }));
-      console.log(image);
-    });
-  };
+    }
+  } catch (err) {
+    console.log('Error picking document', err);
+    }
+};
 
   return (
     <Container>
@@ -394,7 +446,40 @@ const Profile = () => {
                   borderColor={AppColors.BLACK}
                 />
               </View>
-              <TouchableOpacity onPress={onPortfolioImage}>
+                 <View>
+                <AppText
+                  title={'SS'}
+                  color={AppColors.LIGHTGRAY}
+                  size={1.8}
+                />
+                <LineBreak val={1} />
+                <AppTextInput
+                  inputPlaceHolder={'Enter details'}
+                  placeholderTextColor={AppColors.LIGHTGRAY}
+                  borderRadius={30}
+                  keyboardType={'numeric'}
+                  onChangeText={text => onChangeText('price', null, text)}
+                  value={state.ss}
+                  borderColor={AppColors.BLACK}
+                />
+              </View>
+              <TouchableOpacity onPress={() => onSelectFile('license')}>
+                <AppText
+                  title={'Pest Control License'}
+                  color={AppColors.LIGHTGRAY}
+                  size={1.8}
+                />
+                <LineBreak val={1} />
+                <AppTextInput
+                  inputPlaceHolder={'Choose file...'}
+                  placeholderTextColor={AppColors.LIGHTGRAY}
+                  borderRadius={30}
+                  value={state.license.name}
+                  editable={false}
+                  borderColor={AppColors.BLACK}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => onSelectFile('portfolio')}>
                 <AppText
                   title={'Portfolio'}
                   color={AppColors.LIGHTGRAY}
@@ -421,6 +506,46 @@ const Profile = () => {
                   />
                 </View>
               </TouchableOpacity>
+              {state.portfolio.length > 0 && (
+  <View style={{ marginTop: 10 }}>
+    {state.portfolio.map((file, index) => {
+      const isImage =
+        file.type?.includes('image') ||
+        file.path?.match(/\.(jpg|jpeg|png|gif)$/i);
+
+      return (
+        <View
+          key={index}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginBottom: 10,
+          }}
+        >
+          {isImage ? (
+            <ImageBackground
+              source={{ uri: file.uri || file.path }}
+              style={{ width: 40, height: 40, marginRight: 10 }}
+              imageStyle={{ borderRadius: 5 }}
+            />
+          ) : (
+            <Feather
+              name="file-text"
+              size={40}
+              color={colors.secondary_button}
+              style={{ marginRight: 10 }}
+            />
+          )}
+          <AppText
+            size={1.6}
+            title={getShortFileName(file.name || file.filename || `File ${index + 1}`)}
+            color={AppColors.BLACK}
+          />
+        </View>
+      );
+    })}
+  </View>
+)}
             </>
           )}
           <LineBreak val={1} />

@@ -1,5 +1,7 @@
-import { Dimensions } from "react-native";
+import { Dimensions,Platform,PermissionsAndroid } from "react-native";
 import { images } from "../assets/images";
+import Geolocation from 'react-native-geolocation-service';
+import Toast from 'react-native-simple-toast'
 
 const percentageCalculation = (max, val) => max * (val / 100);
 
@@ -66,3 +68,43 @@ export const slides = [
     image: images.slide3,
   }
 ];
+
+
+
+export const getCurrentLocation = async () => {
+  try {
+    if (Platform.OS === 'android') {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      );
+
+      if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+       return Toast.show('Location permission denied')
+      }
+    }
+
+    return new Promise((resolve, reject) => {
+      Geolocation.getCurrentPosition(
+        (position) => {
+          resolve(position.coords); 
+        },
+        (error) => {
+          reject(error.message);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 10000,
+        },
+      );
+    });
+  } catch (err) {
+    throw new Error(err);
+  }
+};
+ 
+export  const getShortFileName = (name = '', maxLength = 25) => {
+  if (name.length <= maxLength) return name;
+  const ext = name.split('.').pop(); // get extension
+  return name.substring(0, maxLength - ext.length - 3) + '...' + ext;
+};

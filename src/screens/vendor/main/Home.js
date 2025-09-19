@@ -35,10 +35,10 @@ const cardsData = [
 
 const Home = ({ navigation }) => {
   const data = [
-    { id: 1, title: 'TODAY' },
-    { id: 2, title: 'YESTERDAY' },
-    { id: 3, title: 'COMPLETE' },
-    { id: 4, title: 'UPCOMING' },
+    // { id: 1, title: 'TODAY' },
+    // { id: 2, title: 'YESTERDAY' },
+    { id: 1, title: 'COMPLETE' },
+    { id: 2, title: 'UPCOMING' },
   ];
   const [currentCategory, setCurrentCategory] = useState('TODAY');
   const [currentCard, setCurrentCard] = useState('Roland Hopper');
