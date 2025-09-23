@@ -1,7 +1,5 @@
-/* eslint-disable eqeqeq */
-/* eslint-disable react-native/no-inline-styles */
 import React from 'react';
-import { View, TouchableOpacity, Image, Text } from 'react-native';
+import { View, TouchableOpacity, Image } from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -28,6 +26,7 @@ const HistoryCard = ({
   homeComponent,
   callOnPress,
   chatOnPress,
+  appointment,
 }) => {
   const nav = useNavigation();
   return (
@@ -80,14 +79,13 @@ const HistoryCard = ({
       ) : null}
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         <Image
-          source={item.profImg}
+          source={{uri:item.profImg}}
           style={{
             width: component || profiles ? 80 : 70,
             height: component || profiles ? 80 : 70,
             borderRadius: component || profiles ? 10 : 100,
           }}
         />
-
         <View style={{ gap: 4 }}>
           <View
             style={{
@@ -135,19 +133,20 @@ const HistoryCard = ({
             ) : (
               <AppText
                 title={item.status}
-                color={
-                  selectedCard?.id == item.id
-                    ? AppColors.BLACK
-                    : homeComponent
-                      ? AppColors.BLACK
-                      : AppColors.PRIMARY
-                }
+                color={AppColors.BLACK}
+                // color={
+                //   selectedCard?.id == item.id
+                //     ? AppColors.BLACK
+                //     : homeComponent
+                //       ? AppColors.BLACK
+                //       : AppColors.BLACK
+                // }
                 size={1.4}
-                fontWeight={'bold'}
+                // fontWeight={'bold'}
               />
             )}
           </View>
-          <View
+          {/* <View
             style={{
               flexDirection: 'row',
               marginTop: component || services || favItem || profiles ? -7 : 0,
@@ -182,7 +181,7 @@ const HistoryCard = ({
                 </View>
               )}
             </View>
-          </View>
+          </View> */}
           <View
             style={{
               width: responsiveWidth(62),
@@ -319,13 +318,13 @@ const HistoryCard = ({
                   />
                 </View>
                 <AppText
-                  title={item.date}
+                  title={appointment ? item.date + '  |  ' + item.fullTime : item.date}
                   color={AppColors.GRAY}
                   size={1.3}
                 />
               </View>
             )}
-            {component || profiles || homeComponent ? (
+            {component || profiles || homeComponent || appointment ? (
               <View style={{ flexDirection: 'row', gap: 15 }}>
                 <TouchableOpacity
                   style={{

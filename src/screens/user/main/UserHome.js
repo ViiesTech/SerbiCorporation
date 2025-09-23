@@ -24,13 +24,25 @@ import { colors } from '../../../assets/colors';
 
 const prefService = [
   // { id: 1, icon: icons.pest_one, title: 'Pest Control' },
-  { id: 1, icon: icons.pest_two, title: 'Termite control' },
-  { id: 2, icon: icons.pest_three, title: 'Mosquito Control' },
+  { id: 1, icon: icons.termites, title: 'Termites' },
+  { id: 2, icon: icons.spiders, title: 'Spiders' },
+  { id: 3, icon: icons.roaches, title: 'Roaches' },
+  { id: 4, icon: icons.mice, title: 'Mice' },
+  { id: 5, icon: icons.mouse, title: 'Mouse' },
+  { id: 6, icon: icons.gnats, title: 'Gnats' },
+  { id: 7, icon: icons.flies, title: 'Flies' },
+  { id: 8, icon: icons.drain_flies, title: 'Drain Flies' },
+  { id: 9, icon: icons.bee, title: 'Bee' },
+  { id: 10, icon: icons.bed_bug, title: 'Bed Bug' },
+  { id: 11, icon: icons.ants, title: 'Ants' },
+
+
+
 ];
 
 const UserHome = () => {
   const [openDrawer, setOpenDrawer] = useState(false);
-  const [selectedService, setSelectedService] = useState({ id: 1 });
+  const [selectedService, setSelectedService] = useState({ title: 'Termites' });
   const { firstVisit } = useSelector(state => state.persistedData);
   const nav = useNavigation();
   const dispatch = useDispatch();
@@ -127,12 +139,12 @@ const UserHome = () => {
                   gap: 6,
                   borderRadius: 6,
                   backgroundColor:
-                    selectedService.id == item.id
+                    selectedService.title == item.title
                       ? AppColors.PRIMARY
                       : AppColors.WHITE,
                 }}
                 onPress={() => {
-                  setSelectedService({ id: item.id });
+                  setSelectedService({ title: item.title });
                 }}
               >
                 <View
@@ -149,7 +161,7 @@ const UserHome = () => {
                 <AppText
                   title={item.title}
                   textColor={
-                    selectedService.id == item.id
+                    selectedService.title == item.title
                       ? AppColors.WHITE
                       : AppColors.PRIMARY
                   }
@@ -280,7 +292,7 @@ const UserHome = () => {
       <LineBreak val={2} />
 
       <Button
-        onPress={() => nav.navigate('Services')}
+        onPress={() => nav.navigate('Services',{service: selectedService.title})}
         title={'Submit'}
         textTransform={'uppercase'}
         color={AppColors.PRIMARY}

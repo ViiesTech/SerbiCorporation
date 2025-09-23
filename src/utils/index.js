@@ -2,6 +2,7 @@ import { Dimensions,Platform,PermissionsAndroid } from "react-native";
 import { images } from "../assets/images";
 import Geolocation from 'react-native-geolocation-service';
 import Toast from 'react-native-simple-toast'
+import moment from 'moment'
 
 const percentageCalculation = (max, val) => max * (val / 100);
 
@@ -105,6 +106,18 @@ export const getCurrentLocation = async () => {
  
 export  const getShortFileName = (name = '', maxLength = 25) => {
   if (name.length <= maxLength) return name;
-  const ext = name.split('.').pop(); // get extension
+  const ext = name.split('.').pop();
   return name.substring(0, maxLength - ext.length - 3) + '...' + ext;
 };
+
+// export const getCreationStatus = (date) => {
+//   const input = moment(date);
+
+//   if (input.isSame(moment(), "day")) {
+//     return "TODAY";
+//   } else if (input.isSame(moment().subtract(1, "day"), "day")) {
+//     return "YESTERDAY";
+//   } else {
+//     return input.format("ddd, MMM D"); 
+//   }
+// }

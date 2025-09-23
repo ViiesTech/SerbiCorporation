@@ -56,9 +56,12 @@ const profiles = [
     },
 ];
 
-const Services = () => {
+const Services = ({route}) => {
     const nav = useNavigation();
     const [selectedCard, setSelectedCard] = useState({ id: 1 });
+    const service = route?.params?.service
+    
+    console.log('selected service ===>',service)
 
     return (
         <Container>

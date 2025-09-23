@@ -78,6 +78,15 @@ export const Apis = createApi({
         };
       },
     }),
+     getAllAppointments: builder.query({
+      query: (id,type) => {
+        //   console.log('typeeee',type)
+        return {
+          url: endpoints.GET_ALL_APPOINTMENTS(id,type),
+          method: 'GET',
+        };
+      },
+    }),
   }),
 });
 
@@ -89,5 +98,6 @@ export const {
   useResetPasswordMutation,
   useLazyGetProfileQuery,
   useLazyVerifyOTPPasswordQuery,
-  useCreateUpdateProfileMutation
+  useCreateUpdateProfileMutation,
+  useLazyGetAllAppointmentsQuery
 } = Apis;

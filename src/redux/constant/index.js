@@ -1,5 +1,5 @@
-export const BASE_URL = 'https://appsdemo.pro/Serbi-Backend/api/user/'
-export const IMAGE_URL = 'https://appsdemo.pro/Serbi-Backend/'
+export const BASE_URL = 'https://appsdemo.pro/Serbi-Backend/api/user/';
+export const IMAGE_URL = 'https://appsdemo.pro/Serbi-Backend/';
 
 export const endpoints = {
   SIGNUP: 'signup',
@@ -7,8 +7,9 @@ export const endpoints = {
   OTP: 'verifyOTP',
   FORGET_PASSWORD: 'forgetPassword',
   RESET_PASSWORD: 'resetPassword',
-  VERIFY_FORGET_REQUEST: ({email,otp}) => `verifyOTPForPassword?email=${email}&OTP=${otp}`,
+  VERIFY_FORGET_REQUEST: ({ email, otp }) =>
+    `verifyOTPForPassword?email=${email}&OTP=${otp}`,
   CREATE_UPDATE_PROFILE: 'updateUser',
-  GET_PROFILE: (id) => `getProfile?userId=${id}`
-
-}
+  GET_PROFILE: id => `getProfile?userId=${id}`,
+  GET_ALL_APPOINTMENTS: (id, type) => `getAllRequestForms?${type === 'user' ? 'userId' : 'technicianId'}=${id}`,
+};

@@ -9,6 +9,7 @@ import {
 import { useEffect, useState } from 'react';
 import {
   AppColors,
+  getCreationStatus,
   responsiveHeight,
   responsiveWidth,
 } from './../../../utils/index';
@@ -25,6 +26,10 @@ import { firstTimeVisit } from '../../../redux/slices';
 import { useDispatch, useSelector } from 'react-redux';
 import { colors } from '../../../assets/colors';
 import { IMAGE_URL } from '../../../redux/constant';
+import { useLazyGetAllAppointmentsQuery } from '../../../redux/services';
+import Loader from '../../../components/Loader';
+import { isForInitializer } from 'typescript';
+import moment from 'moment';
 const cardsData = [
   { id: 1, title: 'Roland Hopper' },
   { id: 2, title: 'Alexis Clark' },
@@ -33,18 +38,77 @@ const cardsData = [
   { id: 5, title: 'LEon Carroll' },
 ];
 
+const data1 = [
+  // { id: 1, title: 'TODAY' },
+  // { id: 2, title: 'YESTERDAY' },
+  { id: 1, title: 'REQUESTED' },
+  { id: 2, title: 'DISCUSSION' },
+];
+
+const data2 = [
+  {
+    id: 1,
+    sub_title: 'Pending',
+  },
+  {
+    id: 2,
+    sub_title: 'Accepted',
+  },
+  {
+    id: 3,
+    sub_title: 'Arrived',
+  },
+];
+
+const data3 = [
+  {
+    id: 1,
+    sub_title: 'Upcoming',
+  },
+  {
+    id: 2,
+    sub_title: 'Started',
+  },
+  {
+    id: 3,
+    sub_title: 'Completed',
+  },
+];
+
 const Home = ({ navigation }) => {
-  const data = [
-    // { id: 1, title: 'TODAY' },
-    // { id: 2, title: 'YESTERDAY' },
-    { id: 1, title: 'COMPLETE' },
-    { id: 2, title: 'UPCOMING' },
-  ];
-  const [currentCategory, setCurrentCategory] = useState('TODAY');
+  const [currentCategory, setCurrentCategory] = useState('REQUESTED');
+  const [subCategory, setSubCategory] = useState(0);
   const [currentCard, setCurrentCard] = useState('Roland Hopper');
-  const { firstVisit,user } = useSelector(state => state.persistedData);
+  const { firstVisit, user } = useSelector(state => state.persistedData);
+  const [getAllAppointments, { data, isLoading }] =
+    useLazyGetAllAppointmentsQuery();
+  const [filterStatusData, setFilterStatusData] = useState([]);
+  const [search, setSearch] = useState('');
 
   const dispatch = useDispatch();
+  console.log('status filteration ===>', filterStatusData);
+  const combinedTabs = [...data2, ...data3];
+
+  useEffect(() => {
+    getAllAppointments(user?._id, user?.type);
+  }, []);
+
+  useEffect(() => {
+    setSubCategory(0);
+
+    let sourceData = [];
+    if (currentCategory === 'REQUESTED') {
+      sourceData = data?.data?.requestForms || [];
+    } else if (currentCategory === 'DISCUSSION') {
+      sourceData = data?.data?.discussionForms || [];
+    }
+
+    const firstTab =
+      currentCategory === 'REQUESTED' ? data2[0].sub_title : data3[0].sub_title;
+
+    const filtered = sourceData.filter(item => item.status === firstTab);
+    setFilterStatusData(filtered);
+  }, [currentCategory, data]);
 
   useEffect(() => {
     setTimeout(() => {
@@ -74,6 +138,52 @@ const Home = ({ navigation }) => {
       </View>
     );
   };
+
+  const splitAppointmentsByStatus = (statusTitle, index) => {
+    setSubCategory(index);
+
+    let sourceData = [];
+    if (currentCategory === 'REQUESTED') {
+      sourceData = data?.data?.requestForms || [];
+    } else if (currentCategory === 'DISCUSSION') {
+      sourceData = data?.data?.discussionForms || [];
+    }
+
+    const filtered = sourceData.filter(item => item.status == statusTitle);
+
+    setFilterStatusData(filtered);
+  };
+
+  const onSearchFilter = () => {
+    const requested = data?.data?.requestForms || [];
+    const discussion = data?.data?.discussionForms || [];
+
+    // Combine both
+    const combined = [...requested, ...discussion];
+
+    const filtered = combined.filter(
+      item =>
+        item?.userId?.fullName?.toLowerCase().includes(search.toLowerCase()) ||
+        item?.userId?.locationName
+          ?.toLowerCase()
+          .includes(search.toLowerCase()),
+    );
+
+    setFilterStatusData(filtered);
+  };
+
+  const getDisplayData = () => {
+    if (search.length > 0) return filterStatusData;
+
+    if (subCategory !== null) return filterStatusData;
+
+    if (currentCategory === 'REQUESTED') {
+      return data?.data?.requestForms || [];
+    }
+    return data?.data?.discussionForms || [];
+  };
+
+  // console.log('display data ===>', getDisplayData());
 
   if (firstVisit) {
     return showLoginMessage();
@@ -109,7 +219,11 @@ const Home = ({ navigation }) => {
               height: responsiveHeight(7.5),
             }}
             borderRadius={100}
-            source={user?.profileImage ? {uri:`${IMAGE_URL}${user.profileImage}`} : images.profile}
+            source={
+              user?.profileImage
+                ? { uri: `${IMAGE_URL}${user.profileImage}` }
+                : images.profile
+            }
           />
           <View>
             <View style={{ flexDirection: 'row', gap: responsiveHeight(1) }}>
@@ -118,7 +232,10 @@ const Home = ({ navigation }) => {
             </View>
             <View style={{ flexDirection: 'row', gap: responsiveHeight(0.5) }}>
               <SVGIcon height={20} width={20} xml={icons.locationPin} />
-              <AppText color={'#777777'} title={user?.location?.locationName || 'No location found'}/>
+              <AppText
+                color={'#777777'}
+                title={user?.location?.locationName || 'No location found'}
+              />
             </View>
           </View>
         </View>
@@ -134,38 +251,91 @@ const Home = ({ navigation }) => {
 
       <AppTextInput
         inputWidth={77}
-        rightIcon={<Ionicons name="search-outline" size={25} />}
+        value={search}
+        onChangeText={text => setSearch(text)}
+        rightIcon={
+          <TouchableOpacity onPress={() => onSearchFilter()}>
+            <Ionicons name="search-outline" size={25} />
+          </TouchableOpacity>
+        }
         inputPlaceHolder="What are you looking for?"
         placeholderTextColor="#777777"
         borderRadius={25}
       />
       <LineBreak val={2} />
       <AppText title="APPOINTMENTS" fontWeight="bold" size={2.4} />
+      {search.length < 1 && (
+        <View>
+          <FlatList
+            showsHorizontalScrollIndicator={false}
+            style={{ marginHorizontal: responsiveHeight(-3) }}
+            contentContainerStyle={{
+              gap: responsiveHeight(1),
+              marginTop: responsiveHeight(1),
+              paddingHorizontal: responsiveHeight(3),
+            }}
+            data={data1}
+            horizontal
+            renderItem={({ item, index }) => {
+              return (
+                <TouchableOpacity
+                  onPress={() => setCurrentCategory(item.title)}
+                  style={{
+                    backgroundColor:
+                      item.title === currentCategory ? '#000' : '#fff',
+                    borderWidth: 1,
+                    borderColor: '#000',
+                    width: responsiveWidth(45),
+                    alignItems: 'center',
+                    borderRadius: responsiveHeight(3),
+                    padding: responsiveHeight(0.8),
+                  }}
+                >
+                  <AppText
+                    color={item.title === currentCategory ? '#fff' : '#000'}
+                    title={item.title}
+                  />
+                </TouchableOpacity>
+              );
+            }}
+          />
+        </View>
+      )}
+      <LineBreak val={2} />
       <View>
         <FlatList
           showsHorizontalScrollIndicator={false}
+          style={{ marginHorizontal: responsiveHeight(-3) }}
           contentContainerStyle={{
             gap: responsiveHeight(1),
             marginTop: responsiveHeight(1),
+            paddingHorizontal: responsiveHeight(3),
           }}
-          data={data}
+          data={
+            search.length > 0
+              ? combinedTabs
+              : currentCategory === 'REQUESTED'
+              ? data2
+              : data3
+          }
           horizontal
           renderItem={({ item, index }) => {
             return (
               <TouchableOpacity
-                onPress={() => setCurrentCategory(item.title)}
+                onPress={() => splitAppointmentsByStatus(item.sub_title, index)}
                 style={{
-                  backgroundColor:
-                    item.title === currentCategory ? '#000' : '#fff',
+                  backgroundColor: index === subCategory ? '#000' : '#fff',
                   borderWidth: 1,
                   borderColor: '#000',
+                  width: responsiveWidth(29),
+                  alignItems: 'center',
                   borderRadius: responsiveHeight(3),
-                  padding: responsiveHeight(0.8),
+                  padding: responsiveHeight(0.6),
                 }}
               >
                 <AppText
-                  color={item.title === currentCategory ? '#fff' : '#000'}
-                  title={item.title}
+                  color={index === subCategory ? '#fff' : '#000'}
+                  title={item.sub_title}
                 />
               </TouchableOpacity>
             );
@@ -173,36 +343,54 @@ const Home = ({ navigation }) => {
         />
       </View>
       <View style={{ marginTop: responsiveHeight(2) }}>
-        <FlatList
-          contentContainerStyle={{ gap: responsiveHeight(2) }}
-          data={cardsData}
-          renderItem={({ item, index }) => {
-            return (
-              <HistoryCard
-                onCardPress={() => {
-                  setCurrentCard(item.id);
-                  navigation.navigate('Services');
-                }}
-                item={{
-                  id: item.id,
-                  profImg: images.imageProf,
-                  username: item.title,
-                  designation: 'Expert Gerdener',
-                  rating: '3.5',
-                  time: '30',
-                }}
-                selectedCard={{ id: currentCard }}
-                activeCardBgColor={
-                  item.id === currentCard ? AppColors.PRIMARY : AppColors.WHITE
-                }
-                profiles={'profiles'}
-                isHideClose={false}
-                isShowBadge={true}
-                viewDetailsHandlePress={() => navigation.navigate('Services')}
-              />
-            );
-          }}
-        />
+        {isLoading ? (
+          <Loader style={{ marginVertical: responsiveHeight(3) }} />
+        ) : (
+          <FlatList
+            contentContainerStyle={{ gap: responsiveHeight(2) }}
+            ListEmptyComponent={() => (
+              <AppText align={'center'} title={'No Appointments Found'} />
+            )}
+            data={getDisplayData()}
+            renderItem={({ item, index }) => {
+              return (
+                <HistoryCard
+                  onCardPress={() => {
+                    setCurrentCard(item.id);
+                    navigation.navigate('Services');
+                  }}
+                  item={{
+                    id: item.id,
+                    profImg: `${IMAGE_URL}${item.userId?.profileImage}`,
+                    username: item.userId?.fullName,
+                    // designation: 'Expert Gerdener',
+                    // rating: '3.5',
+                    location: item.userId.locationName,
+                    status: moment(item.createdAt).calendar(null, {
+                      sameDay: '[TODAY]',
+                      lastDay: '[YESTERDAY]',
+                      lastWeek: 'dddd',
+                      sameElse: 'MMM D',
+                    }),
+                    date: moment(item.date).format('ddd, MMM D'),
+                    fullTime: item.time,
+                  }}
+                  selectedCard={{ id: currentCard }}
+                  activeCardBgColor={
+                    item.id === currentCard
+                      ? AppColors.PRIMARY
+                      : AppColors.WHITE
+                  }
+                  appointment={true}
+                  // profiles={'profiles'}
+                  isHideClose={false}
+                  isShowBadge={true}
+                  viewDetailsHandlePress={() => navigation.navigate('Services')}
+                />
+              );
+            }}
+          />
+        )}
       </View>
     </ScrollView>
   );
