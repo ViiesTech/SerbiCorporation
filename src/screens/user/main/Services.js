@@ -16,9 +16,14 @@ import { images } from '../../../assets/images';
 import AppText from '../../../components/AppText';
 import LineBreak from '../../../components/LineBreak';
 import HistoryCard from './../../../components/HistoryCard';
-import { useLazyGetNearbyTechniciansQuery } from '../../../redux/services/index';
+import {
+  useAddToFavouritesMutation,
+  useLazyGetNearbyTechniciansQuery,
+} from '../../../redux/services/index';
 import Loader from '../../../components/Loader';
 import { IMAGE_URL } from '../../../redux/constant';
+import { useSelector } from 'react-redux';
+import Toast from 'react-native-simple-toast';
 
 // const profiles = [
 //   {
@@ -68,15 +73,48 @@ import { IMAGE_URL } from '../../../redux/constant';
 const Services = ({ route }) => {
   const nav = useNavigation();
   const [selectedCard, setSelectedCard] = useState({ id: 1 });
+  const { _id } = useSelector(state => state.persistedData.user);
   const [getNearbyTechnicians, { data, isLoading }] =
     useLazyGetNearbyTechniciansQuery();
+  const [addToFavourites, { isLoading: favouritesLoader }] =
+    useAddToFavouritesMutation();
   const { service, lat, long } = route?.params;
 
-  console.log('nearby technicians ===>', data);
+  console.log('nearby technicians ===>', _id);
 
   useEffect(() => {
-    getNearbyTechnicians({ lat: '25.4473', long: '-80.479', service: '68d31cacf962675cd0799b74' });
+    getNearbyTechnicians({
+      lat: lat,
+      long: long,
+      service: service,
+    });
   }, [lat, long, service]);
+
+  const onFavouritePress = async technicianId => {
+    // return  console.log('technician id===>',technicianId)
+    let data = {
+      userId: _id,
+      technicianId,
+    };
+
+    await addToFavourites(data)
+      .unwrap()
+      .then(res => {
+        console.log('response of adding into wishlist ===>', res.data);
+        Toast.show(res.msg, 2000, Toast.SHORT);
+        if (res.success) {
+          getNearbyTechnicians({
+            lat: lat,
+            long: long,
+            service: service,
+          });
+        }
+      })
+      .catch(error => {
+        console.log('error adding into wishlist ===>', error);
+        Toast.show('Some problem occured', 2000, Toast.SHORT);
+      });
+  };
 
   return (
     <Container>
@@ -124,8 +162,10 @@ const Services = ({ route }) => {
                     rating: item.avgRating || 0,
                     // time: '30',
                     ml: distanceMiles.toFixed(1),
-                    min: formatMinutes(minutes)
+                    min: formatMinutes(minutes),
                   }}
+                  favourite={item.favouriteBy?.includes(_id)}
+                  onHeartPress={() => onFavouritePress(item._id)}
                   selectedCard={selectedCard}
                   onCardPress={() => setSelectedCard({ id: item._id })}
                   services={'services'}

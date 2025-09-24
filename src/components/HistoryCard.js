@@ -27,6 +27,8 @@ const HistoryCard = ({
   callOnPress,
   chatOnPress,
   appointment,
+  onHeartPress,
+  favourite,
 }) => {
   const nav = useNavigation();
   return (
@@ -116,19 +118,24 @@ const HistoryCard = ({
                 {services || (profiles && isShowBadge) ? (
                   <SVGIcon xml={icons.simple_badge} width={25} height={25} />
                 ) : null}
+                 {services || profiles || favItem ?   
                 <TouchableOpacity
                   style={{
                     borderWidth: 1,
                     padding: 5,
                     borderRadius: 100,
                     borderColor: selectedCard?.id == item._id ? AppColors.BLACK : AppColors.PRIMARY,
-                  }}>
+                  }}
+                  onPress={onHeartPress}
+                  >
                   <AntDesign
-                    name={services || profiles ? 'hearto' : 'heart'}
+                    name={favourite ? 'heart' : 'hearto'}
                     size={responsiveFontSize(1.8)}
                     color={selectedCard?.id == item._id ? AppColors.BLACK : AppColors.PRIMARY}
                   />
                 </TouchableOpacity>
+                : null
+                  }
               </View>
             ) : (
               <AppText
@@ -146,7 +153,7 @@ const HistoryCard = ({
               />
             )}
           </View>
-         {services && 
+         {services || favItem && 
           <View
             style={{
               flexDirection: 'row',

@@ -159,8 +159,7 @@ const UserHome = () => {
                 }}
                 onPress={() => {
                   setSelectedService({ title: item.title });
-                }}
-              >
+                }}>
                 <View
                   style={{
                     borderWidth: 1,

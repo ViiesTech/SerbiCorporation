@@ -96,6 +96,24 @@ export const Apis = createApi({
         };
       },
     }),
+    addToFavourites: builder.mutation({
+      query: (data) => {
+        return {
+          url: endpoints.ADD_TO_FAVOURITES,
+          method: 'POST',
+          body: data
+        }
+      }
+    }),
+     getAllWishlists: builder.query({
+      query: (id) => {
+        //   console.log('typeeee',type)
+        return {
+          url: endpoints.GET_WISHLISTS(id),
+          method: 'GET',
+        };
+      },
+    }),
     //  getAllServices: builder.query({
     //   query: () => {
     //     //   console.log('typeeee',type)
@@ -119,5 +137,7 @@ export const {
   useCreateUpdateProfileMutation,
   useLazyGetAllAppointmentsQuery,
   useLazyGetNearbyTechniciansQuery,
+  useAddToFavouritesMutation,
+  useLazyGetAllWishlistsQuery
   // useLazyGetAllServicesQuery
 } = Apis;

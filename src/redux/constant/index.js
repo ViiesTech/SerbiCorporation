@@ -14,5 +14,7 @@ export const endpoints = {
   GET_PROFILE: id => `getProfile?userId=${id}`,
   GET_ALL_APPOINTMENTS: (id, type) => `getAllRequestForms?${type === 'user' ? 'userId' : 'technicianId'}=${id}`,
   GET_NEARBY_TECHNICIANS: ({lat,long,service}) => `nearbyUsers?longitude=${long}&latitude=${lat}&service=${service}`,
-  GET_ALL_SERVICES: 'getAllServices'
+  GET_ALL_SERVICES: 'getAllServices',
+  ADD_TO_FAVOURITES: 'addToFavorites',
+  GET_WISHLISTS: (id) => `getAllFavorites?userId=${id}`
 };
