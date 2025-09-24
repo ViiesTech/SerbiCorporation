@@ -87,6 +87,24 @@ export const Apis = createApi({
         };
       },
     }),
+     getNearbyTechnicians: builder.query({
+      query: ({lat,long,service}) => {
+        //   console.log('typeeee',type)
+        return {
+          url: endpoints.GET_NEARBY_TECHNICIANS({lat,long,service}),
+          method: 'GET',
+        };
+      },
+    }),
+    //  getAllServices: builder.query({
+    //   query: () => {
+    //     //   console.log('typeeee',type)
+    //     return {
+    //       url: endpoints.GET_ALL_SERVICES,
+    //       method: 'GET',
+    //     };
+    //   },
+    // }),
   }),
 });
 
@@ -99,5 +117,7 @@ export const {
   useLazyGetProfileQuery,
   useLazyVerifyOTPPasswordQuery,
   useCreateUpdateProfileMutation,
-  useLazyGetAllAppointmentsQuery
+  useLazyGetAllAppointmentsQuery,
+  useLazyGetNearbyTechniciansQuery,
+  // useLazyGetAllServicesQuery
 } = Apis;

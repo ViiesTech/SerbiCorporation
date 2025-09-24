@@ -5,6 +5,7 @@ import HomeHeader from './../../../components/HomeHeader';
 import Drawer from './../../../components/Drawer';
 import {
   AppColors,
+  getCurrentLocation,
   responsiveFontSize,
   responsiveHeight,
   responsiveWidth,
@@ -42,10 +43,17 @@ const prefService = [
 
 const UserHome = () => {
   const [openDrawer, setOpenDrawer] = useState(false);
+  const [coordinates,setCoordinates] = useState({})
   const [selectedService, setSelectedService] = useState({ title: 'Termites' });
   const { firstVisit } = useSelector(state => state.persistedData);
   const nav = useNavigation();
   const dispatch = useDispatch();
+
+  useEffect(() => {
+
+    getUserLocation()
+
+  },[])
 
   useEffect(() => {
     setTimeout(() => {
@@ -76,6 +84,12 @@ const UserHome = () => {
     );
   };
 
+  const getUserLocation = async () => {
+    const {latitude,longitude} = await getCurrentLocation()
+    setCoordinates({lat: latitude,long: longitude})
+    // console.log('lat long ===>',latitude,longitude)
+  }
+
   if (firstVisit) {
     return showLoginMessage();
   }
@@ -90,7 +104,7 @@ const UserHome = () => {
         closeIconOnPress={() => setOpenDrawer(false)}
       />
 
-      <View style={{ paddingHorizontal: responsiveWidth(4) }}>
+      {/* <View style={{ paddingHorizontal: responsiveWidth(4) }}>
         <AppTextInput
           inputPlaceHolder={'What are you looking for?'}
           inputWidth={78}
@@ -104,9 +118,9 @@ const UserHome = () => {
             />
           }
         />
-      </View>
+      </View> */}
 
-      <LineBreak val={3} />
+      {/* <LineBreak val={1} /> */}
 
       <Image source={images.map} style={{ width: responsiveWidth(100) }} />
 
@@ -292,7 +306,7 @@ const UserHome = () => {
       <LineBreak val={2} />
 
       <Button
-        onPress={() => nav.navigate('Services',{service: selectedService.title})}
+        onPress={() => nav.navigate('Services',{service: selectedService.title,lat: coordinates?.lat,long: coordinates?.long})}
         title={'Submit'}
         textTransform={'uppercase'}
         color={AppColors.PRIMARY}

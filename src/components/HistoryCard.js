@@ -32,11 +32,11 @@ const HistoryCard = ({
   return (
     <TouchableOpacity
       style={{
-        borderWidth: selectedCard?.id == item.id ? 0 : 1,
+        borderWidth: selectedCard?.id == item._id ? 0 : 1,
         borderColor: AppColors.BLACK,
         backgroundColor: component
           ? AppColors.BLACK
-          : selectedCard?.id == item.id
+          : selectedCard?.id == item._id
             ? activeCardBgColor
               ? activeCardBgColor
               : AppColors.PRIMARY
@@ -62,7 +62,7 @@ const HistoryCard = ({
             borderRadius: 100,
             backgroundColor: AppColors.WHITE,
             borderColor:
-              selectedCard?.id == item.id
+              selectedCard?.id == item._id
                 ? AppColors.WHITE
                 : AppColors.ThemeBlue,
           }}>
@@ -70,7 +70,7 @@ const HistoryCard = ({
             name={'close'}
             size={responsiveFontSize(1.2)}
             color={
-              selectedCard?.id == item.id
+              selectedCard?.id == item._id
                 ? AppColors.BLACK
                 : AppColors.ThemeBlue
             }
@@ -121,12 +121,12 @@ const HistoryCard = ({
                     borderWidth: 1,
                     padding: 5,
                     borderRadius: 100,
-                    borderColor: selectedCard?.id == item.id ? AppColors.BLACK : AppColors.PRIMARY,
+                    borderColor: selectedCard?.id == item._id ? AppColors.BLACK : AppColors.PRIMARY,
                   }}>
                   <AntDesign
                     name={services || profiles ? 'hearto' : 'heart'}
                     size={responsiveFontSize(1.8)}
-                    color={selectedCard?.id == item.id ? AppColors.BLACK : AppColors.PRIMARY}
+                    color={selectedCard?.id == item._id ? AppColors.BLACK : AppColors.PRIMARY}
                   />
                 </TouchableOpacity>
               </View>
@@ -146,7 +146,8 @@ const HistoryCard = ({
               />
             )}
           </View>
-          {/* <View
+         {services && 
+          <View
             style={{
               flexDirection: 'row',
               marginTop: component || services || favItem || profiles ? -7 : 0,
@@ -168,20 +169,21 @@ const HistoryCard = ({
                 color={AppColors.GRAY}
                 size={1.3}
               />
-              {item.rating && (
+              {/* {item.rating && ( */}
                 <View style={{ flexDirection: 'row', gap: 2 }}>
-                  {[...Array(3)].map((_, index) => (
+                  {/* {[...Array(item.rating)].map((_, index) => ( */}
                     <Ionicons
-                      key={index}
+                      // key={index}
                       name="star"
                       size={responsiveFontSize(1.3)}
-                      color={selectedCard?.id == item.id ? AppColors.WHITE : AppColors.Yellow}
+                      color={selectedCard?.id == item._id ? AppColors.WHITE : AppColors.Yellow}
                     />
-                  ))}
+                  {/* ))} */}
                 </View>
-              )}
+              {/* )} */}
             </View>
-          </View> */}
+          </View>
+          }
           <View
             style={{
               width: responsiveWidth(62),
@@ -199,7 +201,7 @@ const HistoryCard = ({
                   title="view details"
                   textColor={AppColors.BLACK}
                   bgColor={
-                    selectedCard?.id == item.id
+                    selectedCard?.id == item._id
                       ? AppColors.WHITE
                       : AppColors.PRIMARY
                   }
@@ -264,7 +266,7 @@ const HistoryCard = ({
                     <AppText
                       title={item.appointmentDate}
                       color={
-                        selectedCard?.id == item.id
+                        selectedCard?.id == item._id
                           ? AppColors.WHITE
                           : AppColors.DARKGRAY
                       }
@@ -273,7 +275,7 @@ const HistoryCard = ({
                     <AppText
                       title={'|'}
                       color={
-                        selectedCard?.id == item.id
+                        selectedCard?.id == item._id
                           ? AppColors.WHITE
                           : AppColors.BLACK
                       }
@@ -282,7 +284,7 @@ const HistoryCard = ({
                     <AppText
                       title={item.appointmentTime}
                       color={
-                        selectedCard?.id == item.id
+                        selectedCard?.id == item._id
                           ? AppColors.WHITE
                           : AppColors.BLACK
                       }
@@ -305,7 +307,7 @@ const HistoryCard = ({
                       name="location-pin"
                       size={responsiveFontSize(1.8)}
                       color={
-                        selectedCard?.id == item.id
+                        selectedCard?.id == item._id
                           ? AppColors.BLACK
                           : AppColors.GRAY
                       }

@@ -18,7 +18,7 @@ import AppTextInput from '../components/AppTextInput';
 import AppButton from '../components/AppButton';
 import { useSelector } from 'react-redux';
 import { useCreateUpdateProfileMutation } from '../redux/services/index';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Toast from 'react-native-simple-toast';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import moment from 'moment';
@@ -26,6 +26,8 @@ import ImageCropPicker from 'react-native-image-crop-picker';
 import { IMAGE_URL } from '../redux/constant';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { pick, types } from '@react-native-documents/picker';
+import { useLazyGetAllServicesQuery } from '../redux/services/adminApis';
+import Loader from '../components/Loader';
 
 const Profile = () => {
   const { user } = useSelector(state => state.persistedData);
@@ -53,7 +55,7 @@ const Profile = () => {
       startTime: user?.workingHours?.startTime || '09:00 AM',
       endTime: user?.workingHours?.endTime || '05: 00 PM',
     },
-    service: user?.service || null,
+    service: user?.service._id || null,
     portfolio: (user?.portfolio || []).map(file => {
       if (typeof file === 'string') {
         return {
@@ -63,11 +65,13 @@ const Profile = () => {
       }
       return file;
     }),
-    price: user?.price.toString() || '',
+    price: user?.price?.toString() || '',
   });
   const [picker, setPicker] = useState({ visible: false, type: null });
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
   const [createUpdateProfile, { isLoading }] = useCreateUpdateProfileMutation();
+  const [getAllServices, { data: servicesData, isLoading: serviceLoader }] =
+    useLazyGetAllServicesQuery();
   const nav = useNavigation();
   const [open, setOpen] = useState(false);
   //   const [value, setValue] = useState(null);
@@ -78,7 +82,23 @@ const Profile = () => {
     { label: 'Test Service 4', value: 'Test Service 4' },
   ]);
 
-  console.log('state ===>', user);
+  // console.log('services data', servicesData);
+
+  useEffect(() => {
+    getAllServices();
+  }, []);
+
+  useEffect(() => {
+    if (servicesData?.data) {
+      const updatedData = servicesData?.data.map(item => ({
+        label: item.name,
+        value: item._id,
+      }));
+      setItems(updatedData);
+    }
+  }, [servicesData]);
+
+  // console.log('state ===>', user);
 
   const onProfilePress = async () => {
     let data = new FormData();
@@ -92,12 +112,12 @@ const Profile = () => {
     data.append('price', parseInt(state.price));
     data.append('service', state.service);
     data.append('workingHours', JSON.stringify(state.workingHours));
-    data.append('ss',state.ss)
-    data.append('license',{
+    data.append('ss', state.ss);
+    data.append('license', {
       uri: state.license.file,
       type: 'application/pdf',
       name: state.license.name,
-    })
+    });
     if (state.image) {
       data.append('profileImage', {
         uri: state.image,
@@ -209,39 +229,37 @@ const Profile = () => {
   //   });
   // };
 
+  const onSelectFile = async type => {
+    try {
+      const [pickResult] = await pick({
+        type: type === 'license' ? [types.pdf] : [types.allFiles],
+      });
 
-const onSelectFile = async (type) => {
-  try {
-    const [pickResult] = await pick({
-      type: type === 'license' ? [types.pdf] : [types.allFiles],     
-    });
-
-
-    if (type === 'license') {
-      setState(prev => ({
-        ...prev,
-        license: {
-          file: pickResult.uri,
-          name: pickResult.name || '',
-        },
-      }));
-    } else {
-      setState(prev => ({
-        ...prev,
-        portfolio: [
-          ...prev.portfolio,
-          {
-            uri: pickResult.uri,
-            name: pickResult.name,
-            type: pickResult.type,
+      if (type === 'license') {
+        setState(prev => ({
+          ...prev,
+          license: {
+            file: pickResult.uri,
+            name: pickResult.name || '',
           },
-        ],
-      }));
+        }));
+      } else {
+        setState(prev => ({
+          ...prev,
+          portfolio: [
+            ...prev.portfolio,
+            {
+              uri: pickResult.uri,
+              name: pickResult.name,
+              type: pickResult.type,
+            },
+          ],
+        }));
+      }
+    } catch (err) {
+      console.log('Error picking document', err);
     }
-  } catch (err) {
-    console.log('Error picking document', err);
-    }
-};
+  };
 
   return (
     <Container>
@@ -380,7 +398,10 @@ const onSelectFile = async (type) => {
               borderColor={AppColors.BLACK}
             />
           </View>
-          {user?.type === 'Technician' && (
+        {serviceLoader ?  
+                <Loader />
+          :
+          user?.type === 'Technician' && (
             <>
               <View>
                 <AppText
@@ -394,7 +415,7 @@ const onSelectFile = async (type) => {
                   value={state.service}
                   items={items}
                   dropDownDirection="BOTTOM"
-                  placeholder="Driver"
+                  placeholder="Select Service"
                   style={{ borderRadius: 100 }}
                   setOpen={setOpen}
                   setValue={val =>
@@ -446,12 +467,8 @@ const onSelectFile = async (type) => {
                   borderColor={AppColors.BLACK}
                 />
               </View>
-                 <View>
-                <AppText
-                  title={'SS'}
-                  color={AppColors.LIGHTGRAY}
-                  size={1.8}
-                />
+              <View>
+                <AppText title={'SS'} color={AppColors.LIGHTGRAY} size={1.8} />
                 <LineBreak val={1} />
                 <AppTextInput
                   inputPlaceHolder={'Enter details'}
@@ -507,47 +524,50 @@ const onSelectFile = async (type) => {
                 </View>
               </TouchableOpacity>
               {state.portfolio.length > 0 && (
-  <View style={{ marginTop: 10 }}>
-    {state.portfolio.map((file, index) => {
-      const isImage =
-        file.type?.includes('image') ||
-        file.path?.match(/\.(jpg|jpeg|png|gif)$/i);
+                <View style={{ marginTop: 10 }}>
+                  {state.portfolio.map((file, index) => {
+                    const isImage =
+                      file.type?.includes('image') ||
+                      file.path?.match(/\.(jpg|jpeg|png|gif)$/i);
 
-      return (
-        <View
-          key={index}
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            marginBottom: 10,
-          }}
-        >
-          {isImage ? (
-            <ImageBackground
-              source={{ uri: file.uri || file.path }}
-              style={{ width: 40, height: 40, marginRight: 10 }}
-              imageStyle={{ borderRadius: 5 }}
-            />
-          ) : (
-            <Feather
-              name="file-text"
-              size={40}
-              color={colors.secondary_button}
-              style={{ marginRight: 10 }}
-            />
-          )}
-          <AppText
-            size={1.6}
-            title={getShortFileName(file.name || file.filename || `File ${index + 1}`)}
-            color={AppColors.BLACK}
-          />
-        </View>
-      );
-    })}
-  </View>
-)}
+                    return (
+                      <View
+                        key={index}
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          marginBottom: 10,
+                        }}
+                      >
+                        {isImage ? (
+                          <ImageBackground
+                            source={{ uri: file.uri || file.path }}
+                            style={{ width: 40, height: 40, marginRight: 10 }}
+                            imageStyle={{ borderRadius: 5 }}
+                          />
+                        ) : (
+                          <Feather
+                            name="file-text"
+                            size={40}
+                            color={colors.secondary_button}
+                            style={{ marginRight: 10 }}
+                          />
+                        )}
+                        <AppText
+                          size={1.6}
+                          title={getShortFileName(
+                            file.name || file.filename || `File ${index + 1}`,
+                          )}
+                          color={AppColors.BLACK}
+                        />
+                      </View>
+                    );
+                  })}
+                </View>
+              )}
             </>
           )}
+          }
           <LineBreak val={1} />
           <AppButton
             title={'update profile'}

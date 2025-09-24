@@ -1,5 +1,6 @@
 export const BASE_URL = 'https://appsdemo.pro/Serbi-Backend/api/user/';
 export const IMAGE_URL = 'https://appsdemo.pro/Serbi-Backend/';
+export const ADMIN_URL = 'https://appsdemo.pro/Serbi-Backend/api/admin/'
 
 export const endpoints = {
   SIGNUP: 'signup',
@@ -12,4 +13,6 @@ export const endpoints = {
   CREATE_UPDATE_PROFILE: 'updateUser',
   GET_PROFILE: id => `getProfile?userId=${id}`,
   GET_ALL_APPOINTMENTS: (id, type) => `getAllRequestForms?${type === 'user' ? 'userId' : 'technicianId'}=${id}`,
+  GET_NEARBY_TECHNICIANS: ({lat,long,service}) => `nearbyUsers?longitude=${long}&latitude=${lat}&service=${service}`,
+  GET_ALL_SERVICES: 'getAllServices'
 };
