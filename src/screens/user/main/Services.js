@@ -78,9 +78,9 @@ const Services = ({ route }) => {
     useLazyGetNearbyTechniciansQuery();
   const [addToFavourites, { isLoading: favouritesLoader }] =
     useAddToFavouritesMutation();
-  const { service, lat, long } = route?.params;
+  const { service, lat, long,requestData } = route?.params;
 
-  console.log('nearby technicians ===>', _id);
+  console.log('nearby technicians ===>', requestData);
 
   useEffect(() => {
     getNearbyTechnicians({

@@ -55,7 +55,7 @@ const Profile = () => {
       startTime: user?.workingHours?.startTime || '09:00 AM',
       endTime: user?.workingHours?.endTime || '05: 00 PM',
     },
-    service: user?.service._id || null,
+    service: user?.service?._id || null,
     portfolio: (user?.portfolio || []).map(file => {
       if (typeof file === 'string') {
         return {
@@ -320,7 +320,6 @@ const Profile = () => {
               borderColor={AppColors.BLACK}
             />
           </View>
-
           <TouchableOpacity onPress={() => setIsDatePickerVisible(true)}>
             <AppText
               title={'Date Of Birth'}
@@ -398,176 +397,181 @@ const Profile = () => {
               borderColor={AppColors.BLACK}
             />
           </View>
-        {serviceLoader ?  
-                <Loader />
-          :
-          user?.type === 'Technician' && (
-            <>
-              <View>
-                <AppText
-                  title={'Which service do you provide?'}
-                  color={AppColors.LIGHTGRAY}
-                  size={1.8}
-                />
-                <LineBreak val={1} />
-                <DropDownPicker
-                  open={open}
-                  value={state.service}
-                  items={items}
-                  dropDownDirection="BOTTOM"
-                  placeholder="Select Service"
-                  style={{ borderRadius: 100 }}
-                  setOpen={setOpen}
-                  setValue={val =>
-                    setState(prevState => ({
-                      ...prevState,
-                      service: val(),
-                    }))
-                  }
-                  setItems={setItems}
-                />
-              </View>
-              <TouchableOpacity onPress={() => showPicker('start')}>
-                <AppText
-                  title={'Working Hours'}
-                  color={AppColors.LIGHTGRAY}
-                  size={1.8}
-                />
-                <LineBreak val={1} />
-                <AppTextInput
-                  inputPlaceHolder={'9:00 AM - 5:00 PM'}
-                  placeholderTextColor={AppColors.LIGHTGRAY}
-                  borderRadius={30}
-                  editable={false}
-                  onChangeText={text => onChangeText('price', null, text)}
-                  value={`${state.workingHours.startTime} - ${state.workingHours.endTime}`}
-                  borderColor={AppColors.BLACK}
-                />
-                <DateTimePickerModal
-                  isVisible={picker.visible}
-                  mode="time"
-                  onConfirm={handleConfirm}
-                  onCancel={hidePicker}
-                />
-              </TouchableOpacity>
-              <View>
-                <AppText
-                  title={'Pricing'}
-                  color={AppColors.LIGHTGRAY}
-                  size={1.8}
-                />
-                <LineBreak val={1} />
-                <AppTextInput
-                  inputPlaceHolder={'$20 per kilometer*'}
-                  placeholderTextColor={AppColors.LIGHTGRAY}
-                  borderRadius={30}
-                  keyboardType={'numeric'}
-                  onChangeText={text => onChangeText('price', null, text)}
-                  value={state.price}
-                  borderColor={AppColors.BLACK}
-                />
-              </View>
-              <View>
-                <AppText title={'SS'} color={AppColors.LIGHTGRAY} size={1.8} />
-                <LineBreak val={1} />
-                <AppTextInput
-                  inputPlaceHolder={'Enter details'}
-                  placeholderTextColor={AppColors.LIGHTGRAY}
-                  borderRadius={30}
-                  keyboardType={'numeric'}
-                  onChangeText={text => onChangeText('price', null, text)}
-                  value={state.ss}
-                  borderColor={AppColors.BLACK}
-                />
-              </View>
-              <TouchableOpacity onPress={() => onSelectFile('license')}>
-                <AppText
-                  title={'Pest Control License'}
-                  color={AppColors.LIGHTGRAY}
-                  size={1.8}
-                />
-                <LineBreak val={1} />
-                <AppTextInput
-                  inputPlaceHolder={'Choose file...'}
-                  placeholderTextColor={AppColors.LIGHTGRAY}
-                  borderRadius={30}
-                  value={state.license.name}
-                  editable={false}
-                  borderColor={AppColors.BLACK}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => onSelectFile('portfolio')}>
-                <AppText
-                  title={'Portfolio'}
-                  color={AppColors.LIGHTGRAY}
-                  size={1.8}
-                />
-                <LineBreak val={1} />
-                <View
-                  style={{
-                    padding: responsiveHeight(1.65),
-                    flexDirection: 'row',
-                    gap: 5,
-                    borderColor: colors.black,
-                    borderWidth: 1,
-                    borderRadius: 100,
-                  }}
-                >
-                  <AppText size={1.8} title={'Drag an image here or'} />
+          {serviceLoader ? (
+            <Loader />
+          ) : (
+            user?.type === 'Technician' && (
+              <>
+                <View>
                   <AppText
-                    fontWeight={'bold'}
-                    color={colors.secondary_button}
+                    title={'Which service do you provide?'}
+                    color={AppColors.LIGHTGRAY}
                     size={1.8}
-                    textDecorationLine={'underline'}
-                    title={'upload a file'}
+                  />
+                  <LineBreak val={1} />
+                  <DropDownPicker
+                    open={open}
+                    value={state.service}
+                    items={items}
+                    dropDownDirection="BOTTOM"
+                    placeholder="Select Service"
+                    style={{ borderRadius: 100 }}
+                    setOpen={setOpen}
+                    setValue={val =>
+                      setState(prevState => ({
+                        ...prevState,
+                        service: val(),
+                      }))
+                    }
+                    setItems={setItems}
                   />
                 </View>
-              </TouchableOpacity>
-              {state.portfolio.length > 0 && (
-                <View style={{ marginTop: 10 }}>
-                  {state.portfolio.map((file, index) => {
-                    const isImage =
-                      file.type?.includes('image') ||
-                      file.path?.match(/\.(jpg|jpeg|png|gif)$/i);
-
-                    return (
-                      <View
-                        key={index}
-                        style={{
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          marginBottom: 10,
-                        }}
-                      >
-                        {isImage ? (
-                          <ImageBackground
-                            source={{ uri: file.uri || file.path }}
-                            style={{ width: 40, height: 40, marginRight: 10 }}
-                            imageStyle={{ borderRadius: 5 }}
-                          />
-                        ) : (
-                          <Feather
-                            name="file-text"
-                            size={40}
-                            color={colors.secondary_button}
-                            style={{ marginRight: 10 }}
-                          />
-                        )}
-                        <AppText
-                          size={1.6}
-                          title={getShortFileName(
-                            file.name || file.filename || `File ${index + 1}`,
-                          )}
-                          color={AppColors.BLACK}
-                        />
-                      </View>
-                    );
-                  })}
+                <TouchableOpacity onPress={() => showPicker('start')}>
+                  <AppText
+                    title={'Working Hours'}
+                    color={AppColors.LIGHTGRAY}
+                    size={1.8}
+                  />
+                  <LineBreak val={1} />
+                  <AppTextInput
+                    inputPlaceHolder={'9:00 AM - 5:00 PM'}
+                    placeholderTextColor={AppColors.LIGHTGRAY}
+                    borderRadius={30}
+                    editable={false}
+                    onChangeText={text => onChangeText('price', null, text)}
+                    value={`${state.workingHours.startTime} - ${state.workingHours.endTime}`}
+                    borderColor={AppColors.BLACK}
+                  />
+                  <DateTimePickerModal
+                    isVisible={picker.visible}
+                    mode="time"
+                    onConfirm={handleConfirm}
+                    onCancel={hidePicker}
+                  />
+                </TouchableOpacity>
+                <View>
+                  <AppText
+                    title={'Pricing'}
+                    color={AppColors.LIGHTGRAY}
+                    size={1.8}
+                  />
+                  <LineBreak val={1} />
+                  <AppTextInput
+                    inputPlaceHolder={'$20 per kilometer*'}
+                    placeholderTextColor={AppColors.LIGHTGRAY}
+                    borderRadius={30}
+                    keyboardType={'numeric'}
+                    onChangeText={text => onChangeText('price', null, text)}
+                    value={state.price}
+                    borderColor={AppColors.BLACK}
+                  />
                 </View>
-              )}
-            </>
+                <View>
+                  <AppText
+                    title={'SS'}
+                    color={AppColors.LIGHTGRAY}
+                    size={1.8}
+                  />
+                  <LineBreak val={1} />
+                  <AppTextInput
+                    inputPlaceHolder={'Enter details'}
+                    placeholderTextColor={AppColors.LIGHTGRAY}
+                    borderRadius={30}
+                    keyboardType={'numeric'}
+                    onChangeText={text => onChangeText('price', null, text)}
+                    value={state.ss}
+                    borderColor={AppColors.BLACK}
+                  />
+                </View>
+                <TouchableOpacity onPress={() => onSelectFile('license')}>
+                  <AppText
+                    title={'Pest Control License'}
+                    color={AppColors.LIGHTGRAY}
+                    size={1.8}
+                  />
+                  <LineBreak val={1} />
+                  <AppTextInput
+                    inputPlaceHolder={'Choose file...'}
+                    placeholderTextColor={AppColors.LIGHTGRAY}
+                    borderRadius={30}
+                    value={state.license.name}
+                    editable={false}
+                    borderColor={AppColors.BLACK}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => onSelectFile('portfolio')}>
+                  <AppText
+                    title={'Portfolio'}
+                    color={AppColors.LIGHTGRAY}
+                    size={1.8}
+                  />
+                  <LineBreak val={1} />
+                  <View
+                    style={{
+                      padding: responsiveHeight(1.65),
+                      flexDirection: 'row',
+                      gap: 5,
+                      borderColor: colors.black,
+                      borderWidth: 1,
+                      borderRadius: 100,
+                    }}
+                  >
+                    <AppText size={1.8} title={'Drag an image here or'} />
+                    <AppText
+                      fontWeight={'bold'}
+                      color={colors.secondary_button}
+                      size={1.8}
+                      textDecorationLine={'underline'}
+                      title={'upload a file'}
+                    />
+                  </View>
+                </TouchableOpacity>
+                {state.portfolio.length > 0 && (
+                  <View style={{ marginTop: 10 }}>
+                    {state.portfolio.map((file, index) => {
+                      const isImage =
+                        file.type?.includes('image') ||
+                        file.path?.match(/\.(jpg|jpeg|png|gif)$/i);
+
+                      return (
+                        <View
+                          key={index}
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            marginBottom: 10,
+                          }}
+                        >
+                          {isImage ? (
+                            <ImageBackground
+                              source={{ uri: file.uri || file.path }}
+                              style={{ width: 40, height: 40, marginRight: 10 }}
+                              imageStyle={{ borderRadius: 5 }}
+                            />
+                          ) : (
+                            <Feather
+                              name="file-text"
+                              size={40}
+                              color={colors.secondary_button}
+                              style={{ marginRight: 10 }}
+                            />
+                          )}
+                          <AppText
+                            size={1.6}
+                            title={getShortFileName(
+                              file.name || file.filename || `File ${index + 1}`,
+                            )}
+                            color={AppColors.BLACK}
+                          />
+                        </View>
+                      );
+                    })}
+                  </View>
+                )}
+              </>
+            )
           )}
-          }
+          
           <LineBreak val={1} />
           <AppButton
             title={'update profile'}

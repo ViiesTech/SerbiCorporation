@@ -39,10 +39,10 @@ const Signup = ({ route }) => {
       Toast.show('Please enter your name', 2000, Toast.SHORT);
       return;
     }
-    if (!state.number) {
-      Toast.show('Please enter your number', 2000, Toast.SHORT);
-      return;
-    }
+    // if (!state.number) {
+    //   Toast.show('Please enter your number', 2000, Toast.SHORT);
+    //   return;
+    // }
     if (!state.email) {
       Toast.show('Please enter your email', 2000, Toast.SHORT);
       return;
