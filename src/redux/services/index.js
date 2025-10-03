@@ -114,6 +114,26 @@ export const Apis = createApi({
         };
       },
     }),
+     createRequestForm: builder.mutation({
+      query: (data) => {
+        //   console.log('typeeee',type)
+        return {
+          url: endpoints.REQUEST_FORM,
+          method: 'POST',
+          body: data
+        };
+      },
+    }),
+      addReview: builder.mutation({
+      query: (data) => {
+        //   console.log('typeeee',type)
+        return {
+          url: endpoints.ADD_REVIEW,
+          method: 'POST',
+          body: data
+        };
+      },
+    }),
     //  getAllServices: builder.query({
     //   query: () => {
     //     //   console.log('typeeee',type)
@@ -138,6 +158,8 @@ export const {
   useLazyGetAllAppointmentsQuery,
   useLazyGetNearbyTechniciansQuery,
   useAddToFavouritesMutation,
-  useLazyGetAllWishlistsQuery
+  useLazyGetAllWishlistsQuery,
+  useCreateRequestFormMutation,
+  useAddReviewMutation
   // useLazyGetAllServicesQuery
 } = Apis;

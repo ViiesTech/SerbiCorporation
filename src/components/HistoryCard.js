@@ -153,7 +153,7 @@ const HistoryCard = ({
               />
             )}
           </View>
-         {services || favItem && 
+         {services || favItem || profiles ? 
           <View
             style={{
               flexDirection: 'row',
@@ -190,6 +190,7 @@ const HistoryCard = ({
               {/* )} */}
             </View>
           </View>
+          : null
           }
           <View
             style={{

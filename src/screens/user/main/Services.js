@@ -80,12 +80,12 @@ const Services = ({ route }) => {
     useAddToFavouritesMutation();
   const { service, lat, long,requestData } = route?.params;
 
-  console.log('nearby technicians ===>', requestData);
+  console.log('nearby technicians ===>', service);
 
   useEffect(() => {
     getNearbyTechnicians({
-      lat: lat,
-      long: long,
+      lat: '25.4486',
+      long: '-80.4115',
       service: service,
     });
   }, [lat, long, service]);
@@ -104,8 +104,8 @@ const Services = ({ route }) => {
         Toast.show(res.msg, 2000, Toast.SHORT);
         if (res.success) {
           getNearbyTechnicians({
-            lat: lat,
-            long: long,
+            lat: '25.4486',
+            long: '-80.4115',
             service: service,
           });
         }
@@ -171,7 +171,7 @@ const Services = ({ route }) => {
                   services={'services'}
                   isHideClose={false}
                   isShowBadge={true}
-                  viewDetailsHandlePress={() => nav.navigate('ServicesProfile')}
+                  viewDetailsHandlePress={() => nav.navigate('ServicesProfile',{requestData: {...requestData,service},profileData: item})}
                 />
               );
             }}

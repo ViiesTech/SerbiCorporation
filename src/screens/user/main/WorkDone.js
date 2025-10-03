@@ -11,8 +11,9 @@ import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { colors } from '../../../assets/colors';
 import Button from '../../../components/Button';
 
-const WorkDone = () => {
+const WorkDone = ({route}) => {
     const nav = useNavigation();
+    const {profileData} = route?.params
 
     return (
         <Container>
@@ -33,7 +34,7 @@ const WorkDone = () => {
                     </View>
                     <LineBreak val={2.5} />
                     <Button
-                        onPress={() => nav.navigate("Payment")}
+                        onPress={() => nav.navigate("Payment",{pest_tech:profileData})}
                         title={'Proceed to payment'}
                         textTransform={'uppercase'}
                         color={colors.secondary_button}

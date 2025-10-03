@@ -61,7 +61,11 @@ const Payment = ({ route }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [addNewCarModal, setAddNewCarModal] = useState(false);
     const [selectedPayMethod, setSelectedPayMethod] = useState({ id: 1 });
-    const pest_tech = route?.params?.pest_tech;
+    // const pest_tech = route?.params?.pest_tech;
+    const {pest_tech} = route?.params
+
+    console.log('profile',pest_tech)
+
 
     const renderDots = () => (
         <View
@@ -213,7 +217,7 @@ const Payment = ({ route }) => {
                         textTransform={'uppercase'}
                         handlePress={() => {
                             if (pest_tech) {
-                                nav.navigate('PaymentSuccess', {pest_tech: true});
+                                nav.navigate('PaymentSuccess', {pest_tech});
                             } else {
                                 nav.navigate('PaymentSuccess');
                             }

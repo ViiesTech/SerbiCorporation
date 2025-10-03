@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, { useEffect } from 'react'
+import React, { useState } from 'react'
 import { FlatList, View } from 'react-native'
 import Container from '../../../components/Container'
 import { AppColors, responsiveFontSize, responsiveHeight, responsiveWidth } from '../../../utils'
@@ -11,6 +11,10 @@ import { useNavigation } from '@react-navigation/native'
 import AppButton from '../../../components/AppButton'
 import AppTextInput from '../../../components/AppTextInput'
 import Feather from 'react-native-vector-icons/Feather';
+import StarRating from 'react-native-star-rating-widget'
+import { useAddReviewMutation } from '../../../redux/services'
+import { useSelector } from 'react-redux'
+import Toast from 'react-native-simple-toast'
 
 const data = [
     { id: 1, title: 'Ref Number', subTitle: '000085752257' },
@@ -21,18 +25,44 @@ const data = [
 ]
 
 const PaymentSuccess = ({ route }) => {
+    const [rating,setRating] = useState(0)
+    const [message,setMessage] = useState('')
     const nav = useNavigation();
     const pest_tech = route?.params?.pest_tech;
+    const [addReview,{isLoading}] = useAddReviewMutation()
+    const {_id} = useSelector(state => state.persistedData.user)
 
-    useEffect(() => {
-        if (pest_tech) {
-            null
-        } else {
-            setTimeout(() => {
-                nav.navigate('PestTechnician');
-            }, 2000);
+    console.log('pest',pest_tech)
+
+    // useEffect(() => {
+    //     if (pest_tech) {
+    //         null
+    //     } else {
+    //         setTimeout(() => {
+    //             nav.navigate('PestTechnician');
+    //         }, 2000);
+    //     }
+    // }, [nav, pest_tech])
+
+    const onSubmit = async () => {
+        let data = {
+            userId: _id,
+            technicianId: pest_tech._id,
+            star: rating,
+            message
         }
-    }, [nav, pest_tech])
+
+        await addReview(data).unwrap().then((res) => {
+                    console.log('response of client review ===>',res)
+                    Toast.show(res.msg)
+                    if(res.success) {
+                            nav.navigate('UserHome')
+                    }
+        }).catch((error) => {
+            console.log('error while adding review ===>>>',error)
+            Toast.show('Some problem occured')
+        })
+    }
 
     return (
         <Container>
@@ -118,12 +148,21 @@ const PaymentSuccess = ({ route }) => {
                     pest_tech ? (
                         <>
                             <LineBreak val={3} />
+
+                        <StarRating
+                                starSize={40}
+                                onChange={setRating}
+                                rating={rating}
+                        />
+                            <LineBreak val={3} />
                             <View>
                                 <AppTextInput
                                     inputPlaceHolder={'Leave feedback'}
                                     borderRadius={30}
                                     placeholderTextColor={AppColors.LIGHTGRAY}
                                     borderColor={AppColors.DARKGRAY}
+                                    value={message}
+                                    onChangeText={(text) => setMessage(text)}
                                     inputWidth={75}
                                     logo={
                                         <Feather
@@ -142,10 +181,9 @@ const PaymentSuccess = ({ route }) => {
                                 textFontWeight={'bold'}
                                 borderRadius={30}
                                 buttoWidth={90}
+                                isLoading={isLoading}
                                 textTransform={'uppercase'}
-                                handlePress={() => {
-                                    nav.navigate('UserHome');
-                                }}
+                                handlePress={() => onSubmit()}
                             />
                         </>
                     ) : null

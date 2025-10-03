@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react';
-import { View, Image, TouchableOpacity, FlatList } from 'react-native';
+import {
+  View,
+  Image,
+  TouchableOpacity,
+  FlatList,
+  ToastAndroid,
+} from 'react-native';
 import Container from '../../../components/Container';
 import HomeHeader from './../../../components/HomeHeader';
 import Drawer from './../../../components/Drawer';
@@ -25,6 +31,7 @@ import { colors } from '../../../assets/colors';
 import { useLazyGetAllServicesQuery } from '../../../redux/services/adminApis';
 import Loader from '../../../components/Loader';
 import DropDownPicker from 'react-native-dropdown-picker';
+import Toast from 'react-native-simple-toast';
 
 // const prefService = [
 //   // { id: 1, icon: icons.pest_one, title: 'Pest Control' },
@@ -158,6 +165,41 @@ const UserHome = () => {
     })) || [];
 
   const onRequestFormSubmit = async () => {
+    if (!propertyValue) {
+      Toast.show('Please select the property type', 2000, Toast.SHORT);
+      return;
+    }
+
+    if (propertyValue === 'Residential') {
+      if (!residentialValue) {
+        Toast.show('Please select the residential', 2000, Toast.SHORT);
+        return;
+      }
+    }
+
+    if (!areaValue) {
+      Toast.show(
+        'Please select the area which will be going to treat',
+        2000,
+        Toast.SHORT,
+      );
+      return;
+    }
+
+    if (!severityValue) {
+      Toast.show('Please select the severity', 2000, Toast.SHORT);
+      return;
+    }
+
+    if (!note) {
+      Toast.show(
+        'Please give some special instructions or note',
+        2000,
+        Toast.SHORT,
+      );
+      return;
+    }
+
     nav.navigate('Services', {
       service: selectedService.id,
       lat: coordinates?.lat,

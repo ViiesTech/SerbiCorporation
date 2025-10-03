@@ -106,6 +106,7 @@ const menuTwo = [
   {
     id: 2,
     title: 'Terms & Conditions',
+    navTo: 'TermsAndCondition',
     leftIcon: (
       <Feather
         name="file"
@@ -124,6 +125,7 @@ const menuTwo = [
   {
     id: 3,
     title: 'Privacy Policy',
+    navTo: 'PrivacyPolicy',
     leftIcon: (
       <Octicons
         name="lock"
@@ -142,6 +144,7 @@ const menuTwo = [
   {
     id: 4,
     title: 'Help',
+    navTo: 'Help',
     leftIcon: (
       <Feather
         name="alert-circle"

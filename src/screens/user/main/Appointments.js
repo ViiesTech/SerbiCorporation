@@ -21,7 +21,7 @@ const tabData = [
 const cardData = [
     {
         id: 1,
-        profImg: images.map,
+        // profImg: images.map,
         username: 'Roland Hopper',
         price: '$79.00',
         status: 'Upcoming',
@@ -32,7 +32,7 @@ const cardData = [
     },
     {
         id: 2,
-        profImg: images.map,
+        // profImg: images.map,
         username: 'Roland Hopper',
         price: '$79.00',
         status: 'Upcoming',
@@ -43,7 +43,7 @@ const cardData = [
     },
     {
         id: 3,
-        profImg: images.map,
+        // profImg: images.map,
         username: 'Roland Hopper',
         price: '$79.00',
         status: 'Upcoming',
@@ -54,7 +54,7 @@ const cardData = [
     },
     {
         id: 4,
-        profImg: images.map,
+        // profImg: images.map,
         username: 'Roland Hopper',
         price: '$79.00',
         status: 'Upcoming',
@@ -65,7 +65,7 @@ const cardData = [
     },
     {
         id: 5,
-        profImg: images.map,
+        // profImg: images.map,
         username: 'Roland Hopper',
         price: '$79.00',
         status: 'Upcoming',
@@ -76,7 +76,7 @@ const cardData = [
     },
     {
         id: 6,
-        profImg: images.map,
+        // profImg: images.map,
         username: 'Roland Hopper',
         price: '$79.00',
         status: 'Upcoming',
@@ -87,7 +87,7 @@ const cardData = [
     },
     {
         id: 7,
-        profImg: images.map,
+        // profImg: images.map,
         username: 'Roland Hopper',
         price: '$79.00',
         status: 'Upcoming',
@@ -98,7 +98,7 @@ const cardData = [
     },
     {
         id: 8,
-        profImg: images.map,
+        // profImg: images.map,
         username: 'Roland Hopper',
         price: '$79.00',
         status: 'Upcoming',
@@ -112,7 +112,7 @@ const cardData = [
 const cardTwoData = [
     {
         id: 1,
-        profImg: images.map,
+        // profImg: images.map,
         username: 'Roland Hopper',
         price: '$79.00',
         status: 'Completed',
@@ -123,7 +123,7 @@ const cardTwoData = [
     },
     {
         id: 2,
-        profImg: images.map,
+        // profImg: images.map,
         username: 'Roland Hopper',
         price: '$79.00',
         status: 'Completed',
@@ -134,7 +134,7 @@ const cardTwoData = [
     },
     {
         id: 3,
-        profImg: images.map,
+        // profImg: images.map,
         username: 'Roland Hopper',
         price: '$79.00',
         status: 'Completed',
@@ -145,7 +145,7 @@ const cardTwoData = [
     },
     {
         id: 4,
-        profImg: images.map,
+        // profImg: images.map,
         username: 'Roland Hopper',
         price: '$79.00',
         status: 'Completed',
@@ -156,7 +156,7 @@ const cardTwoData = [
     },
     {
         id: 5,
-        profImg: images.map,
+        // profImg: images.map,
         username: 'Roland Hopper',
         price: '$79.00',
         status: 'Completed',
@@ -167,7 +167,7 @@ const cardTwoData = [
     },
     {
         id: 6,
-        profImg: images.map,
+        // profImg: images.map,
         username: 'Roland Hopper',
         price: '$79.00',
         status: 'Completed',
@@ -178,7 +178,7 @@ const cardTwoData = [
     },
     {
         id: 7,
-        profImg: images.map,
+        // profImg: images.map,
         username: 'Roland Hopper',
         price: '$79.00',
         status: 'Completed',
@@ -189,7 +189,7 @@ const cardTwoData = [
     },
     {
         id: 8,
-        profImg: images.map,
+        // profImg: images.map,
         username: 'Roland Hopper',
         price: '$79.00',
         status: 'Completed',

@@ -9,6 +9,9 @@ import AppSettings from '../screens/AppSettings';
 import Chat from '../screens/Chat';
 import IncomingCall from '../screens/IncomingCall';
 import { useSelector } from 'react-redux';
+import PrivacyPolicy from '../screens/PrivacyPolicy';
+import TermsAndCondition from '../screens/TermsAndCondition';
+import Help from '../screens/Help';
 
 const Stack = createStackNavigator();
 
@@ -29,6 +32,9 @@ const Routes = () => {
               <Stack.Screen name="Profile" component={Profile} />
               <Stack.Screen name="AppSettings" component={AppSettings} />
               <Stack.Screen name="Chat" component={Chat} />
+              <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicy} />
+              <Stack.Screen name="Help" component={Help} />
+              <Stack.Screen name="TermsAndCondition" component={TermsAndCondition} />
               <Stack.Screen name="IncomingCall" component={IncomingCall} />
             </>
           ) : user?.type === 'Technician' && (
@@ -36,6 +42,9 @@ const Routes = () => {
               <Stack.Screen name="VendorRoutes" component={VendorStack} />
               <Stack.Screen name="Profile" component={Profile} />
               <Stack.Screen name="AppSettings" component={AppSettings} />
+              <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicy} />
+              <Stack.Screen name="Help" component={Help} />
+              <Stack.Screen name="TermsAndCondition" component={TermsAndCondition} />
               <Stack.Screen name="Chat" component={Chat} />
               <Stack.Screen name="IncomingCall" component={IncomingCall} />
             </>
