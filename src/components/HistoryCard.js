@@ -29,6 +29,7 @@ const HistoryCard = ({
   appointment,
   onHeartPress,
   favourite,
+  myAppointments
 }) => {
   const nav = useNavigation();
   return (
@@ -153,7 +154,7 @@ const HistoryCard = ({
               />
             )}
           </View>
-         {services || favItem || profiles ? 
+         {services || favItem || profiles || myAppointments ? 
           <View
             style={{
               flexDirection: 'row',

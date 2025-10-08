@@ -21,6 +21,7 @@ const AppButton = ({
   textTransform,
   padding,
   isLoading,
+  alignSelf
 }) => {
   return (
     <TouchableOpacity
@@ -28,6 +29,7 @@ const AppButton = ({
       style={{
         backgroundColor: bgColor ? bgColor : AppColors.BTNCOLOURS,
         alignItems: 'center',
+        alignSelf: alignSelf,
         justifyContent: leftIcon ? 'center' : 'space-between',
         padding: padding ? padding : 12,
         borderRadius: borderRadius ? borderRadius : 8,

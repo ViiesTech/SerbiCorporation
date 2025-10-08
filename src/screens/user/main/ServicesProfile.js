@@ -49,6 +49,7 @@ const ServicesProfile = ({ route }) => {
       serviceId: requestData.service,
       propertyType: requestData.propertyType,
       areaTobeTreated: requestData.area,
+      residentailType: requestData?.residential,
       // "areaSqFt": 120,
       severity: requestData.severity,
       date: moment(date).format('DD-MM-YYYY'),
@@ -171,6 +172,7 @@ const ServicesProfile = ({ route }) => {
             </TouchableOpacity>
             <AppClock
               isDatePickerVisible={isDatePickerVisible}
+              handleConfirm={(date) => setTime(moment(date).format('hh:mm A'))}
               setDatePickerVisibility={setDatePickerVisibility}
             />
           </View>

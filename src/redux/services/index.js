@@ -79,8 +79,8 @@ export const Apis = createApi({
       },
     }),
      getAllAppointments: builder.query({
-      query: (id,type) => {
-        //   console.log('typeeee',type)
+      query: ({id,type}) => {
+          console.log('typeeee',type)
         return {
           url: endpoints.GET_ALL_APPOINTMENTS(id,type),
           method: 'GET',
@@ -124,6 +124,16 @@ export const Apis = createApi({
         };
       },
     }),
+      createDiscussForm: builder.mutation({
+      query: (data) => {
+        //   console.log('typeeee',type)
+        return {
+          url: endpoints.DISCUSS_FORM,
+          method: 'POST',
+          body: data
+        };
+      },
+    }),
       addReview: builder.mutation({
       query: (data) => {
         //   console.log('typeeee',type)
@@ -160,6 +170,7 @@ export const {
   useAddToFavouritesMutation,
   useLazyGetAllWishlistsQuery,
   useCreateRequestFormMutation,
-  useAddReviewMutation
+  useAddReviewMutation,
+  useCreateDiscussFormMutation
   // useLazyGetAllServicesQuery
 } = Apis;

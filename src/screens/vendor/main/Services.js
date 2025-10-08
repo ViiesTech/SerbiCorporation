@@ -10,8 +10,10 @@ import Payment from './../../user/main/Payment';
 import AppButton from '../../../components/AppButton';
 import LineBreak from '../../../components/LineBreak';
 
-const Services = ({ navigation }) => {
+const Services = ({ route, navigation }) => {
   const [currentStatus, setCurrentStatus] = useState('ON THE WAY');
+  const {ids} = route?.params;
+  console.log('ids',ids)
   return (
     <ImageBackground style={{ flex: 1, padding: responsiveHeight(2) }} source={images.mapbg}>
       <AppTextInput containerBg={AppColors.WHITE} inputWidth={77} rightIcon={<Ionicons name="search-outline" size={25} />} inputPlaceHolder="What are you looking for?" placeholderTextColor="#777777" borderRadius={25} />
@@ -36,7 +38,7 @@ const Services = ({ navigation }) => {
         <AppText size={2} title='Youre on the way. Estimated arrival in 15 - 20 mins' />
         <LineBreak val={3} />
 
-        <AppButton handlePress={() => currentStatus === 'ON THE WAY' ? setCurrentStatus('ARRIVED') : currentStatus === 'ARRIVED' ? setCurrentStatus('PROCEED') : navigation.navigate('JobDiscussionForm')} textColor='black' textFontWeight='bold' title={currentStatus} buttoWidth={80} bgColor='#A0CCD9' borderRadius={30} />
+        <AppButton handlePress={() => currentStatus === 'ON THE WAY' ? setCurrentStatus('ARRIVED') : currentStatus === 'ARRIVED' ? setCurrentStatus('PROCEED') : navigation.navigate('JobDiscussionForm',{ids})} textColor='black' textFontWeight='bold' title={currentStatus} buttoWidth={80} bgColor='#A0CCD9' borderRadius={30} />
       </View>
     </ImageBackground>
   )

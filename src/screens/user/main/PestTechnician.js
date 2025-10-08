@@ -1,6 +1,5 @@
-/* eslint-disable react-native/no-inline-styles */
 import React, { useState } from 'react'
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
+import { View, StyleSheet, TouchableOpacity } from 'react-native'
 import Container from '../../../components/Container';
 import { useNavigation } from '@react-navigation/native';
 import NormalHeader from '../../../components/NormalHeader';

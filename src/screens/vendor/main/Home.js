@@ -90,7 +90,7 @@ const Home = ({ navigation }) => {
   const combinedTabs = [...data2, ...data3];
 
   useEffect(() => {
-    getAllAppointments(user?._id, user?.type);
+    getAllAppointments({id: user?._id, type: user?.type});
   }, []);
 
   useEffect(() => {
@@ -356,11 +356,11 @@ const Home = ({ navigation }) => {
               return (
                 <HistoryCard
                   onCardPress={() => {
-                    setCurrentCard(item.id);
-                    navigation.navigate('Services');
+                    setCurrentCard(item._id);
+                    navigation.navigate('Services',{ids: {requestFormId: item._id,technicianId: item.technicianId}});
                   }}
                   item={{
-                    id: item.id,
+                    id: item._id,
                     profImg: `${IMAGE_URL}${item.userId?.profileImage}`,
                     username: item.userId?.fullName,
                     // designation: 'Expert Gerdener',
@@ -377,7 +377,7 @@ const Home = ({ navigation }) => {
                   }}
                   selectedCard={{ id: currentCard }}
                   activeCardBgColor={
-                    item.id === currentCard
+                    item._id === currentCard
                       ? AppColors.PRIMARY
                       : AppColors.WHITE
                   }
