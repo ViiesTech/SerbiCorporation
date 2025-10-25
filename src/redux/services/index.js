@@ -144,6 +144,25 @@ export const Apis = createApi({
         };
       },
     }),
+        getDiscussionForms: builder.query({
+      query: (status) => {
+        //   console.log('typeeee',type)
+        return {
+          url: endpoints.GET_DISCUSSION_FORMS(status),
+          method: 'GET',
+        };
+      },
+    }),
+      updateDiscussion: builder.mutation({
+      query: (data) => {
+        //   console.log('typeeee',type)
+        return {
+          url: endpoints.UPDATE_DISCUSSION_FORMS,
+          method: 'POST',
+          body: data
+        };
+      },
+    }),
     //  getAllServices: builder.query({
     //   query: () => {
     //     //   console.log('typeeee',type)
@@ -171,6 +190,8 @@ export const {
   useLazyGetAllWishlistsQuery,
   useCreateRequestFormMutation,
   useAddReviewMutation,
-  useCreateDiscussFormMutation
+  useCreateDiscussFormMutation,
+  useLazyGetDiscussionFormsQuery,
+  useUpdateDiscussionMutation
   // useLazyGetAllServicesQuery
 } = Apis;

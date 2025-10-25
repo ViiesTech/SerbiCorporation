@@ -117,6 +117,7 @@ const JobDiscussionForm = ({ route, navigation }) => {
       userId: user?._id,
       technicianId: ids?.technicianId,
       requestFormId: ids?.requestFormId,
+      serviceId: ids?.serviceId,
       typeOfPest: pestValue,
       propertyType: propertyValue,
       residentailType: residentialValue,
@@ -133,7 +134,7 @@ const JobDiscussionForm = ({ route, navigation }) => {
         console.log('response of creating the discussion form', res);
         Toast.show(res.msg, 2000, Toast.SHORT);
         if (res.success) {
-          navigation.navigate('StartJob');
+          navigation.navigate('Home');
         }
       })
       .catch(error => {

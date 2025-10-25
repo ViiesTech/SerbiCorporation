@@ -30,6 +30,7 @@ import { useLazyGetAllAppointmentsQuery } from '../../../redux/services';
 import Loader from '../../../components/Loader';
 import { isForInitializer } from 'typescript';
 import moment from 'moment';
+import { useIsFocused } from '@react-navigation/native';
 const cardsData = [
   { id: 1, title: 'Roland Hopper' },
   { id: 2, title: 'Alexis Clark' },
@@ -67,7 +68,7 @@ const data3 = [
   },
   {
     id: 2,
-    sub_title: 'Started',
+    sub_title: 'Start',
   },
   {
     id: 3,
@@ -89,9 +90,11 @@ const Home = ({ navigation }) => {
   console.log('status filteration ===>', filterStatusData);
   const combinedTabs = [...data2, ...data3];
 
+  const isFocused = useIsFocused()
+
   useEffect(() => {
-    getAllAppointments({id: user?._id, type: user?.type});
-  }, []);
+    getAllAppointments({ id: user?._id, type: user?.type });
+  }, [isFocused]);
 
   useEffect(() => {
     setSubCategory(0);
@@ -357,7 +360,27 @@ const Home = ({ navigation }) => {
                 <HistoryCard
                   onCardPress={() => {
                     setCurrentCard(item._id);
-                    navigation.navigate('Services',{ids: {requestFormId: item._id,technicianId: item.technicianId}});
+                    // console.log('items ===>',item)
+                    if (
+                      item.status === 'Upcoming' ||
+                      item.status === 'Start' ||
+                      item.status === 'Stop' ||
+                      item.status === 'Rejected'
+                    ) {
+                      navigation.navigate('StartJob', { status: item.status,formId: item._id });
+                    } else if (item.status === 'Completed') {
+                      navigation.navigate('ClientReview',{reviewId: ''});
+                    } else {
+                      navigation.navigate('Services', {
+                        ids: {
+                          requestFormId: item._id,
+                          technicianId: item.technicianId,
+                          serviceId: item.serviceId,
+                          user: item.userId
+                        },
+                        // status: item.status,
+                      });
+                    }
                   }}
                   item={{
                     id: item._id,

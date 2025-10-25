@@ -21,5 +21,7 @@ export const endpoints = {
   GET_WISHLISTS: id => `getAllFavorites?userId=${id}`,
   REQUEST_FORM: 'createRequestForm',
   ADD_REVIEW: 'addReview',
-  DISCUSS_FORM: 'createDiscussionForm'
+  DISCUSS_FORM: 'createDiscussionForm',
+  GET_DISCUSSION_FORMS: (status) =>  `getAllDiscussionForms?status=${status}`,
+  UPDATE_DISCUSSION_FORMS: 'updateDiscussionForm'
 };
