@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { FlatList, View } from 'react-native'
 import Container from '../../../components/Container'
 import { AppColors, responsiveFontSize, responsiveHeight, responsiveWidth } from '../../../utils'
@@ -29,20 +29,21 @@ const PaymentSuccess = ({ route }) => {
     const [message,setMessage] = useState('')
     const nav = useNavigation();
     const pest_tech = route?.params?.pest_tech;
+    const request = route?.params?.request;
     const [addReview,{isLoading}] = useAddReviewMutation()
     const {_id} = useSelector(state => state.persistedData.user)
 
     console.log('pest',pest_tech)
 
-    // useEffect(() => {
-    //     if (pest_tech) {
-    //         null
-    //     } else {
-    //         setTimeout(() => {
-    //             nav.navigate('PestTechnician');
-    //         }, 2000);
-    //     }
-    // }, [nav, pest_tech])
+    useEffect(() => {
+        if (!request) {
+            null
+        } else {
+            setTimeout(() => {
+                nav.navigate('PestTechnician',{pest_tech});
+            }, 2000);
+        }
+    }, [nav, request])
 
     const onSubmit = async () => {
         let data = {
@@ -145,7 +146,7 @@ const PaymentSuccess = ({ route }) => {
                     </View>
                 </View>
                 {
-                    pest_tech ? (
+                    !request ? (
                         <>
                             <LineBreak val={3} />
 

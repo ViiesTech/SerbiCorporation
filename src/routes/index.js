@@ -12,6 +12,7 @@ import { useSelector } from 'react-redux';
 import PrivacyPolicy from '../screens/PrivacyPolicy';
 import TermsAndCondition from '../screens/TermsAndCondition';
 import Help from '../screens/Help';
+import MainProfile from '../screens/MainProfile';
 
 const Stack = createStackNavigator();
 
@@ -29,6 +30,7 @@ const Routes = () => {
           ) : user?.type === 'User' ? (
             <>
               <Stack.Screen name="UserRoutes" component={userRoutes} />
+              <Stack.Screen name="MainProfile" component={MainProfile} />
               <Stack.Screen name="Profile" component={Profile} />
               <Stack.Screen name="AppSettings" component={AppSettings} />
               <Stack.Screen name="Chat" component={Chat} />
@@ -40,6 +42,7 @@ const Routes = () => {
           ) : user?.type === 'Technician' && (
             <>
               <Stack.Screen name="VendorRoutes" component={VendorStack} />
+              <Stack.Screen name="MainProfile" component={MainProfile} />
               <Stack.Screen name="Profile" component={Profile} />
               <Stack.Screen name="AppSettings" component={AppSettings} />
               <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicy} />
@@ -47,6 +50,7 @@ const Routes = () => {
               <Stack.Screen name="TermsAndCondition" component={TermsAndCondition} />
               <Stack.Screen name="Chat" component={Chat} />
               <Stack.Screen name="IncomingCall" component={IncomingCall} />
+
             </>
           )}
         </Stack.Navigator>

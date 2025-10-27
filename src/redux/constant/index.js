@@ -12,7 +12,7 @@ export const endpoints = {
     `verifyOTPForPassword?email=${email}&OTP=${otp}`,
   CREATE_UPDATE_PROFILE: 'updateUser',
   GET_PROFILE: id => `getProfile?userId=${id}`,
-  GET_ALL_APPOINTMENTS: (id, type) => 
+  GET_ALL_APPOINTMENTS: (id, type) =>
     `getAllRequestForms?${type === 'User' ? 'userId' : 'technicianId'}=${id}`,
   GET_NEARBY_TECHNICIANS: ({ lat, long, service }) =>
     `nearbyUsers?longitude=${long}&latitude=${lat}&service=${service}`,
@@ -22,6 +22,9 @@ export const endpoints = {
   REQUEST_FORM: 'createRequestForm',
   ADD_REVIEW: 'addReview',
   DISCUSS_FORM: 'createDiscussionForm',
-  GET_DISCUSSION_FORMS: (status) =>  `getAllDiscussionForms?status=${status}`,
-  UPDATE_DISCUSSION_FORMS: 'updateDiscussionForm'
+  GET_DISCUSSION_FORMS: (id, type, status) =>
+    `getAllDiscussionForms?${
+      type === 'User' ? 'userId' : 'technicianId'
+    }=${id}&status=${status}`,
+  UPDATE_DISCUSSION_FORMS: 'updateDiscussionForm',
 };

@@ -21,7 +21,7 @@ import { colors } from '../assets/colors';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useDispatch } from 'react-redux';
 import { resetUser } from '../redux/slices';
-import Toast from 'react-native-simple-toast'
+import Toast from 'react-native-simple-toast';
 
 const menuOne = [
   {
@@ -41,6 +41,7 @@ const menuOne = [
         color={AppColors.BLACK}
       />
     ),
+    navTo: 'MainProfile',
   },
   {
     id: 2,
@@ -212,6 +213,11 @@ const AppSettings = () => {
                   borderBottomColor: AppColors.DARKGRAY,
                 }}
                 activeOpacity={item.id == 2 || item.id == 3 ? 1 : 0}
+                onPress={() => {
+                  if (item.navTo) {
+                    nav.navigate(item.navTo);
+                  }
+                }}
               >
                 <View
                   style={{
@@ -264,7 +270,7 @@ const AppSettings = () => {
                     nav.navigate(item.navTo);
                   } else if (item.logoutAction) {
                     dispatch(resetUser());
-                    Toast.show('Logout successfully',2000,Toast.SHORT)
+                    Toast.show('Logout successfully', 2000, Toast.SHORT);
                   }
                 }}
                 style={{

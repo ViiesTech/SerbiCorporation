@@ -114,7 +114,7 @@ const JobDiscussionForm = ({ route, navigation }) => {
       return;
     }
     let data = {
-      userId: user?._id,
+      userId: ids?.user?._id,
       technicianId: ids?.technicianId,
       requestFormId: ids?.requestFormId,
       serviceId: ids?.serviceId,

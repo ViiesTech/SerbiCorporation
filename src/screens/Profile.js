@@ -1,4 +1,9 @@
-import { View, TouchableOpacity, ImageBackground } from 'react-native';
+import {
+  View,
+  TouchableOpacity,
+  ImageBackground,
+  Platform,
+} from 'react-native';
 import Container from '../components/Container';
 import { useNavigation } from '@react-navigation/native';
 import NormalHeader from '../components/NormalHeader';
@@ -29,8 +34,9 @@ import { pick, types } from '@react-native-documents/picker';
 import { useLazyGetAllServicesQuery } from '../redux/services/adminApis';
 import Loader from '../components/Loader';
 
-const Profile = () => {
-  const { user } = useSelector(state => state.persistedData);
+const Profile = ({ route }) => {
+  const { user } = route?.params;
+  // const { user } = useSelector(state => state.persistedData);
   const [state, setState] = useState({
     fullName: user?.fullName || '',
     image: user?.profileImage ? `${IMAGE_URL}${user.profileImage}` : null,
@@ -82,6 +88,8 @@ const Profile = () => {
     { label: 'Test Service 4', value: 'Test Service 4' },
   ]);
 
+  console.log(user);
+
   // console.log('services data', servicesData);
 
   useEffect(() => {
@@ -109,35 +117,51 @@ const Profile = () => {
     data.append('longitude', '-80.4790');
     data.append('latitude', '25.4473');
     data.append('locationName', state.location.name);
-    data.append('price', parseInt(state.price));
-    data.append('service', state.service);
-    data.append('workingHours', JSON.stringify(state.workingHours));
-    data.append('ss', state.ss);
-    data.append('license', {
-      uri: state.license.file,
-      type: 'application/pdf',
-      name: state.license.name,
-    });
+    if (user?.type === 'Technician') {
+      data.append('price', parseInt(state.price));
+      if (state.service) {
+        data.append('service', state.service);
+      }
+      data.append('workingHours', JSON.stringify(state.workingHours));
+      if (state.license.file && state.license.file.startsWith('file://')) {
+        data.append('license', {
+          uri: state.license.file,
+          type: 'application/pdf',
+          name: state.license.name,
+        });
+      }
+      data.append('ss', state.ss);
+      state.portfolio.forEach((file, index) => {
+        data.append('portfolio', {
+          uri:
+            Platform.OS === 'android'
+              ? file.path
+              : file.path.replace('file://', ''),
+          type: 'image/jpeg',
+          name: file.filename || `portfolio${index}.pdf`,
+        });
+      });
+    }
+
     if (state.image) {
       data.append('profileImage', {
-        uri: state.image,
+        uri:
+          Platform.OS === 'android'
+            ? state.image
+            : state.image.replace('file://', ''),
         type: 'image/jpeg',
         name: `image.jpg`,
       });
     }
-    state.portfolio.forEach((file, index) => {
-      data.append('portfolio', {
-        uri: file.path,
-        type: 'image/jpeg',
-        name: file.filename || `portfolio${index}.pdf`,
-      });
-    });
+
+    console.log(data);
 
     await createUpdateProfile(data)
       .unwrap()
       .then(res => {
         console.log('response of profile/creation', res);
         Toast.show(res.msg, 2000, Toast.SHORT);
+        nav.goBack();
       })
       .catch(error => {
         console.log('error of profile/creation ===>', error);
@@ -478,7 +502,7 @@ const Profile = () => {
                     placeholderTextColor={AppColors.LIGHTGRAY}
                     borderRadius={30}
                     keyboardType={'numeric'}
-                    onChangeText={text => onChangeText('price', null, text)}
+                    onChangeText={text => onChangeText('ss', null, text)}
                     value={state.ss}
                     borderColor={AppColors.BLACK}
                   />
@@ -571,7 +595,7 @@ const Profile = () => {
               </>
             )
           )}
-          
+
           <LineBreak val={1} />
           <AppButton
             title={'update profile'}

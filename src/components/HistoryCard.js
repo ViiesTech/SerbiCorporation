@@ -4,7 +4,12 @@ import Entypo from 'react-native-vector-icons/Entypo';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import { useNavigation } from '@react-navigation/native';
-import { AppColors, responsiveFontSize, responsiveHeight, responsiveWidth } from '../utils';
+import {
+  AppColors,
+  responsiveFontSize,
+  responsiveHeight,
+  responsiveWidth,
+} from '../utils';
 import AppText from './AppText';
 import SVGIcon from './SVGIcon';
 import icons from '../assets/icons';
@@ -29,7 +34,8 @@ const HistoryCard = ({
   appointment,
   onHeartPress,
   favourite,
-  myAppointments
+  myAppointments,
+  history
 }) => {
   const nav = useNavigation();
   return (
@@ -40,16 +46,17 @@ const HistoryCard = ({
         backgroundColor: component
           ? AppColors.BLACK
           : selectedCard?.id == item._id
+          ? activeCardBgColor
             ? activeCardBgColor
-              ? activeCardBgColor
-              : AppColors.PRIMARY
-            : AppColors.WHITE,
+            : AppColors.PRIMARY
+          : AppColors.WHITE,
         paddingHorizontal: responsiveWidth(4),
         paddingVertical: responsiveHeight(2),
         borderRadius: 10,
         position: 'relative',
       }}
-      onPress={onCardPress}>
+      onPress={onCardPress}
+    >
       {services && isHideClose ? (
         <TouchableOpacity
           style={{
@@ -68,7 +75,8 @@ const HistoryCard = ({
               selectedCard?.id == item._id
                 ? AppColors.WHITE
                 : AppColors.ThemeBlue,
-          }}>
+          }}
+        >
           <AntDesign
             name={'close'}
             size={responsiveFontSize(1.2)}
@@ -82,7 +90,7 @@ const HistoryCard = ({
       ) : null}
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         <Image
-          source={{uri:item.profImg}}
+          source={{ uri: item.profImg }}
           style={{
             width: component || profiles ? 80 : 70,
             height: component || profiles ? 80 : 70,
@@ -94,7 +102,8 @@ const HistoryCard = ({
             style={{
               flexDirection: 'row',
               justifyContent: 'space-between',
-            }}>
+            }}
+          >
             <AppText
               title={item.username}
               color={AppColors.BLACK}
@@ -108,35 +117,38 @@ const HistoryCard = ({
                   services || profiles
                     ? { flexDirection: 'row', gap: 7, alignItems: 'center' }
                     : null
-                }>
+                }
+              >
                 {services || (profiles && isShowBadge) ? (
-                  <SVGIcon
-                    xml={icons.correct_badge}
-                    width={25}
-                    height={25}
-                  />
+                  <SVGIcon xml={icons.correct_badge} width={25} height={25} />
                 ) : null}
                 {services || (profiles && isShowBadge) ? (
                   <SVGIcon xml={icons.simple_badge} width={25} height={25} />
                 ) : null}
-                 {services || profiles || favItem ?   
-                <TouchableOpacity
-                  style={{
-                    borderWidth: 1,
-                    padding: 5,
-                    borderRadius: 100,
-                    borderColor: selectedCard?.id == item._id ? AppColors.BLACK : AppColors.PRIMARY,
-                  }}
-                  onPress={onHeartPress}
+                {services || profiles || favItem ? (
+                  <TouchableOpacity
+                    style={{
+                      borderWidth: 1,
+                      padding: 5,
+                      borderRadius: 100,
+                      borderColor:
+                        selectedCard?.id == item._id
+                          ? AppColors.BLACK
+                          : AppColors.PRIMARY,
+                    }}
+                    onPress={onHeartPress}
                   >
-                  <AntDesign
-                    name={favourite ? 'heart' : 'hearto'}
-                    size={responsiveFontSize(1.8)}
-                    color={selectedCard?.id == item._id ? AppColors.BLACK : AppColors.PRIMARY}
-                  />
-                </TouchableOpacity>
-                : null
-                  }
+                    <AntDesign
+                      name={favourite ? 'heart' : 'hearto'}
+                      size={responsiveFontSize(1.8)}
+                      color={
+                        selectedCard?.id == item._id
+                          ? AppColors.BLACK
+                          : AppColors.PRIMARY
+                      }
+                    />
+                  </TouchableOpacity>
+                ) : null}
               </View>
             ) : (
               <AppText
@@ -154,58 +166,66 @@ const HistoryCard = ({
               />
             )}
           </View>
-         {services || favItem || profiles || myAppointments ? 
-          <View
-            style={{
-              flexDirection: 'row',
-              marginTop: component || services || favItem || profiles ? -7 : 0,
-              gap: 5,
-            }}>
-            <AppText
-              title={item.designation}
-              color={AppColors.GRAY}
-              size={1.3}
-            />
+          {services || favItem || profiles || myAppointments || history ? (
             <View
               style={{
                 flexDirection: 'row',
+                marginTop:
+                  component || services || favItem || profiles ? -7 : 0,
                 gap: 5,
-                alignItems: 'center',
-              }}>
+              }}
+            >
               <AppText
-                title={item.rating}
+                title={item.designation}
                 color={AppColors.GRAY}
                 size={1.3}
               />
-              {/* {item.rating && ( */}
+              <View
+                style={{
+                  flexDirection: 'row',
+                  gap: 5,
+                  alignItems: 'center',
+                }}
+              >
+                <AppText
+                  title={item.rating}
+                  color={AppColors.GRAY}
+                  size={1.3}
+                />
+                {/* {item.rating && ( */}
                 <View style={{ flexDirection: 'row', gap: 2 }}>
                   {/* {[...Array(item.rating)].map((_, index) => ( */}
-                    <Ionicons
-                      // key={index}
-                      name="star"
-                      size={responsiveFontSize(1.3)}
-                      color={selectedCard?.id == item._id ? AppColors.WHITE : AppColors.Yellow}
-                    />
+                  <Ionicons
+                    // key={index}
+                    name="star"
+                    size={responsiveFontSize(1.3)}
+                    color={
+                      selectedCard?.id == item._id
+                        ? AppColors.WHITE
+                        : AppColors.Yellow
+                    }
+                  />
                   {/* ))} */}
                 </View>
-              {/* )} */}
+                {/* )} */}
+              </View>
             </View>
-          </View>
-          : null
-          }
+          ) : null}
           <View
             style={{
               width: responsiveWidth(62),
               flexDirection: 'row',
               justifyContent: 'space-between',
-            }}>
+            }}
+          >
             {favItem || services ? (
               <View
                 style={
                   services
                     ? { flexDirection: 'row', gap: 10, alignItems: 'center' }
                     : null
-                }>
+                }
+              >
                 <AppButton
                   title="view details"
                   textColor={AppColors.BLACK}
@@ -228,7 +248,8 @@ const HistoryCard = ({
                       flexDirection: 'row',
                       alignItems: 'center',
                       gap: 7,
-                    }}>
+                    }}
+                  >
                     {item.ml && (
                       <AppText
                         title={`${item.ml} ml`}
@@ -271,7 +292,8 @@ const HistoryCard = ({
                       flexDirection: 'row',
                       gap: 4,
                       alignItems: 'center',
-                    }}>
+                    }}
+                  >
                     <AppText
                       title={item.appointmentDate}
                       color={
@@ -310,7 +332,8 @@ const HistoryCard = ({
                     flexDirection: 'row',
                     gap: 3,
                     alignItems: 'center',
-                  }}>
+                  }}
+                >
                   {item.location && (
                     <Entypo
                       name="location-pin"
@@ -329,7 +352,11 @@ const HistoryCard = ({
                   />
                 </View>
                 <AppText
-                  title={appointment ? item.date + '  |  ' + item.fullTime : item.date}
+                  title={
+                    appointment
+                      ? item.date + '  |  ' + item.fullTime
+                      : item.date
+                  }
                   color={AppColors.GRAY}
                   size={1.3}
                 />
@@ -346,7 +373,8 @@ const HistoryCard = ({
                   onPress={() =>
                     // nav.navigate('CallAndChatHistory', { screen: 'cALL hISTORY' })
                     nav.navigate('IncomingCall')
-                  }>
+                  }
+                >
                   <Ionicons
                     name="call"
                     size={responsiveFontSize(2.2)}
@@ -364,7 +392,8 @@ const HistoryCard = ({
                   onPress={() =>
                     // nav.navigate('CallAndChatHistory', { screen: 'cHAT hISTORY' })
                     nav.navigate('Chat')
-                  }>
+                  }
+                >
                   <AntDesign
                     name="wechat"
                     size={responsiveFontSize(2.2)}

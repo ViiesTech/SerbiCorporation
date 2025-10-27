@@ -246,7 +246,7 @@ const Home = ({ navigation }) => {
           <TouchableOpacity onPress={() => navigation.navigate('AppSettings')}>
             <Feather name="settings" size={25} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
+          <TouchableOpacity onPress={() => navigation.navigate('MainProfile')}>
             <Feather name="user" size={25} />
           </TouchableOpacity>
         </View>
@@ -395,7 +395,7 @@ const Home = ({ navigation }) => {
                       lastWeek: 'dddd',
                       sameElse: 'MMM D',
                     }),
-                    date: moment(item.date).format('ddd, MMM D'),
+                    date: moment(item.createdAt).format('ddd, MMM D'),
                     fullTime: item.time,
                   }}
                   selectedCard={{ id: currentCard }}

@@ -34,7 +34,7 @@ const WorkDone = ({route}) => {
                     </View>
                     <LineBreak val={2.5} />
                     <Button
-                        onPress={() => nav.navigate("Payment",{pest_tech:profileData})}
+                        onPress={() => nav.navigate("Payment",{pest_tech:profileData,request:true})}
                         title={'Proceed to payment'}
                         textTransform={'uppercase'}
                         color={colors.secondary_button}

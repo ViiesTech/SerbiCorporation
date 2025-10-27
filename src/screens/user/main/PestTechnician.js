@@ -12,12 +12,14 @@ import AppText from '../../../components/AppText';
 import { colors } from '../../../assets/colors';
 import AppButton from '../../../components/AppButton';
 
-const PestTechnician = () => {
+const PestTechnician = ({route}) => {
     const nav = useNavigation();
     const [step, setStep] = useState(0);
 
     // Progress values mapped to steps
     const steps = [0.1, 0.4, 0.7, 1.0];
+
+    // console.log(route?.params?.pest_tech)
 
     const nextStep = () => {
         const next = (step + 1) % steps.length;
@@ -157,7 +159,7 @@ const PestTechnician = () => {
                             buttoWidth={92}
                             textTransform={'uppercase'}
                             handlePress={() => {
-                                nav.navigate('Payment', {pest_tech: true});
+                                nav.navigate('Payment', {pest_tech: route?.params?.pest_tech,request: false});
                             }}
                         />
                     </View>

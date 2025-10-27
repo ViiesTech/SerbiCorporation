@@ -28,7 +28,7 @@ const data = [
       />
     ),
     title: 'profile',
-    navTo: 'Profile',
+    navTo: 'MainProfile',
   },
   {
     id: 2,

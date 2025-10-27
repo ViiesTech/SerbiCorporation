@@ -145,10 +145,10 @@ export const Apis = createApi({
       },
     }),
         getDiscussionForms: builder.query({
-      query: (status) => {
+      query: ({id,type,status}) => {
         //   console.log('typeeee',type)
         return {
-          url: endpoints.GET_DISCUSSION_FORMS(status),
+          url: endpoints.GET_DISCUSSION_FORMS(id,type,status),
           method: 'GET',
         };
       },

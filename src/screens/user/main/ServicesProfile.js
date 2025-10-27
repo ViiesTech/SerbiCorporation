@@ -30,7 +30,7 @@ const ServicesProfile = ({ route }) => {
   const [date, setDate] = useState(new Date());
   const [time, setTime] = useState(moment().format('hh:mm A'));
   const [address, setAddress] = useState('');
-//   const [comment, setComment] = useState('');
+  //   const [comment, setComment] = useState('');
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [createRequestForm, { isLoading }] = useCreateRequestFormMutation();
   const { _id } = useSelector(state => state.persistedData.user);
@@ -49,7 +49,9 @@ const ServicesProfile = ({ route }) => {
       serviceId: requestData.service,
       propertyType: requestData.propertyType,
       areaTobeTreated: requestData.area,
-      residentailType: requestData?.residential,
+      ...(requestData?.residential && {
+        residentailType: requestData?.residential,
+      }),
       // "areaSqFt": 120,
       severity: requestData.severity,
       date: moment(date).format('DD-MM-YYYY'),
@@ -60,16 +62,19 @@ const ServicesProfile = ({ route }) => {
       latitude: 25.4482,
       // locationName: "Florida City Canal Park"
     };
-   await createRequestForm(data).unwrap().then((res) => {
-    console.log('request form response ===>',res)
-    // Toast.show(res.msg)
-    if(res.success) {
-        nav.navigate('WorkDone',{profileData});
-    }
-   }).catch((error) => {
-    console.log('error while creating request form ===>',error)
-    Toast.show('Some problem occured')
-   })
+    await createRequestForm(data)
+      .unwrap()
+      .then(res => {
+        console.log('request form response ===>', res);
+        // Toast.show(res.msg)
+        if (res.success) {
+          nav.navigate('WorkDone', { profileData });
+        }
+      })
+      .catch(error => {
+        console.log('error while creating request form ===>', error);
+        Toast.show('Some problem occured');
+      });
   };
 
   return (
@@ -172,7 +177,7 @@ const ServicesProfile = ({ route }) => {
             </TouchableOpacity>
             <AppClock
               isDatePickerVisible={isDatePickerVisible}
-              handleConfirm={(date) => setTime(moment(date).format('hh:mm A'))}
+              handleConfirm={date => setTime(moment(date).format('hh:mm A'))}
               setDatePickerVisibility={setDatePickerVisibility}
             />
           </View>
