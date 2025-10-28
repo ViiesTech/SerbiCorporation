@@ -15,6 +15,7 @@ import SVGIcon from './SVGIcon';
 import icons from '../assets/icons';
 import AppButton from './AppButton';
 import { colors } from '../assets/colors';
+import { images } from '../assets/images';
 
 const HistoryCard = ({
   item,
@@ -35,9 +36,12 @@ const HistoryCard = ({
   onHeartPress,
   favourite,
   myAppointments,
-  history
+  history,
 }) => {
   const nav = useNavigation();
+
+  // console.log(item.profImg)
+
   return (
     <TouchableOpacity
       style={{
@@ -90,7 +94,13 @@ const HistoryCard = ({
       ) : null}
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         <Image
-          source={{ uri: item.profImg }}
+          source={
+            item.profImg &&
+            !item.profImg.endsWith('/undefined') &&
+            item.profImg.trim() !== ''
+              ? { uri: item.profImg }
+              : images.userProfile
+          }
           style={{
             width: component || profiles ? 80 : 70,
             height: component || profiles ? 80 : 70,

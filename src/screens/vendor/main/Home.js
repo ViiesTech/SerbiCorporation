@@ -9,7 +9,6 @@ import {
 import { useEffect, useState } from 'react';
 import {
   AppColors,
-  getCreationStatus,
   responsiveHeight,
   responsiveWidth,
 } from './../../../utils/index';
@@ -26,9 +25,11 @@ import { firstTimeVisit } from '../../../redux/slices';
 import { useDispatch, useSelector } from 'react-redux';
 import { colors } from '../../../assets/colors';
 import { IMAGE_URL } from '../../../redux/constant';
-import { useLazyGetAllAppointmentsQuery } from '../../../redux/services';
+import {
+  useLazyGetAllAppointmentsQuery,
+  useLazyGetAllReviewsQuery,
+} from '../../../redux/services';
 import Loader from '../../../components/Loader';
-import { isForInitializer } from 'typescript';
 import moment from 'moment';
 import { useIsFocused } from '@react-navigation/native';
 const cardsData = [
@@ -84,16 +85,19 @@ const Home = ({ navigation }) => {
   const [getAllAppointments, { data, isLoading }] =
     useLazyGetAllAppointmentsQuery();
   const [filterStatusData, setFilterStatusData] = useState([]);
+  const [getAllReviews, { data: reviewsData }] = useLazyGetAllReviewsQuery();
   const [search, setSearch] = useState('');
 
   const dispatch = useDispatch();
   console.log('status filteration ===>', filterStatusData);
+  console.log('review Data ===>', reviewsData);
   const combinedTabs = [...data2, ...data3];
 
-  const isFocused = useIsFocused()
+  const isFocused = useIsFocused();
 
   useEffect(() => {
     getAllAppointments({ id: user?._id, type: user?.type });
+    getAllReviews(user?._id);
   }, [isFocused]);
 
   useEffect(() => {
@@ -225,7 +229,7 @@ const Home = ({ navigation }) => {
             source={
               user?.profileImage
                 ? { uri: `${IMAGE_URL}${user.profileImage}` }
-                : images.profile
+                : images.userProfile
             }
           />
           <View>
@@ -367,16 +371,27 @@ const Home = ({ navigation }) => {
                       item.status === 'Stop' ||
                       item.status === 'Rejected'
                     ) {
-                      navigation.navigate('StartJob', { status: item.status,formId: item._id });
+                      navigation.navigate('StartJob', {
+                        status: item.status,
+                        formId: item._id,
+                      });
                     } else if (item.status === 'Completed') {
-                      navigation.navigate('ClientReview',{reviewId: ''});
+                      let filterData = reviewsData?.data?.find(
+                        review => review.userId?._id == item.userId?._id,
+                      );
+                      // return console.log('filterData ===>',filterData)
+                      if (Object.keys(filterData).length > 0) {
+                        navigation.navigate('ClientReview', {
+                          reviewData: filterData,
+                        });
+                      }
                     } else {
                       navigation.navigate('Services', {
                         ids: {
                           requestFormId: item._id,
                           technicianId: item.technicianId,
                           serviceId: item.serviceId,
-                          user: item.userId
+                          user: item.userId,
                         },
                         // status: item.status,
                       });

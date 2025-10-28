@@ -39,7 +39,7 @@ const Profile = ({ route }) => {
   // const { user } = useSelector(state => state.persistedData);
   const [state, setState] = useState({
     fullName: user?.fullName || '',
-    image: user?.profileImage ? `${IMAGE_URL}${user.profileImage}` : null,
+    image: user?.profileImage ? `${IMAGE_URL}${user.profileImage}` : images.userProfile,
     dob: user?.DOB || moment(new Date()).format('DD-MM-YYYY'),
     phone: user?.phone || '',
     location: {

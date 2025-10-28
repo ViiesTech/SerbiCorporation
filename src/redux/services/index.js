@@ -163,15 +163,15 @@ export const Apis = createApi({
         };
       },
     }),
-    //  getAllServices: builder.query({
-    //   query: () => {
-    //     //   console.log('typeeee',type)
-    //     return {
-    //       url: endpoints.GET_ALL_SERVICES,
-    //       method: 'GET',
-    //     };
-    //   },
-    // }),
+      getAllReviews: builder.query({
+      query: (id) => {
+        //   console.log('typeeee',type)
+        return {
+          url: endpoints.GET_ALL_REVIEWS(id),
+          method: 'GET',
+        };
+      },
+    }),
   }),
 });
 
@@ -192,6 +192,6 @@ export const {
   useAddReviewMutation,
   useCreateDiscussFormMutation,
   useLazyGetDiscussionFormsQuery,
-  useUpdateDiscussionMutation
-  // useLazyGetAllServicesQuery
+  useUpdateDiscussionMutation,
+  useLazyGetAllReviewsQuery
 } = Apis;

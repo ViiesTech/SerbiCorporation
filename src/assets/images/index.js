@@ -5,7 +5,7 @@ export const images = {
   logo: require('../images/logo.png'),
   success: require('../images/success.png'),
   map: require('../images/map.png'),
-  map: require('../images/map.png'),
+  // map: require('../images/map.png'),
   imageProf: require('../images/image.png'),
   big_map: require('../images/big_map.png'),
   profile: require('../images/profile.png'),
@@ -16,4 +16,6 @@ export const images = {
   dotsLeft: require('../images/dotsLeft.png'),
   dotsRight: require('../images/dotsRight.png'),
   mapbg: require('../images/mapbg.jpg'),
+  userProfile: require('../images/userProfile.jpeg')
+  // mapbg: require('../images/mapbg.jpg'),
 }

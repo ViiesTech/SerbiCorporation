@@ -50,7 +50,7 @@ const MainProfile = () => {
                 width: responsiveHeight(12),
                 borderRadius: 100,
               }}
-              source={{ uri: `${IMAGE_URL}${data?.data?.profileImage}` }}
+              source={data?.data?.profileImage ? { uri: `${IMAGE_URL}${data?.data?.profileImage}` } : images.userProfile}
             />
             <LineBreak val={2} />
             <AppText title={data?.data?.fullName} />
