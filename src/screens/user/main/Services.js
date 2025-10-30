@@ -84,8 +84,8 @@ const Services = ({ route }) => {
 
   useEffect(() => {
     getNearbyTechnicians({
-      lat: '25.4486',
-      long: '-80.4115',
+      lat:  lat,
+      long: long,
       service: service,
     });
   }, [lat, long, service]);
@@ -154,6 +154,7 @@ const Services = ({ route }) => {
               const minutes = estimateTimeMinutes(distanceMiles);
               return (
                 <HistoryCard
+                  disabled={true}
                   item={{
                     profImg: `${IMAGE_URL}${item.profileImage}`,
                     username: item.fullName,

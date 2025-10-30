@@ -52,7 +52,7 @@ const Login = () => {
   };
 
   return (
-    <Container space={25} authHeading={'LOGIN TO CONTINUE'}>
+    <Container contentStyle={{paddingBottom: responsiveHeight(5)}} space={25} authHeading={'LOGIN TO CONTINUE'}>
       <LineBreak val={4} />
       <InputField
         value={state.email}

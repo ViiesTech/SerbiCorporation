@@ -7,7 +7,7 @@ import AppText from '../../components/AppText';
 import { TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useState } from 'react';
-import { responsiveHeight, responsiveWidth } from '../../utils';
+import { formatSSN, responsiveHeight, responsiveWidth } from '../../utils';
 import Toast from 'react-native-simple-toast';
 import { useRegisterMutation } from '../../redux/services';
 import { pick, types } from '@react-native-documents/picker';
@@ -62,6 +62,23 @@ const Signup = ({ route }) => {
     if (state.cPassword !== state.password) {
       Toast.show(`Password doesn't match`, 2000, Toast.SHORT);
       return;
+    }
+
+    if (type === 'Technician') {
+      const ssnDigits = state.ss.replace(/\D/g, '');
+      if (ssnDigits.length !== 9) {
+        Toast.show('Please enter a valid 9-digit SSN', 2000, Toast.SHORT);
+        return;
+      }
+
+      if (!state.license.file) {
+        Toast.show(
+          'Please upload your pest control license',
+          2000,
+          Toast.SHORT,
+        );
+        return;
+      }
     }
 
     let data = new FormData();
@@ -160,10 +177,13 @@ const Signup = ({ route }) => {
         <>
           <LineBreak val={2} />
           <InputField
-            onChangeText={text => onChangeText('ss', text)}
+            onChangeText={text => {
+              const formatted = formatSSN(text);
+              onChangeText('ss', formatted);
+            }}
             value={state.ss}
-            keyboardType={'numeric'}
-            placeholder={'SS'}
+            keyboardType="numeric"
+            placeholder="SSN"
           />
           <LineBreak val={2} />
           <TouchableOpacity onPress={() => onSelectFile()}>

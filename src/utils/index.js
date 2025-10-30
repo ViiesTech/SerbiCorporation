@@ -153,3 +153,16 @@ export const formatMinutes = (minutes) => {
   }
   return `${hrs} hr ${mins}`;
 };
+
+export const formatSSN = (value) => {
+  // Remove all non-digits
+  const cleaned = value.replace(/\D/g, '');
+  // Apply SSN format: 123-45-6789
+  let formatted = cleaned;
+  if (cleaned.length > 3 && cleaned.length <= 5) {
+    formatted = `${cleaned.slice(0, 3)}-${cleaned.slice(3)}`;
+  } else if (cleaned.length > 5) {
+    formatted = `${cleaned.slice(0, 3)}-${cleaned.slice(3, 5)}-${cleaned.slice(5, 9)}`;
+  }
+  return formatted;
+};

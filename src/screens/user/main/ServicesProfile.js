@@ -193,6 +193,7 @@ const ServicesProfile = ({ route }) => {
               inputPlaceHolder={'371 7th Ave, New York, NY 10001'}
               borderRadius={30}
               inputWidth={77}
+              placeholderTextColor={AppColors.GRAY}
               value={address}
               onChangeText={text => setAddress(text)}
               rightIcon={

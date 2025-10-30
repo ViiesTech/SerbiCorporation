@@ -66,7 +66,7 @@ const PaymentSuccess = ({ route }) => {
     }
 
     return (
-        <Container>
+        <Container contentStyle={{paddingBottom: responsiveHeight(5)}}>
             <View style={{
                 justifyContent: 'center',
                 alignItems: 'center',

@@ -215,7 +215,7 @@ const UserHome = () => {
   };
 
   return (
-    <Container>
+    <Container contentStyle={{paddingBottom: responsiveHeight(5)}}>
       <HomeHeader menuIconOnPress={() => setOpenDrawer(true)} />
       {serviceLoader ? (
         <Loader />
