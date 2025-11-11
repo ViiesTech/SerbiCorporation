@@ -16,6 +16,7 @@ export const images = {
   dotsLeft: require('../images/dotsLeft.png'),
   dotsRight: require('../images/dotsRight.png'),
   mapbg: require('../images/mapbg.jpg'),
-  userProfile: require('../images/userProfile.jpeg')
+  userProfile: require('../images/userProfile.jpeg'),
+  pin_marker: require('../images/marker.png')
   // mapbg: require('../images/mapbg.jpg'),
 }

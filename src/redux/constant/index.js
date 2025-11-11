@@ -1,6 +1,7 @@
 export const BASE_URL = 'https://appsdemo.pro/Serbi-Backend/api/user/';
 export const IMAGE_URL = 'https://appsdemo.pro/Serbi-Backend/';
 export const ADMIN_URL = 'https://appsdemo.pro/Serbi-Backend/api/admin/';
+export const MAP_API_KEY = 'AIzaSyD_u0v13rRdMLo4ZpwsSfhT4dGTzcIwXf4'
 
 export const endpoints = {
   SIGNUP: 'signup',

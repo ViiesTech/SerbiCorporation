@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList } from 'react-native';
+import { View, FlatList, Image } from 'react-native';
 import Container from '../../../components/Container';
 import { useNavigation } from '@react-navigation/native';
 import NormalHeader from './../../../components/NormalHeader';
@@ -11,8 +11,6 @@ import {
   responsiveHeight,
   responsiveWidth,
 } from '../../../utils';
-import { Image } from 'react-native';
-import { images } from '../../../assets/images';
 import AppText from '../../../components/AppText';
 import LineBreak from '../../../components/LineBreak';
 import HistoryCard from './../../../components/HistoryCard';
@@ -24,6 +22,8 @@ import Loader from '../../../components/Loader';
 import { IMAGE_URL } from '../../../redux/constant';
 import { useSelector } from 'react-redux';
 import Toast from 'react-native-simple-toast';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { images } from '../../../assets/images';
 
 // const profiles = [
 //   {
@@ -78,17 +78,29 @@ const Services = ({ route }) => {
     useLazyGetNearbyTechniciansQuery();
   const [addToFavourites, { isLoading: favouritesLoader }] =
     useAddToFavouritesMutation();
-  const { service, lat, long,requestData } = route?.params;
+  const [nearbyCoordinates, setNearbyCoordinates] = useState([]);
+  const { service, lat, long, requestData } = route?.params;
 
-  console.log('nearby technicians ===>', service);
+  console.log('nearby technicians ===>', nearbyCoordinates);
 
   useEffect(() => {
     getNearbyTechnicians({
-      lat:  lat,
-      long: long,
+      //real lat long goes here coming from params
+      lat: '25.4486',
+      long: '-80.4115',
       service: service,
     });
   }, [lat, long, service]);
+
+  useEffect(() => {
+    if (data?.data?.length > 0) {
+      const getCoordinates = data.data.map(item => ({
+        longitude: item.location.coordinates[0],
+        latitude: item.location.coordinates[1],
+      }));
+      setNearbyCoordinates(getCoordinates);
+    }
+  }, [data?.data]);
 
   const onFavouritePress = async technicianId => {
     // return  console.log('technician id===>',technicianId)
@@ -122,63 +134,102 @@ const Services = ({ route }) => {
         heading={'technicians Profiles'}
         onBackPress={() => nav.goBack()}
       />
-      <Image source={images.map} style={{ width: responsiveWidth(100) }} />
-
-      <LineBreak val={2} />
-
-      <View style={{ paddingHorizontal: responsiveWidth(4), gap: 20 }}>
-        <AppText
-          title={'Nearby Profiles'}
-          color={AppColors.BLACK}
-          size={2.2}
-          fontWeight={'bold'}
-        />
-        {isLoading ? (
-          <Loader style={{ marginVertical: responsiveHeight(2) }} />
-        ) : !data?.success ? (
-          <AppText align={'center'} title={data?.msg} />
-        ) : (
-          <FlatList
-            data={data?.data}
-            ListHeaderComponent={() => <LineBreak val={1} />}
-            ListFooterComponent={() => <LineBreak val={2} />}
-            ItemSeparatorComponent={() => <LineBreak val={2} />}
-            renderItem={({ item }) => {
-              const [techLng, techLat] = item.location?.coordinates;
-              const distanceMiles = getDistanceInMiles(
-                lat,
-                long,
-                techLat,
-                techLng,
-              );
-              const minutes = estimateTimeMinutes(distanceMiles);
-              return (
-                <HistoryCard
-                  disabled={true}
-                  item={{
-                    profImg: `${IMAGE_URL}${item.profileImage}`,
-                    username: item.fullName,
-                    price: `$${item.price}`,
-                    designation: `${item.service?.name + ' ' + 'Technician'}`,
-                    rating: item.avgRating || 0,
-                    // time: '30',
-                    ml: distanceMiles.toFixed(1),
-                    min: formatMinutes(minutes),
-                  }}
-                  favourite={item.favouriteBy?.includes(_id)}
-                  onHeartPress={() => onFavouritePress(item._id)}
-                  selectedCard={selectedCard}
-                  onCardPress={() => setSelectedCard({ id: item._id })}
-                  services={'services'}
-                  isHideClose={false}
-                  isShowBadge={true}
-                  viewDetailsHandlePress={() => nav.navigate('ServicesProfile',{requestData: {...requestData,service},profileData: item})}
-                />
-              );
+      {isLoading ? (
+        <Loader style={{ marginVertical: responsiveHeight(2) }} />
+      ) : !data?.success ? (
+        <AppText align={'center'} title={data?.msg} />
+      ) : (
+        <>
+          <MapView
+            provider={PROVIDER_GOOGLE}
+            style={{
+              height: responsiveHeight(50),
+              width: responsiveWidth(100),
             }}
-          />
-        )}
-      </View>
+            region={{
+              latitude:  25.4486 || lat,
+              longitude: -80.4115 || long,
+              latitudeDelta: 0.015,
+              longitudeDelta: 0.0121,
+            }}
+          >
+            {nearbyCoordinates?.map((coord, index) => {
+              return (
+                <Marker
+                  key={index}
+                  title={`Technician ${index + 1}`}
+                  coordinate={{
+                    latitude:  coord.latitude,
+                    longitude: coord.longitude,
+                  }}>
+                  <Image
+                    source={images.pin_marker}
+                    style={{ height: 70, width: 70, borderRadius: 35 }}
+                  />
+                </Marker>
+              );
+            })}
+          </MapView>
+          {/* <Image source={images.map} style={{ width: responsiveWidth(100) }} /> */}
+
+          <LineBreak val={2} />
+
+          <View style={{ paddingHorizontal: responsiveWidth(4), gap: 20 }}>
+            <AppText
+              title={'Nearby Profiles'}
+              color={AppColors.BLACK}
+              size={2.2}
+              fontWeight={'bold'}
+            />
+            <FlatList
+              data={data?.data}
+              ListHeaderComponent={() => <LineBreak val={1} />}
+              ListFooterComponent={() => <LineBreak val={2} />}
+              ItemSeparatorComponent={() => <LineBreak val={2} />}
+              renderItem={({ item }) => {
+                const [techLng, techLat] = item.location?.coordinates;
+                //real lat long coming from params goes here
+                const distanceMiles = getDistanceInMiles(
+                  '25.4486',
+                  '-80.4115',
+                  techLat,
+                  techLng,
+                );
+                const minutes = estimateTimeMinutes(distanceMiles);
+                return (
+                  <HistoryCard
+                    disabled={true}
+                    item={{
+                      profImg: `${IMAGE_URL}${item.profileImage}`,
+                      username: item.fullName,
+                      price: `$${item.price}`,
+                      designation: `${item.service?.name + ' ' + 'Technician'}`,
+                      rating: item.avgRating || 0,
+                      // time: '30',
+                      ml: distanceMiles.toFixed(1),
+                      min: formatMinutes(minutes),
+                    }}
+                    x
+                    favourite={item.favouriteBy?.includes(_id)}
+                    onHeartPress={() => onFavouritePress(item._id)}
+                    selectedCard={selectedCard}
+                    onCardPress={() => setSelectedCard({ id: item._id })}
+                    services={'services'}
+                    isHideClose={false}
+                    isShowBadge={true}
+                    viewDetailsHandlePress={() =>
+                      nav.navigate('ServicesProfile', {
+                        requestData: { ...requestData, service },
+                        profileData: item,
+                      })
+                    }
+                  />
+                );
+              }}
+            />
+          </View>
+        </>
+      )}
     </Container>
   );
 };

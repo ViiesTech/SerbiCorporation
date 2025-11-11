@@ -1,22 +1,14 @@
 import { useEffect, useState } from 'react';
-import {
-  View,
-  Image,
-  TouchableOpacity,
-  FlatList,
-  ToastAndroid,
-} from 'react-native';
+import { View, Image, TouchableOpacity, FlatList } from 'react-native';
 import Container from '../../../components/Container';
 import HomeHeader from './../../../components/HomeHeader';
 import Drawer from './../../../components/Drawer';
 import {
   AppColors,
   getCurrentLocation,
-  responsiveFontSize,
   responsiveHeight,
   responsiveWidth,
 } from '../../../utils';
-import Feather from 'react-native-vector-icons/Feather';
 import AppTextInput from './../../../components/AppTextInput';
 import { images } from '../../../assets/images';
 import LineBreak from '../../../components/LineBreak';
@@ -32,6 +24,7 @@ import { useLazyGetAllServicesQuery } from '../../../redux/services/adminApis';
 import Loader from '../../../components/Loader';
 import DropDownPicker from 'react-native-dropdown-picker';
 import Toast from 'react-native-simple-toast';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
 // const prefService = [
 //   // { id: 1, icon: icons.pest_one, title: 'Pest Control' },
@@ -104,8 +97,9 @@ const UserHome = () => {
   const [note, setNote] = useState('');
   const nav = useNavigation();
   const dispatch = useDispatch();
+  const { user } = useSelector(state => state.persistedData);
 
-  // console.log('service',servicesData?.data[0]._id)
+  // console.log('service',user?.profileImage);
 
   useEffect(() => {
     getUserLocation();
@@ -149,7 +143,7 @@ const UserHome = () => {
 
   const getUserLocation = async () => {
     const { latitude, longitude } = await getCurrentLocation();
-    setCoordinates({ lat: latitude, long: longitude });
+    setCoordinates({ latitude, longitude });
     // console.log('lat long ===>',latitude,longitude)
   };
 
@@ -202,8 +196,8 @@ const UserHome = () => {
 
     nav.navigate('Services', {
       service: selectedService.id,
-      lat: coordinates?.lat,
-      long: coordinates?.long,
+      lat: coordinates?.latitude,
+      long: coordinates?.longitude,
       requestData: {
         propertyType: propertyValue,
         residential: propertyValue === 'Residential' && residentialValue,
@@ -215,7 +209,7 @@ const UserHome = () => {
   };
 
   return (
-    <Container contentStyle={{paddingBottom: responsiveHeight(5)}}>
+    <Container contentStyle={{ paddingBottom: responsiveHeight(5) }}>
       <HomeHeader menuIconOnPress={() => setOpenDrawer(true)} />
       {serviceLoader ? (
         <Loader />
@@ -244,8 +238,30 @@ const UserHome = () => {
       </View> */}
 
           {/* <LineBreak val={1} /> */}
+          {coordinates?.latitude && coordinates?.longitude && (
+            <MapView
+              provider={PROVIDER_GOOGLE} 
+              style={{
+                height: responsiveHeight(50),
+                width: responsiveWidth(100),
+              }}
+              region={{
+                latitude: coordinates.latitude,
+                longitude: coordinates.longitude,
+                latitudeDelta: 0.015,
+                longitudeDelta: 0.0121,
+              }}
+            >
+              <Marker
+                title="Current Location"
+                coordinate={coordinates}
+              >
+                <Image style={{height: 70,width: 70,borderRadius: 35}} source={images.pin_marker} />
+              </Marker>
+            </MapView>
+          )}
 
-          <Image source={images.map} style={{ width: responsiveWidth(100) }} />
+          {/* <Image source={images.map} style={{ width: responsiveWidth(100) }} /> */}
 
           <LineBreak val={2} />
 

@@ -144,7 +144,7 @@ export const estimateTimeMinutes = (miles, speedMph = 40) => {
 
 export const formatMinutes = (minutes) => {
   if (minutes < 60) {
-    return `${Math.round(minutes)} min`;
+    return `${Math.round(minutes)}`;
   }
   const hrs = Math.floor(minutes / 60);
   const mins = Math.round(minutes % 60);

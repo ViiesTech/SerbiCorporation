@@ -271,7 +271,7 @@ const HistoryCard = ({
                     )}
                     {item.min && (
                       <AppText
-                        title={`${item.min} mint`}
+                        title={`${item.min} min`}
                         color={AppColors.BLACK}
                         size={1.4}
                         textWidth={10}

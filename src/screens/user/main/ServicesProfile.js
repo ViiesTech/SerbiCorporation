@@ -29,14 +29,14 @@ const ServicesProfile = ({ route }) => {
   const [isShowCalendar, setIsShowCalendar] = useState(false);
   const [date, setDate] = useState(new Date());
   const [time, setTime] = useState(moment().format('hh:mm A'));
-  const [address, setAddress] = useState('');
+  const { user } = useSelector(state => state.persistedData);
+  const [address, setAddress] = useState(user?.location.locationName || '');
   //   const [comment, setComment] = useState('');
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [createRequestForm, { isLoading }] = useCreateRequestFormMutation();
-  const { _id } = useSelector(state => state.persistedData.user);
 
   const { requestData, profileData } = route?.params;
-  console.log('requestData ===>', requestData);
+  console.log('requestData ===>', user);
 
   const onConfirmBooking = async () => {
     if (!address) {
@@ -44,7 +44,7 @@ const ServicesProfile = ({ route }) => {
       return;
     }
     let data = {
-      userId: _id,
+      userId: user?._id,
       technicianId: profileData._id,
       serviceId: requestData.service,
       propertyType: requestData.propertyType,
@@ -80,7 +80,7 @@ const ServicesProfile = ({ route }) => {
   return (
     <Container>
       <NormalHeader
-        heading={'Roland hopper'}
+        heading={profileData?.fullName}
         onBackPress={() => nav.goBack()}
       />
       <LineBreak val={2} />
@@ -95,7 +95,7 @@ const ServicesProfile = ({ route }) => {
             time: '30',
           }}
           selectedCard={{ id: profileData?._id }}
-          favourite={profileData.favouriteBy?.includes(_id)}
+          favourite={profileData.favouriteBy?.includes(user?._id)}
           activeCardBgColor={AppColors.PRIMARY}
           profiles={'profiles'}
           isHideClose={false}

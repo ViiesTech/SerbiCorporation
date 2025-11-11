@@ -33,7 +33,7 @@ const PaymentSuccess = ({ route }) => {
     const [addReview,{isLoading}] = useAddReviewMutation()
     const {_id} = useSelector(state => state.persistedData.user)
 
-    console.log('pest',pest_tech)
+    // console.log('pest',pest_tech)
 
     useEffect(() => {
         if (!request) {
