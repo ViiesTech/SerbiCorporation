@@ -54,11 +54,15 @@ const data2 = [
   },
   {
     id: 2,
-    sub_title: 'Accepted',
+    sub_title: 'On The Way',
   },
   {
     id: 3,
     sub_title: 'Arrived',
+  },
+    {
+    id: 4,
+    sub_title: 'Accepted',
   },
 ];
 

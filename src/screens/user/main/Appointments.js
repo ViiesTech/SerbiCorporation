@@ -327,7 +327,9 @@ const Appointments = () => {
 
             <FlatList
               data={filterData}
-              ListEmptyComponent={() => <AppText title={'No Appointments Found'} align={'center'} />}
+              ListEmptyComponent={() => (
+                <AppText title={'No Appointments Found'} align={'center'} />
+              )}
               contentContainerStyle={{
                 paddingHorizontal: responsiveWidth(4),
                 gap: 15,
@@ -340,11 +342,9 @@ const Appointments = () => {
                       id: item._id,
                       profImg: `${IMAGE_URL}${item.technicianId?.profileImage}`,
                       username: item.technicianId?.fullName,
-                      price: item?.technicianId?.price || '$0.00',
+                      price: `$${item?.technicianId?.price}` || '$0.00',
                       status: item.status,
-                      designation: item?.technicianId?.service?.name
-                        ? `${item.technicianId?.service.name} Technician`
-                        : 'No Service',
+                      designation: 'Pest Technician',
                       rating: item.technicianId?.avgRating || 0,
                       location: item.address,
                       date: `${moment(item.date, 'DD-MM-YYYY').format(
@@ -353,7 +353,21 @@ const Appointments = () => {
                     }}
                     myAppointments={true}
                     selectedCard={selectedCard}
-                    onCardPress={() => setSelectedCard({ id: item._id })}
+                    onCardPress={() => {
+                      if (item.status === 'Pending') {
+                        nav.navigate('ServicesProfile', {
+                          profileData: {
+                            ...item.technicianId,
+                            appointmentData: {
+                              status: item.status,
+                              id: item._id,
+                            },
+                            previousScreen: 'Appointments',
+                          },
+                        });
+                      }
+                      setSelectedCard({ id: item._id });
+                    }}
                     activeCardBgColor={AppColors.PRIMARY}
                   />
                 );

@@ -46,9 +46,9 @@ export const Apis = createApi({
       },
     }),
     verifyOTPPassword: builder.query({
-      query: ({email,otp}) => {
+      query: ({ email, otp }) => {
         return {
-          url: endpoints.VERIFY_FORGET_REQUEST({email,otp}),
+          url: endpoints.VERIFY_FORGET_REQUEST({ email, otp }),
           method: 'GET',
         };
       },
@@ -78,35 +78,35 @@ export const Apis = createApi({
         };
       },
     }),
-     getAllAppointments: builder.query({
-      query: ({id,type}) => {
-          console.log('typeeee',type)
+    getAllAppointments: builder.query({
+      query: ({ id, type }) => {
+        console.log('typeeee', type);
         return {
-          url: endpoints.GET_ALL_APPOINTMENTS(id,type),
+          url: endpoints.GET_ALL_APPOINTMENTS(id, type),
           method: 'GET',
         };
       },
     }),
-     getNearbyTechnicians: builder.query({
-      query: ({lat,long,service}) => {
+    getNearbyTechnicians: builder.query({
+      query: ({ lat, long, service }) => {
         //   console.log('typeeee',type)
         return {
-          url: endpoints.GET_NEARBY_TECHNICIANS({lat,long,service}),
+          url: endpoints.GET_NEARBY_TECHNICIANS({ lat, long, service }),
           method: 'GET',
         };
       },
     }),
     addToFavourites: builder.mutation({
-      query: (data) => {
+      query: data => {
         return {
           url: endpoints.ADD_TO_FAVOURITES,
           method: 'POST',
-          body: data
-        }
-      }
+          body: data,
+        };
+      },
     }),
-     getAllWishlists: builder.query({
-      query: (id) => {
+    getAllWishlists: builder.query({
+      query: id => {
         //   console.log('typeeee',type)
         return {
           url: endpoints.GET_WISHLISTS(id),
@@ -114,57 +114,57 @@ export const Apis = createApi({
         };
       },
     }),
-     createRequestForm: builder.mutation({
-      query: (data) => {
+    createRequestForm: builder.mutation({
+      query: data => {
         //   console.log('typeeee',type)
         return {
           url: endpoints.REQUEST_FORM,
           method: 'POST',
-          body: data
+          body: data,
         };
       },
     }),
-      createDiscussForm: builder.mutation({
-      query: (data) => {
+    createDiscussForm: builder.mutation({
+      query: data => {
         //   console.log('typeeee',type)
         return {
           url: endpoints.DISCUSS_FORM,
           method: 'POST',
-          body: data
+          body: data,
         };
       },
     }),
-      addReview: builder.mutation({
-      query: (data) => {
+    addReview: builder.mutation({
+      query: data => {
         //   console.log('typeeee',type)
         return {
           url: endpoints.ADD_REVIEW,
           method: 'POST',
-          body: data
+          body: data,
         };
       },
     }),
-        getDiscussionForms: builder.query({
-      query: ({id,type,status}) => {
+    getDiscussionForms: builder.query({
+      query: ({ id, type, status }) => {
         //   console.log('typeeee',type)
         return {
-          url: endpoints.GET_DISCUSSION_FORMS(id,type,status),
+          url: endpoints.GET_DISCUSSION_FORMS(id, type, status),
           method: 'GET',
         };
       },
     }),
-      updateDiscussion: builder.mutation({
-      query: (data) => {
+    updateDiscussion: builder.mutation({
+      query: data => {
         //   console.log('typeeee',type)
         return {
           url: endpoints.UPDATE_DISCUSSION_FORMS,
           method: 'POST',
-          body: data
+          body: data,
         };
       },
     }),
-      getAllReviews: builder.query({
-      query: (id) => {
+    getAllReviews: builder.query({
+      query: id => {
         //   console.log('typeeee',type)
         return {
           url: endpoints.GET_ALL_REVIEWS(id),
@@ -172,6 +172,25 @@ export const Apis = createApi({
         };
       },
     }),
+    getAppointmentDetail: builder.query({
+      query: id => {
+        //   console.log('typeeee',type)
+        return {
+          url: endpoints.GET_APPOINTMENT_DETAIL(id),
+          method: 'GET',
+        };
+      },
+    }),
+    updateRequestAppointment: builder.mutation({
+        query: data => {
+          //   console.log('typeeee',type)
+          return {
+            url: endpoints.UPDATE_APPOINTMENT,
+            method: 'POST',
+            body: data,
+          };
+        },
+      }),
   }),
 });
 
@@ -193,5 +212,7 @@ export const {
   useCreateDiscussFormMutation,
   useLazyGetDiscussionFormsQuery,
   useUpdateDiscussionMutation,
-  useLazyGetAllReviewsQuery
+  useLazyGetAllReviewsQuery,
+  useLazyGetAppointmentDetailQuery,
+  useUpdateRequestAppointmentMutation
 } = Apis;

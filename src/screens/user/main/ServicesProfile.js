@@ -36,7 +36,7 @@ const ServicesProfile = ({ route }) => {
   const [createRequestForm, { isLoading }] = useCreateRequestFormMutation();
 
   const { requestData, profileData } = route?.params;
-  console.log('requestData ===>', user);
+  console.log('requestData ===>', profileData);
 
   const onConfirmBooking = async () => {
     if (!address) {
@@ -68,13 +68,21 @@ const ServicesProfile = ({ route }) => {
         console.log('request form response ===>', res);
         // Toast.show(res.msg)
         if (res.success) {
-          nav.navigate('WorkDone', { profileData });
+          nav.navigate('WorkDone', {
+           profileData:{ 
+            ...profileData,
+            appointmentData: { status: res.data.status, id: res.data._id },
+          }});
         }
       })
       .catch(error => {
         console.log('error while creating request form ===>', error);
         Toast.show('Some problem occured');
       });
+  };
+
+  const onCheckStatus = () => {
+    nav.navigate('PestTechnician', { pest_tech: profileData });
   };
 
   return (
@@ -90,7 +98,7 @@ const ServicesProfile = ({ route }) => {
             id: profileData?._id,
             profImg: `${IMAGE_URL}${profileData?.profileImage}`,
             username: `${profileData?.fullName}`,
-            designation: `${profileData?.service.name} Technician`,
+            designation: 'Pest Technician',
             rating: profileData?.avgRating || 0,
             time: '30',
           }}
@@ -104,7 +112,7 @@ const ServicesProfile = ({ route }) => {
         />
         <LineBreak val={2} />
         <AppText
-          title={`Experience in ${profileData?.service.name} Technician`}
+          title={`Experience in Pest Technician`}
           color={AppColors.BLACK}
           size={2.5}
           fontWeight={'bold'}
@@ -117,95 +125,107 @@ const ServicesProfile = ({ route }) => {
         />
 
         <LineBreak val={2} />
-
-        <View style={{ gap: responsiveHeight(1) }}>
-          <View>
-            <AppText
-              title={'Select Date'}
-              color={AppColors.BLACK}
-              size={1.8}
-              fontWeight={'bold'}
-            />
-            <LineBreak val={0.5} />
-            <TouchableOpacity
-              onPress={() => setIsShowCalendar(!isShowCalendar)}
-            >
-              <AppTextInput
-                inputPlaceHolder={'03/17/2025'}
-                borderRadius={30}
-                editable={false}
-                value={moment(date).format('DD/MM/YYYY')}
-                inputWidth={77}
-                rightIcon={
-                  <Entypo
-                    name="chevron-small-down"
-                    size={responsiveFontSize(3.5)}
-                    color={AppColors.BLACK}
-                  />
-                }
-              />
-            </TouchableOpacity>
-            {isShowCalendar && (
-              <AppCalendar changeDate={day => setDate(day)} date={date} />
-            )}
-          </View>
-          <View>
-            <AppText
-              title={'Select Time'}
-              color={AppColors.BLACK}
-              size={1.8}
-              fontWeight={'bold'}
-            />
-            <LineBreak val={0.5} />
-            <TouchableOpacity
-              onPress={() => setDatePickerVisibility(!isDatePickerVisible)}
-            >
-              <AppTextInput
-                inputPlaceHolder={'10:00 AM'}
-                borderRadius={30}
-                inputWidth={77}
-                editable={false}
-                value={time}
-                rightIcon={
-                  <Entypo
-                    name="chevron-small-down"
-                    size={responsiveFontSize(3.5)}
-                    color={AppColors.BLACK}
-                  />
-                }
-              />
-            </TouchableOpacity>
-            <AppClock
-              isDatePickerVisible={isDatePickerVisible}
-              handleConfirm={date => setTime(moment(date).format('hh:mm A'))}
-              setDatePickerVisibility={setDatePickerVisibility}
-            />
-          </View>
-          <View>
-            <AppText
-              title={'Address'}
-              color={AppColors.BLACK}
-              size={1.8}
-              fontWeight={'bold'}
-            />
-            <LineBreak val={0.5} />
-            <AppTextInput
-              inputPlaceHolder={'371 7th Ave, New York, NY 10001'}
-              borderRadius={30}
-              inputWidth={77}
-              placeholderTextColor={AppColors.GRAY}
-              value={address}
-              onChangeText={text => setAddress(text)}
-              rightIcon={
-                <Entypo
-                  name="location-pin"
-                  size={responsiveFontSize(3.5)}
+        {profileData?.previousScreen === 'Appointments' ? (
+          <Button
+            onPress={() => onCheckStatus()}
+            title={'View your status'}
+            indicator={isLoading}
+            textTransform={'uppercase'}
+            color={colors.primary}
+            width={90}
+          />
+        ) : (
+          <>
+            <View style={{ gap: responsiveHeight(1) }}>
+              <View>
+                <AppText
+                  title={'Select Date'}
                   color={AppColors.BLACK}
+                  size={1.8}
+                  fontWeight={'bold'}
                 />
-              }
-            />
-          </View>
-          {/* <View>
+                <LineBreak val={0.5} />
+                <TouchableOpacity
+                  onPress={() => setIsShowCalendar(!isShowCalendar)}
+                >
+                  <AppTextInput
+                    inputPlaceHolder={'03/17/2025'}
+                    borderRadius={30}
+                    editable={false}
+                    value={moment(date).format('DD/MM/YYYY')}
+                    inputWidth={77}
+                    rightIcon={
+                      <Entypo
+                        name="chevron-small-down"
+                        size={responsiveFontSize(3.5)}
+                        color={AppColors.BLACK}
+                      />
+                    }
+                  />
+                </TouchableOpacity>
+                {isShowCalendar && (
+                  <AppCalendar changeDate={day => setDate(day)} date={date} />
+                )}
+              </View>
+              <View>
+                <AppText
+                  title={'Select Time'}
+                  color={AppColors.BLACK}
+                  size={1.8}
+                  fontWeight={'bold'}
+                />
+                <LineBreak val={0.5} />
+                <TouchableOpacity
+                  onPress={() => setDatePickerVisibility(!isDatePickerVisible)}
+                >
+                  <AppTextInput
+                    inputPlaceHolder={'10:00 AM'}
+                    borderRadius={30}
+                    inputWidth={77}
+                    editable={false}
+                    value={time}
+                    rightIcon={
+                      <Entypo
+                        name="chevron-small-down"
+                        size={responsiveFontSize(3.5)}
+                        color={AppColors.BLACK}
+                      />
+                    }
+                  />
+                </TouchableOpacity>
+                <AppClock
+                  isDatePickerVisible={isDatePickerVisible}
+                  handleConfirm={date =>
+                    setTime(moment(date).format('hh:mm A'))
+                  }
+                  setDatePickerVisibility={setDatePickerVisibility}
+                />
+              </View>
+              <View>
+                <AppText
+                  title={'Address'}
+                  color={AppColors.BLACK}
+                  size={1.8}
+                  fontWeight={'bold'}
+                />
+                <LineBreak val={0.5} />
+                <AppTextInput
+                  inputPlaceHolder={'371 7th Ave, New York, NY 10001'}
+                  borderRadius={30}
+                  inputWidth={77}
+                  placeholderTextColor={AppColors.GRAY}
+                  value={address}
+                  onChangeText={text => setAddress(text)}
+                  rightIcon={
+                    <Entypo
+                      name="location-pin"
+                      size={responsiveFontSize(3.5)}
+                      color={AppColors.BLACK}
+                    />
+                  }
+                />
+              </View>
+              {/* <View>
             <AppText
               title={'Add Comment'}
               color={AppColors.BLACK}
@@ -224,18 +244,20 @@ const ServicesProfile = ({ route }) => {
               textAlignVertical={'top'}
             />
           </View> */}
-        </View>
+            </View>
 
-        <LineBreak val={4} />
+            <LineBreak val={4} />
 
-        <Button
-          onPress={() => onConfirmBooking()}
-          title={'Confirm booking'}
-          indicator={isLoading}
-          textTransform={'uppercase'}
-          color={colors.primary}
-          width={90}
-        />
+            <Button
+              onPress={() => onConfirmBooking()}
+              title={'Confirm booking'}
+              indicator={isLoading}
+              textTransform={'uppercase'}
+              color={colors.primary}
+              width={90}
+            />
+          </>
+        )}
       </View>
     </Container>
   );

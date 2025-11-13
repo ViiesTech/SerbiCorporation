@@ -1,5 +1,11 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  Platform,
+  PermissionsAndroid,
+} from 'react-native';
 import Container from '../../../components/Container';
 import { useNavigation } from '@react-navigation/native';
 import NormalHeader from '../../../components/NormalHeader';
@@ -15,33 +21,155 @@ import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import { useSelector } from 'react-redux';
 import { IMAGE_URL, MAP_API_KEY } from '../../../redux/constant';
 import MapViewDirections from 'react-native-maps-directions';
+import Geolocation from 'react-native-geolocation-service';
+import { useLazyGetAppointmentDetailQuery } from '../../../redux/services';
 
 const PestTechnician = ({ route }) => {
   const nav = useNavigation();
   const { user } = useSelector(state => state.persistedData);
   const [step, setStep] = useState(0);
+  const [eta, setEta] = useState(null);
+  const technicianData = route?.params?.pest_tech;
+  const [technicianLocation, setTechnicianLocation] = useState({
+    longitude: technicianData?.location?.coordinates[0],
+    latitude: technicianData?.location?.coordinates[1],
+  });
+  const [getAppointmentDetail, { data, isLoading }] =
+    useLazyGetAppointmentDetailQuery();
+
+  // console.log('hello',technicianData.appointmentData.id)
+  const id = technicianData?.appointmentData?.id;
+  console.log(data?.data?.status);
+  //  const [mapRegion, setMapRegion] = useState({
+  //   latitude: (destination.latitude + technicianLocation.latitude) / 2,
+  //   longitude: (destination.longitude + technicianLocation.longitude) / 2,
+  //   latitudeDelta: 0.015,
+  //   longitudeDelta: 0.0121,
+  // });
+
+  // useEffect(() => {
+  //   if (technicianLocation && destination) {
+  //     setMapRegion({
+  //       latitude: (destination.latitude + technicianLocation.latitude) / 2,
+  //       longitude: (destination.longitude + technicianLocation.longitude) / 2,
+  //       latitudeDelta: 0.015,
+  //       longitudeDelta: 0.0121,
+  //     });
+  //   }
+  // }, [technicianLocation, destination]);
+
+  // console.log(technicianLocation)
 
   // Progress values mapped to steps
   const steps = [0.1, 0.4, 0.7, 1.0];
-
-  const technicianData = route?.params?.pest_tech;
-  //   console.log(technicianData.location?.coordinates);
-
-  const nextStep = () => {
-    const next = (step + 1) % steps.length;
-    // console.log(next)
-    setStep(next);
-  };
-
-  const origin = {
-    longitude: technicianData?.location?.coordinates[0],
-    latitude: technicianData?.location?.coordinates[1],
-  };
-
   const destination = {
     longitude: user?.location?.coordinates[0],
     latitude: user?.location?.coordinates[1],
   };
+
+  // useEffect(() => {
+  //   let watchId;
+
+  //   const startWatching = async () => {
+  //     if (Platform.OS === 'android') {
+  //       const granted = await PermissionsAndroid.request(
+  //         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+  //       );
+  //       if (granted !== PermissionsAndroid.RESULTS.GRANTED) return;
+  //     }
+
+  //     watchId = Geolocation.watchPosition(
+  //       position => {
+  //         const { latitude, longitude } = position.coords;
+  //         setTechnicianLocation({ longitude, latitude });
+  //       },
+  //       error => console.log('WatchPosition Error:', error),
+  //       {
+  //         enableHighAccuracy: true,
+  //         distanceFilter: 10,
+  //         interval: 5000,
+  //         fastestInterval: 2000,
+  //       },
+  //     );
+  //   };
+
+  //   startWatching();
+
+  //   return () => {
+  //     if (watchId != null) Geolocation.clearWatch(watchId);
+  //   };
+  // }, []);
+
+  //   console.log(technicianData.location?.coordinates);
+
+  useEffect(() => {
+    if (!id) return;
+
+    getAppointmentDetail(id);
+
+    const interval = setInterval(() => {
+      getAppointmentDetail(id);
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [id]);
+
+  useEffect(() => {
+    if (data?.data?.status) {
+      console.log('Updated status:', data.data.status);
+
+      switch (data.data.status) {
+        case 'On The Way':
+          setStep(0);
+          break;
+        case 'Arrived':
+          setStep(1);
+          break;
+        case 'Discussing':
+          setStep(2);
+          break;
+        case 'Accepted':
+          setStep(3);
+          break;
+        default:
+          break;
+      }
+    }
+  }, [data]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTechnicianLocation(prev => {
+        const latDiff = destination.latitude - prev.latitude;
+        const lngDiff = destination.longitude - prev.longitude;
+
+        // Stop when very close
+        if (Math.abs(latDiff) < 0.0001 && Math.abs(lngDiff) < 0.0001) {
+          // alert('hello')
+          clearInterval(interval);
+          return prev;
+        }
+
+        return {
+          latitude: prev.latitude + latDiff * 0.01,
+          longitude: prev.longitude + lngDiff * 0.01,
+        };
+      });
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [destination]);
+
+  // const nextStep = () => {
+  //   const next = (step + 1) % steps.length;
+  //   // console.log(next)
+  //   setStep(next);
+  // };
+
+  // const origin = {
+  //   longitude: technicianData?.location?.coordinates[0],
+  //   latitude: technicianData?.location?.coordinates[1],
+  // };
 
   const renderContent = () => {
     switch (step) {
@@ -55,7 +183,19 @@ const PestTechnician = ({ route }) => {
             />
             <LineBreak val={1} />
             <AppText
-              title={'15 - 20 mins'}
+              title={
+                eta !== null
+                  ? eta < 10
+                    ? 'Arriving soon'
+                    : eta < 20
+                    ? '15 - 20 mins'
+                    : eta < 45
+                    ? 'About 30 mins'
+                    : eta < 90
+                    ? 'About 1 hour'
+                    : 'About 2 hours'
+                  : 'Calculating...'
+              }
               color={AppColors.BLACK}
               size={2.5}
               fontWeight={'bold'}
@@ -217,34 +357,38 @@ const PestTechnician = ({ route }) => {
     );
   };
 
-  const midLat = (destination?.latitude + origin?.latitude) / 2;
-  const midLng = (destination?.longitude + origin?.longitude) / 2;
+  // const midLat = (destination?.latitude + technicianLocation?.latitude) / 2;
+  // const midLng = (destination?.longitude + technicianLocation?.longitude) / 2;
 
   return (
-    <Container>
+    <Container contentStyle={{ paddingBottom: responsiveHeight(5) }}>
       <NormalHeader
         heading={`Pest Technician`}
         onBackPress={() => nav.goBack()}
       />
-      {origin && destination && (
+      {destination && technicianLocation && (
         <MapView
           provider={PROVIDER_GOOGLE}
           style={{
-            height: responsiveHeight(70),
+            height: responsiveHeight(50),
             width: responsiveWidth(100),
           }}
-          region={{
-            latitude: midLat || 40.7128,
-            longitude: midLng || -74.006,
+          initialRegion={{
+            latitude: (destination.latitude + technicianLocation.latitude) / 2,
+            longitude:
+              (destination.longitude + technicianLocation.longitude) / 2,
             latitudeDelta: 0.015,
             longitudeDelta: 0.0121,
           }}
         >
-          <Marker coordinate={origin} title="Technician" pinColor="blue" />
-
           <Marker coordinate={destination} title="You" pinColor="green" />
+          <Marker
+            coordinate={technicianLocation}
+            title="Technician"
+            pinColor="blue"
+          />
           <MapViewDirections
-            origin={origin}
+            origin={technicianLocation}
             mode="DRIVING"
             destination={destination}
             // lineCap="round"
@@ -256,6 +400,7 @@ const PestTechnician = ({ route }) => {
             onReady={result => {
               console.log(`Distance: ${result.distance} km`);
               console.log(`Duration: ${result.duration} min`);
+              setEta(result.duration);
             }}
             onError={error => {
               console.error('Directions Error:', error);
@@ -276,7 +421,7 @@ const PestTechnician = ({ route }) => {
 
       {renderContent()}
 
-      {step !== 3 ? (
+      {/* {step !== 3 ? (
         <View
           style={{ paddingVertical: responsiveHeight(2), alignItems: 'center' }}
         >
@@ -291,7 +436,7 @@ const PestTechnician = ({ route }) => {
             handlePress={nextStep}
           />
         </View>
-      ) : null}
+      ) : null} */}
     </Container>
   );
 };

@@ -28,5 +28,7 @@ export const endpoints = {
       type === 'User' ? 'userId' : 'technicianId'
     }=${id}&status=${status}`,
   UPDATE_DISCUSSION_FORMS: 'updateDiscussionForm',
-  GET_ALL_REVIEWS: (id) => `getAllReviews?technicianId=${id}`
+  GET_ALL_REVIEWS: (id) => `getAllReviews?technicianId=${id}`,
+  GET_APPOINTMENT_DETAIL: (id) => `getRequestFormById?formId=${id}`,
+  UPDATE_APPOINTMENT: 'updateRequestForm'
 };
