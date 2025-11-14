@@ -45,6 +45,14 @@ export const AppColors = {
   Yellow: '#FF9C12',
 };
 
+export const DEFAULT_REGION = {
+  latitude: 37.7749,    
+  longitude: -122.4194,
+  latitudeDelta: 5,       
+  longitudeDelta: 5,
+};
+
+
 
 export const slides = [
   {

@@ -119,17 +119,23 @@ const PestTechnician = ({ route }) => {
       console.log('Updated status:', data.data.status);
 
       switch (data.data.status) {
-        case 'On The Way':
+        case 'Pending':
           setStep(0);
           break;
-        case 'Arrived':
+        case 'On The Way':
           setStep(1);
           break;
-        case 'Discussing':
+        case 'Arrived':
           setStep(2);
           break;
         case 'Accepted':
           setStep(3);
+          break;
+        case 'Start':
+          setStep(4);
+          break;
+        case 'Stop':
+          setStep(5);
           break;
         default:
           break;
@@ -176,6 +182,36 @@ const PestTechnician = ({ route }) => {
       case 0:
         return (
           <View style={styles.centerContent}>
+            {/* <AppText
+              title={'Your Pest Control Technician has arrived!'}
+              color={AppColors.GRAY}
+              size={1.8}
+            /> */}
+            <LineBreak val={1} />
+            <AppText
+              title={'Waiting...'}
+              color={AppColors.BLACK}
+              size={3}
+              fontWeight={'bold'}
+            />
+            <LineBreak val={2} />
+            {progressBar()}
+            <LineBreak val={2} />
+            <AppText
+              title={
+                'Your service request has been received and is pending confirmation from your technician. Please hold tight while we get things ready.'
+              }
+              color={AppColors.GRAY}
+              size={2}
+              textWidth={80}
+              align={'center'}
+            />
+          </View>
+        );
+
+      case 1:
+        return (
+          <View style={styles.centerContent}>
             <AppText
               title={'Estimated Arriving Time'}
               color={AppColors.LIGHTGRAY}
@@ -202,14 +238,14 @@ const PestTechnician = ({ route }) => {
             />
             <LineBreak val={1} />
             {progressBar()}
-            <LineBreak val={1} />
+            {/* <LineBreak val={1} />
             <AppText
               title={`Your pest control technician is on the way and will be arriving shortly.`}
               color={AppColors.LIGHTGRAY}
               size={1.9}
               textWidth={75}
               align={'center'}
-            />
+            /> */}
             {/* Contact Card */}
             <View style={styles.contactCard}>
               <Image
@@ -248,7 +284,7 @@ const PestTechnician = ({ route }) => {
           </View>
         );
 
-      case 1:
+      case 2:
         return (
           <View style={styles.centerContent}>
             <AppText
@@ -267,14 +303,18 @@ const PestTechnician = ({ route }) => {
             {progressBar()}
             <LineBreak val={2} />
             <AppText
-              title={'Your technician has arrived'}
+              title={
+                'Your technician is here and going over the plan with you.'
+              }
               color={AppColors.GRAY}
               size={2}
+              textWidth={80}
+              align={'center'}
             />
           </View>
         );
 
-      case 2:
+        // case 3:
         return (
           <View style={styles.centerContent}>
             <AppText
@@ -308,7 +348,7 @@ const PestTechnician = ({ route }) => {
         return (
           <View style={styles.centerContent}>
             <AppText
-              title={'Proceed to payment'}
+              title={'Job Discussion In Progress'}
               color={AppColors.BLACK}
               size={3}
               fontWeight={'bold'}
@@ -316,7 +356,18 @@ const PestTechnician = ({ route }) => {
             <LineBreak val={2} />
             {progressBar()}
             <LineBreak val={2} />
-            <AppButton
+            <AppText
+              title={
+                'Your technician is currently evaluating the issue and filling the job discussion form.'
+              }
+              color={AppColors.BLACK}
+              size={2}
+              align={'center'}
+              textWidth={80}
+              // fontWeight={'bold'}
+            />
+            <LineBreak val={2} />
+            {/* <AppButton
               title={'Proceed to payment'}
               bgColor={colors.secondary_button}
               textColor={AppColors.BLACK}
@@ -330,7 +381,7 @@ const PestTechnician = ({ route }) => {
                   request: false,
                 });
               }}
-            />
+            /> */}
           </View>
         );
 
@@ -370,7 +421,7 @@ const PestTechnician = ({ route }) => {
         <MapView
           provider={PROVIDER_GOOGLE}
           style={{
-            height: responsiveHeight(50),
+            height: responsiveHeight(30),
             width: responsiveWidth(100),
           }}
           initialRegion={{
@@ -396,7 +447,7 @@ const PestTechnician = ({ route }) => {
             optimizeWaypoints={true}
             apikey={MAP_API_KEY}
             strokeWidth={4}
-            strokeColor={'#4296f5'}
+            strokeColor={AppColors.Yellow}
             onReady={result => {
               console.log(`Distance: ${result.distance} km`);
               console.log(`Duration: ${result.duration} min`);

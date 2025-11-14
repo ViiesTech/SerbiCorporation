@@ -82,7 +82,8 @@ const ServicesProfile = ({ route }) => {
   };
 
   const onCheckStatus = () => {
-    nav.navigate('PestTechnician', { pest_tech: profileData });
+    // return console.log('profiledaata',profileData)
+    nav.navigate('PestTechnician', { pest_tech: profileData })
   };
 
   return (

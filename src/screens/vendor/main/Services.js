@@ -1,10 +1,10 @@
 import { View, ImageBackground, Image, TouchableOpacity } from 'react-native';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { images } from '../../../assets/images';
 import AppTextInput from './../../../components/AppTextInput';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import { AppColors, responsiveHeight, responsiveWidth } from '../../../utils';
+import { AppColors, DEFAULT_REGION, responsiveHeight, responsiveWidth } from '../../../utils';
 import AppText from '../../../components/AppText';
 import Payment from './../../user/main/Payment';
 import AppButton from '../../../components/AppButton';
@@ -18,16 +18,73 @@ import Toast from 'react-native-simple-toast';
 import Loader from '../../../components/Loader';
 import MapViewDirections from 'react-native-maps-directions';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { useSelector } from 'react-redux';
+
 
 const Services = ({ route, navigation }) => {
   const [currentStatus, setCurrentStatus] = useState(null);
   const [eta, setEta] = useState(null);
   const { ids } = route?.params;
+  const { user } = useSelector(state => state.persistedData);
+  const [technicianLocation, setTechnicianLocation] = useState({
+    latitude: user?.location?.coordinates[1],
+    longitude: user?.location?.coordinates[0],
+  });
+  const [mapReady,setMapReady] = useState(false)
   const [updateRequestAppointment, { isLoading }] =
     useUpdateRequestAppointmentMutation();
   const [getAppointmentDetail, { data, isLoading: appointmentLoader }] =
     useLazyGetAppointmentDetailQuery();
-  console.log('ids', ids);
+      const mapRef = useRef(null);
+  // console.log('technician == current user', technicianLocation);
+
+  // const userLocation = {
+  //   latitude: ids?.user?.location?.coordinates[1],
+  //   longitude: ids?.user?.location?.coordinates[0],
+  // };
+
+   useEffect(() => {
+    if (
+      user?.location?.coordinates &&
+      ids?.user?.location?.coordinates &&
+      mapReady
+    ) {
+      const region = {
+      latitude:
+        (user.location.coordinates[1] + ids.user.location.coordinates[1]) / 2,
+      longitude:
+        (user.location.coordinates[0] + ids.user.location.coordinates[0]) / 2,
+      latitudeDelta: 0.5,
+      longitudeDelta: 0.5,
+    };
+
+    mapRef.current?.animateToRegion(region, 1000);
+    }
+  }, [mapReady,ids?.user?.location?.coordinates]);
+  // console.log(technicianLocation)
+
+    useEffect(() => {
+      const interval = setInterval(() => {
+        setTechnicianLocation(prev => {
+          const latDiff = ids?.user?.location?.coordinates[1] - prev.latitude;
+          const lngDiff = ids?.user?.location?.coordinates[0] - prev.longitude;
+  
+          // Stop when very close
+          if (Math.abs(latDiff) < 0.0001 && Math.abs(lngDiff) < 0.0001) {
+            // alert('hello')
+            clearInterval(interval);
+            return prev;
+          }
+  
+          return {
+            latitude: prev.latitude + latDiff * 0.01,
+            longitude: prev.longitude + lngDiff * 0.01,
+          };
+        });
+      }, 30000);
+  
+      return () => clearInterval(interval);
+    }, [ids?.user?.location?.coordinates]);
 
   useEffect(() => {
     if (ids?.requestFormId) {
@@ -42,7 +99,7 @@ const Services = ({ route, navigation }) => {
   //   }
   // }, [data]);
 
-  const statusFlow = ['On The Way', 'Arrived', 'Accepted'];
+  const statusFlow = ['On The Way', 'Arrived', 'Accepted','Proceed'];
 
   useEffect(() => {
     if (ids?.requestFormId) getAppointmentDetail(ids.requestFormId);
@@ -58,6 +115,9 @@ const Services = ({ route, navigation }) => {
     const currentIndex = statusFlow.findIndex(s => s === currentStatus);
     return statusFlow[currentIndex + 1] || null;
   }, [currentStatus]);
+
+  console.log('user == appointment user', nextStatus);
+
 
   // console.log('nnext', nextStatus);
 
@@ -85,10 +145,11 @@ const Services = ({ route, navigation }) => {
   );
 
   const handlePress = async () => {
-    // if (!nextStatus) {
-    //   navigation.navigate('JobDiscussionForm', { ids });
-    //   return;
-    // }
+    if (nextStatus === 'Accepted') {
+      navigation.navigate('JobDiscussionForm', { ids });
+    await onChangeStatus(nextStatus);
+      return;
+    }
     await onChangeStatus(nextStatus);
   };
 
@@ -101,47 +162,55 @@ const Services = ({ route, navigation }) => {
     />
   ) : (
     <>
-      {/* <MapView
-        provider={PROVIDER_GOOGLE}
-        style={{
-          height: responsiveHeight(50),
-          width: responsiveWidth(100),
-        }}
-        initialRegion={{
-          latitude: (destination.latitude + technicianLocation.latitude) / 2,
-          longitude:
-            (destination.longitude + technicianLocation.longitude) / 2,
-          latitudeDelta: 0.015,
-          longitudeDelta: 0.0121,
-        }}>
-      
-              <Marker
-                  coordinate={technicianLocation}
-                  title="Technician"
-                  pinColor="blue"
-                />
-      
-                <Marker coordinate={destination} title="You" pinColor="green" />
-                <MapViewDirections
-                  origin={technicianLocation}
-                  mode="DRIVING"
-                  destination={destination}
-                  // lineCap="round"
-                  // lineJoin="round"
-                  optimizeWaypoints={true}
-                  apikey={MAP_API_KEY}
-                  strokeWidth={4}
-                  strokeColor={'#4296f5'}
-                  onReady={result => {
-                    console.log(`Distance: ${result.distance} km`);
-                    console.log(`Duration: ${result.duration} min`);
-                    setEta(result.duration);
-                  }}
-                  onError={error => {
-                    console.error('Directions Error:', error);
-                  }}
-                /> 
-      </MapView> */}
+      {ids?.user?.location?.coordinates && user?.location?.coordinates && (
+        <MapView
+          provider={PROVIDER_GOOGLE}
+          ref={mapRef}
+          onMapReady={() => setMapReady(true)}
+          style={{
+            height: responsiveHeight(100),
+            width: responsiveWidth(100),
+          }}
+          initialRegion={DEFAULT_REGION}
+        >
+          <Marker
+         coordinate={technicianLocation}
+            title="You"
+            pinColor="green"
+          />
+
+          <Marker
+            coordinate={{
+                latitude: ids?.user?.location?.coordinates[1],
+                longitude: ids?.user?.location?.coordinates[0],
+              }}
+            title={ids?.user?.fullName}
+            pinColor="blue"
+          />
+            <MapViewDirections
+              origin={technicianLocation}
+              mode="DRIVING"
+              destination={{
+                latitude: ids?.user?.location?.coordinates[1],
+                longitude: ids?.user?.location?.coordinates[0],
+              }}
+              // lineCap="round"
+              // lineJoin="round"
+              optimizeWaypoints={true}
+              apikey={MAP_API_KEY}
+              strokeWidth={4}
+              strokeColor={AppColors.Yellow}
+              onReady={result => {
+                console.log(`Distance: ${result.distance} km`);
+                console.log(`Duration: ${result.duration} min`);
+                setEta(result.duration);
+              }}
+              onError={error => {
+                console.error('Directions Error:', error);
+              }}
+            />
+        </MapView>
+      )}
       {/* <ImageBackground
       style={{ flex: 1, padding: responsiveHeight(2) }}
       source={images.mapbg}
@@ -158,10 +227,13 @@ const Services = ({ route, navigation }) => {
         style={{
           backgroundColor: AppColors.WHITE,
           position: 'absolute',
-          alignSelf: 'center',
-          bottom: 20,
+          bottom: 0,
+          width: '100%',
           borderRadius: responsiveHeight(2),
-          padding: responsiveHeight(2),
+          paddingHorizontal: responsiveHeight(2),
+          height: responsiveHeight(28),
+          paddingVertical: responsiveHeight(2)
+          // padding: responsiveHeight(2),
         }}
       >
         <View
@@ -232,7 +304,19 @@ const Services = ({ route, navigation }) => {
         <LineBreak val={3} />
         <AppText
           size={2}
-          title="Youre on the way. Estimated arrival in 15 - 20 mins"
+          align={'center'}
+          // title="Youre on the way. Estimated arrival in 15 - 20 mins"
+         title={
+    currentStatus === 'On The Way'
+      ? eta !== null
+        ? `You’re on the way. Estimated arrival in ${Math.round(eta)} mins`
+        : 'Calculating ETA...'
+      : currentStatus === 'Arrived'
+      ? 'You’ve arrived at the customer’s location.'
+      : currentStatus === 'Accepted'
+      ? 'Proceed with the service.'
+      : 'Waiting to start...'
+  }
         />
         <LineBreak val={3} />
         <AppButton
@@ -256,6 +340,7 @@ const Services = ({ route, navigation }) => {
           // }
           textColor="black"
           textFontWeight="bold"
+          alignSelf={'center'}
           isLoading={isLoading}
           title={
             nextStatus === 'Accepted'
@@ -269,6 +354,7 @@ const Services = ({ route, navigation }) => {
           borderRadius={30}
         />
       </View>
+
       {/* </ImageBackground> */}
     </>
   );

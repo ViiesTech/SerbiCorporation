@@ -3,7 +3,11 @@ import { FlatList, TouchableOpacity, View } from 'react-native';
 import Container from '../../../components/Container';
 import NormalHeader from '../../../components/NormalHeader';
 import LineBreak from '../../../components/LineBreak';
-import { TabRouter, useNavigation } from '@react-navigation/native';
+import {
+  TabRouter,
+  useIsFocused,
+  useNavigation,
+} from '@react-navigation/native';
 import { AppColors, responsiveHeight, responsiveWidth } from '../../../utils';
 import AppText from '../../../components/AppText';
 import HistoryCard from '../../../components/HistoryCard';
@@ -15,206 +19,66 @@ import { IMAGE_URL } from '../../../redux/constant';
 import moment from 'moment';
 import AppTextInput from '../../../components/AppTextInput';
 
-const tabData = [
-  { id: 1, title: 'Pending Appointments' },
-  { id: 2, title: 'Complete Appointments' },
-];
-
 // const appointmentTypes = [
 //     { id: 1, title: 'REQUESTED' },
 //     { id: 2, title: 'DISCUSSION' },
 // ];
 
-const cardData = [
+const tabData = [
+  // { id: 1, title: 'TODAY' },
+  // { id: 2, title: 'YESTERDAY' },
+  { id: 1, title: 'REQUESTED' },
+  { id: 2, title: 'DISCUSSION' },
+];
+
+const data2 = [
   {
     id: 1,
-    // profImg: images.map,
-    username: 'Roland Hopper',
-    price: '$79.00',
-    status: 'Upcoming',
-    designation: 'Pest Technician',
-    rating: '3.5',
-    location: 'California, United State',
-    date: 'Tuesday, 11 March 2025 at 10:00 AM',
+    sub_title: 'Pending',
   },
   {
     id: 2,
-    // profImg: images.map,
-    username: 'Roland Hopper',
-    price: '$79.00',
-    status: 'Upcoming',
-    designation: 'Pest Technician',
-    rating: '3.5',
-    location: 'California, United State',
-    date: 'Tuesday, 11 March 2025 at 10:00 AM',
+    sub_title: 'On The Way',
   },
   {
     id: 3,
-    // profImg: images.map,
-    username: 'Roland Hopper',
-    price: '$79.00',
-    status: 'Upcoming',
-    designation: 'Pest Technician',
-    rating: '3.5',
-    location: 'California, United State',
-    date: 'Tuesday, 11 March 2025 at 10:00 AM',
+    sub_title: 'Arrived',
   },
   {
     id: 4,
-    // profImg: images.map,
-    username: 'Roland Hopper',
-    price: '$79.00',
-    status: 'Upcoming',
-    designation: 'Pest Technician',
-    rating: '3.5',
-    location: 'California, United State',
-    date: 'Tuesday, 11 March 2025 at 10:00 AM',
-  },
-  {
-    id: 5,
-    // profImg: images.map,
-    username: 'Roland Hopper',
-    price: '$79.00',
-    status: 'Upcoming',
-    designation: 'Pest Technician',
-    rating: '3.5',
-    location: 'California, United State',
-    date: 'Tuesday, 11 March 2025 at 10:00 AM',
-  },
-  {
-    id: 6,
-    // profImg: images.map,
-    username: 'Roland Hopper',
-    price: '$79.00',
-    status: 'Upcoming',
-    designation: 'Pest Technician',
-    rating: '3.5',
-    location: 'California, United State',
-    date: 'Tuesday, 11 March 2025 at 10:00 AM',
-  },
-  {
-    id: 7,
-    // profImg: images.map,
-    username: 'Roland Hopper',
-    price: '$79.00',
-    status: 'Upcoming',
-    designation: 'Pest Technician',
-    rating: '3.5',
-    location: 'California, United State',
-    date: 'Tuesday, 11 March 2025 at 10:00 AM',
-  },
-  {
-    id: 8,
-    // profImg: images.map,
-    username: 'Roland Hopper',
-    price: '$79.00',
-    status: 'Upcoming',
-    designation: 'Pest Technician',
-    rating: '3.5',
-    location: 'California, United State',
-    date: 'Tuesday, 11 March 2025 at 10:00 AM',
+    sub_title: 'Accepted',
   },
 ];
 
-const cardTwoData = [
+const data3 = [
   {
     id: 1,
-    // profImg: images.map,
-    username: 'Roland Hopper',
-    price: '$79.00',
-    status: 'Completed',
-    designation: 'Pest Technician',
-    rating: '3.5',
-    location: 'California, United State',
-    date: 'Tuesday, 11 March 2025 at 10:00 AM',
+    sub_title: 'Upcoming',
   },
   {
     id: 2,
-    // profImg: images.map,
-    username: 'Roland Hopper',
-    price: '$79.00',
-    status: 'Completed',
-    designation: 'Pest Technician',
-    rating: '3.5',
-    location: 'California, United State',
-    date: 'Tuesday, 11 March 2025 at 10:00 AM',
+    sub_title: 'Start',
   },
   {
     id: 3,
-    // profImg: images.map,
-    username: 'Roland Hopper',
-    price: '$79.00',
-    status: 'Completed',
-    designation: 'Pest Technician',
-    rating: '3.5',
-    location: 'California, United State',
-    date: 'Tuesday, 11 March 2025 at 10:00 AM',
+    sub_title: 'Stop',
   },
   {
     id: 4,
-    // profImg: images.map,
-    username: 'Roland Hopper',
-    price: '$79.00',
-    status: 'Completed',
-    designation: 'Pest Technician',
-    rating: '3.5',
-    location: 'California, United State',
-    date: 'Tuesday, 11 March 2025 at 10:00 AM',
-  },
-  {
-    id: 5,
-    // profImg: images.map,
-    username: 'Roland Hopper',
-    price: '$79.00',
-    status: 'Completed',
-    designation: 'Pest Technician',
-    rating: '3.5',
-    location: 'California, United State',
-    date: 'Tuesday, 11 March 2025 at 10:00 AM',
-  },
-  {
-    id: 6,
-    // profImg: images.map,
-    username: 'Roland Hopper',
-    price: '$79.00',
-    status: 'Completed',
-    designation: 'Pest Technician',
-    rating: '3.5',
-    location: 'California, United State',
-    date: 'Tuesday, 11 March 2025 at 10:00 AM',
-  },
-  {
-    id: 7,
-    // profImg: images.map,
-    username: 'Roland Hopper',
-    price: '$79.00',
-    status: 'Completed',
-    designation: 'Pest Technician',
-    rating: '3.5',
-    location: 'California, United State',
-    date: 'Tuesday, 11 March 2025 at 10:00 AM',
-  },
-  {
-    id: 8,
-    // profImg: images.map,
-    username: 'Roland Hopper',
-    price: '$79.00',
-    status: 'Completed',
-    designation: 'Pest Technician',
-    rating: '3.5',
-    location: 'California, United State',
-    date: 'Tuesday, 11 March 2025 at 10:00 AM',
+    sub_title: 'Completed',
   },
 ];
 
 const Appointments = () => {
   const nav = useNavigation();
   const { user } = useSelector(state => state.persistedData);
-  const [selectedTab, setSelectedTab] = useState({ id: 1, initial: true });
+  const [selectedTab, setSelectedTab] = useState('REQUESTED');
   const [filterData, setFilterData] = useState([]);
   const [selectedCard, setSelectedCard] = useState({ id: 1 });
+  const [subCategory, setSubCategory] = useState(0);
   const [getAllAppointments, { data, isLoading }] =
     useLazyGetAllAppointmentsQuery();
+  const isFocused = useIsFocused();
 
   console.log('appointment data >', filterData);
 
@@ -222,33 +86,67 @@ const Appointments = () => {
     if (user?._id && user?.type) {
       getAllAppointments({ id: user._id, type: user.type });
     }
-  }, [user]);
+  }, [user, isFocused]);
 
   useEffect(() => {
-    if (!data?.data || !selectedTab.initial) return;
+    setSubCategory(0);
 
-    const filtered =
-      data.data.requestForms?.filter(item => item.status === 'Pending') || [];
+    let sourceData = [];
+    if (selectedTab === 'REQUESTED') {
+      sourceData = data?.data?.requestForms || [];
+    } else if (selectedTab === 'DISCUSSION') {
+      sourceData = data?.data?.discussionForms || [];
+    }
 
+    const firstTab =
+      selectedTab === 'REQUESTED' ? data2[0].sub_title : data3[0].sub_title;
+
+    const filtered = sourceData.filter(item => item.status === firstTab);
     setFilterData(filtered);
   }, [selectedTab, data]);
 
   // ✅ Split logic to handle tab change
-  const splitAppointmentsByStatus = (statusTitle, id) => {
-    setSelectedTab({ id, initial: false });
+  // const splitAppointmentsByStatus = (statusTitle, id) => {
+  //   setSelectedTab({ id, initial: false });
 
-    let filtered = [];
-    if (statusTitle === 'Pending Appointments') {
-      filtered = data?.data?.requestForms?.filter(
-        item => item.status === statusTitle.substring(0, 7),
-      );
-    } else {
-      filtered = data?.data?.discussionForms?.filter(
-        item => item.status === statusTitle.substring(0, 8),
-      );
+  //   let filtered = [];
+  //   if (statusTitle === 'Pending Appointments') {
+  //     filtered = data?.data?.requestForms?.filter(
+  //       item => item.status === statusTitle.substring(0, 7),
+  //     );
+  //   } else {
+  //     filtered = data?.data?.discussionForms?.filter(
+  //       item => item.status === statusTitle.substring(0, 8),
+  //     );
+  //   }
+
+  //   setFilterData(filtered || []);
+  // };
+
+    const splitAppointmentsByStatus = (statusTitle, index) => {
+    setSubCategory(index);
+
+    let sourceData = [];
+    if (selectedTab === 'REQUESTED') {
+      sourceData = data?.data?.requestForms || [];
+    } else if (selectedTab === 'DISCUSSION') {
+      sourceData = data?.data?.discussionForms || [];
     }
 
-    setFilterData(filtered || []);
+    const filtered = sourceData.filter(item => item.status == statusTitle);
+
+    setFilterData(filtered);
+  };
+
+
+  const getDisplayData = () => {
+
+    if (subCategory !== null) return filterData;
+
+    if (selectedTab === 'REQUESTED') {
+      return data?.data?.requestForms || [];
+    }
+    return data?.data?.discussionForms || [];
   };
 
   return (
@@ -301,21 +199,23 @@ const Appointments = () => {
                   <TouchableOpacity
                     style={{
                       backgroundColor:
-                        selectedTab.id == item.id
+                        selectedTab == item.title
                           ? colors.primary
                           : AppColors.WHITE,
-                      paddingHorizontal: responsiveWidth(5),
+                      paddingHorizontal: responsiveWidth(11),
                       paddingVertical: responsiveHeight(1.2),
                       borderRadius: 20,
+                      alignItems: 'center',
                     }}
-                    onPress={() =>
-                      splitAppointmentsByStatus(item.title, item.id)
+                    onPress={
+                      () => setSelectedTab(item.title)
+                      // splitAppointmentsByStatus(item.title, item.id)
                     }
                   >
                     <AppText
                       title={item.title}
                       color={AppColors.BLACK}
-                      size={1.6}
+                      size={1.8}
                       fontWeight={'bold'}
                     />
                   </TouchableOpacity>
@@ -324,9 +224,48 @@ const Appointments = () => {
             />
 
             <LineBreak val={2} />
-
+            <View>
+              <FlatList
+                showsHorizontalScrollIndicator={false}
+                // style={{ marginHorizontal: responsiveHeight(-3) }}
+                contentContainerStyle={{
+                  gap: responsiveHeight(1),
+                  marginTop: responsiveHeight(1),
+                  paddingHorizontal: responsiveHeight(3),
+                }}
+                data={selectedTab === 'REQUESTED' ? data2 : data3}
+                horizontal
+                renderItem={({ item, index }) => {
+                  return (
+                    <TouchableOpacity
+                      onPress={() =>
+                        splitAppointmentsByStatus(item.sub_title, index)
+                      }
+                      style={{
+                        backgroundColor:
+                          index == subCategory
+                            ? colors.black
+                            : AppColors.WHITE,
+                        borderWidth: 1,
+                        borderColor: '#000',
+                        paddingHorizontal: responsiveWidth(11),
+                        paddingVertical: responsiveHeight(1.2),
+                        borderRadius: 20,
+                        alignItems: 'center',
+                      }}
+                    >
+                      <AppText
+                        color={index === subCategory ? '#fff' : '#000'}
+                        title={item.sub_title}
+                      />
+                    </TouchableOpacity>
+                  );
+                }}
+              />
+            </View>
+            <LineBreak val={2} />
             <FlatList
-              data={filterData}
+              data={getDisplayData()}
               ListEmptyComponent={() => (
                 <AppText title={'No Appointments Found'} align={'center'} />
               )}
@@ -342,7 +281,7 @@ const Appointments = () => {
                       id: item._id,
                       profImg: `${IMAGE_URL}${item.technicianId?.profileImage}`,
                       username: item.technicianId?.fullName,
-                      price: `$${item?.technicianId?.price}` || '$0.00',
+                      price: `$${item?.technicianId?.price || item?.amount}` || '$0.00',
                       status: item.status,
                       designation: 'Pest Technician',
                       rating: item.technicianId?.avgRating || 0,
@@ -354,7 +293,8 @@ const Appointments = () => {
                     myAppointments={true}
                     selectedCard={selectedCard}
                     onCardPress={() => {
-                      if (item.status === 'Pending') {
+                      // return console.log('api status appointments',item.status)
+                      // if (item.status === 'Pending') {
                         nav.navigate('ServicesProfile', {
                           profileData: {
                             ...item.technicianId,
@@ -365,7 +305,7 @@ const Appointments = () => {
                             previousScreen: 'Appointments',
                           },
                         });
-                      }
+                      // }
                       setSelectedCard({ id: item._id });
                     }}
                     activeCardBgColor={AppColors.PRIMARY}

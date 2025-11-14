@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { View, Image, TouchableOpacity, FlatList } from 'react-native';
 import Container from '../../../components/Container';
 import HomeHeader from './../../../components/HomeHeader';
 import Drawer from './../../../components/Drawer';
 import {
   AppColors,
+  DEFAULT_REGION,
   getCurrentLocation,
   responsiveHeight,
   responsiveWidth,
@@ -95,11 +96,30 @@ const UserHome = () => {
   const [severityValue, setSeverityValue] = useState('');
   const [areaValue, setAreaValue] = useState('');
   const [note, setNote] = useState('');
+  const [mapReady, setMapReady] = useState(false);
+  const mapRef = useRef(false);
+
   const nav = useNavigation();
   const dispatch = useDispatch();
   const { user } = useSelector(state => state.persistedData);
 
   // console.log('service',user?.profileImage);
+
+     useEffect(() => {
+      if (
+        coordinates &&
+        mapReady
+      ) {
+        const region = {
+        latitude: coordinates?.latitude,
+        longitude: coordinates?.longitude,
+        latitudeDelta: 0.5,
+        longitudeDelta: 0.5,
+      };
+  
+      mapRef.current?.animateToRegion(region, 1000);
+      }
+    }, [mapReady]);
 
   useEffect(() => {
     getUserLocation();
@@ -241,16 +261,13 @@ const UserHome = () => {
           {coordinates?.latitude && coordinates?.longitude && (
             <MapView
               provider={PROVIDER_GOOGLE} 
+              ref={mapRef}
               style={{
                 height: responsiveHeight(50),
                 width: responsiveWidth(100),
               }}
-              region={{
-                latitude: coordinates.latitude,
-                longitude: coordinates.longitude,
-                latitudeDelta: 0.015,
-                longitudeDelta: 0.0121,
-              }}
+              onMapReady={() => setMapReady(true)}
+              initialRegion={DEFAULT_REGION}
             >
               <Marker
                 title="Current Location"
