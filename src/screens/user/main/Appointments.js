@@ -123,7 +123,7 @@ const Appointments = () => {
   //   setFilterData(filtered || []);
   // };
 
-    const splitAppointmentsByStatus = (statusTitle, index) => {
+  const splitAppointmentsByStatus = (statusTitle, index) => {
     setSubCategory(index);
 
     let sourceData = [];
@@ -138,9 +138,7 @@ const Appointments = () => {
     setFilterData(filtered);
   };
 
-
   const getDisplayData = () => {
-
     if (subCategory !== null) return filterData;
 
     if (selectedTab === 'REQUESTED') {
@@ -243,9 +241,7 @@ const Appointments = () => {
                       }
                       style={{
                         backgroundColor:
-                          index == subCategory
-                            ? colors.black
-                            : AppColors.WHITE,
+                          index == subCategory ? colors.black : AppColors.WHITE,
                         borderWidth: 1,
                         borderColor: '#000',
                         paddingHorizontal: responsiveWidth(11),
@@ -281,7 +277,9 @@ const Appointments = () => {
                       id: item._id,
                       profImg: `${IMAGE_URL}${item.technicianId?.profileImage}`,
                       username: item.technicianId?.fullName,
-                      price: `$${item?.technicianId?.price || item?.amount}` || '$0.00',
+                      price:
+                        `$${item?.technicianId?.price || item?.amount}` ||
+                        '$0.00',
                       status: item.status,
                       designation: 'Pest Technician',
                       rating: item.technicianId?.avgRating || 0,
@@ -293,18 +291,22 @@ const Appointments = () => {
                     myAppointments={true}
                     selectedCard={selectedCard}
                     onCardPress={() => {
-                      // return console.log('api status appointments',item.status)
+                      // return console.log('api appointments',item)
                       // if (item.status === 'Pending') {
-                        nav.navigate('ServicesProfile', {
-                          profileData: {
-                            ...item.technicianId,
-                            appointmentData: {
-                              status: item.status,
-                              id: item._id,
-                            },
-                            previousScreen: 'Appointments',
+                      nav.navigate('ServicesProfile', {
+                        profileData: {
+                          ...item.technicianId,
+                          appointmentData: {
+                            status: item.status,
+                            id: item._id,
+                            date: item.date,
+                            time: item.time,
+                            address: item.address,
+                            type: selectedTab,
                           },
-                        });
+                          previousScreen: 'Appointments',
+                        },
+                      });
                       // }
                       setSelectedCard({ id: item._id });
                     }}

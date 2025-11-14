@@ -9,6 +9,7 @@ import { useNavigation } from '@react-navigation/native';
 import NormalHeader from '../components/NormalHeader';
 import {
   AppColors,
+  getCurrentLocation,
   getShortFileName,
   responsiveFontSize,
   responsiveHeight,
@@ -28,18 +29,22 @@ import Toast from 'react-native-simple-toast';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import moment from 'moment';
 import ImageCropPicker from 'react-native-image-crop-picker';
-import { IMAGE_URL } from '../redux/constant';
+import { IMAGE_URL, MAP_API_KEY } from '../redux/constant';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { pick, types } from '@react-native-documents/picker';
 import { useLazyGetAllServicesQuery } from '../redux/services/adminApis';
 import Loader from '../components/Loader';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import axios from 'axios';
 
 const Profile = ({ route }) => {
   const { user } = route?.params;
   // const { user } = useSelector(state => state.persistedData);
   const [state, setState] = useState({
     fullName: user?.fullName || '',
-    image: user?.profileImage ? `${IMAGE_URL}${user.profileImage}` : images.userProfile,
+    image: user?.profileImage
+      ? `${IMAGE_URL}${user.profileImage}`
+      : images.userProfile,
     dob: user?.DOB || moment(new Date()).format('DD-MM-YYYY'),
     phone: user?.phone || '',
     location: {
@@ -75,6 +80,7 @@ const Profile = ({ route }) => {
   });
   const [picker, setPicker] = useState({ visible: false, type: null });
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
+  const [predictions, setPredictions] = useState([]);
   const [createUpdateProfile, { isLoading }] = useCreateUpdateProfileMutation();
   const [getAllServices, { data: servicesData, isLoading: serviceLoader }] =
     useLazyGetAllServicesQuery();
@@ -88,7 +94,7 @@ const Profile = ({ route }) => {
     { label: 'Test Service 4', value: 'Test Service 4' },
   ]);
 
-  console.log(user);
+  // console.log(user);
 
   // console.log('services data', servicesData);
 
@@ -114,8 +120,8 @@ const Profile = ({ route }) => {
     data.append('fullName', state.fullName);
     data.append('phone', state.phone);
     data.append('DOB', state.dob);
-    data.append('longitude', '-80.4790');
-    data.append('latitude', '25.4473');
+    data.append('longitude', state.location.long);
+    data.append('latitude', state.location.lat);
     data.append('locationName', state.location.name);
     if (user?.type === 'Technician') {
       data.append('price', parseInt(state.price));
@@ -285,6 +291,109 @@ const Profile = ({ route }) => {
     }
   };
 
+  const currentLocationAndFetchAddress = async () => {
+    try {
+      Toast.show('Fetching current location...', 2000, Toast.SHORT);
+      const { latitude, longitude } = await getCurrentLocation();
+      // console.log('Lat Long:', latitude, longitude);
+
+      const address = await convertLatLongToAddress(latitude, longitude);
+      setState(prevState => ({
+        ...prevState,
+        location: {
+          name: address,
+          lat: latitude,
+          long: longitude,
+        },
+      }));
+      Toast.show('Current Location Fetched Successfuly!', 2000, Toast.SHORT);
+      // console.log('Converted Address:', address);
+    } catch (error) {
+      console.log('Error getting location or converting:', error);
+      Toast.show('Failed to fetch current location...', 2000, Toast.SHORT);
+      return null;
+    }
+  };
+
+  const convertLatLongToAddress = async (lat, lng) => {
+    try {
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${MAP_API_KEY}`;
+      const response = await axios.get(url);
+
+      if (
+        response.data.status === 'OK' &&
+        response.data.results &&
+        response.data.results.length > 0
+      ) {
+        return response.data.results[0].formatted_address;
+      } else {
+        console.log('No address found for given coordinates');
+        return null;
+      }
+    } catch (error) {
+      console.log('Error in geocoding API:', error);
+      return null;
+    }
+  };
+
+  const searchLocation = async key => {
+    if (!key) {
+      setPredictions([]);
+      return;
+    }
+    try {
+      const response = await axios.get(
+        `https://maps.googleapis.com/maps/api/place/autocomplete/json`,
+        {
+          params: {
+            input: key,
+            key: MAP_API_KEY,
+            components: 'country:us',
+          },
+        },
+      );
+
+      if (response.data?.predictions) {
+        setPredictions(response.data.predictions);
+      }
+    } catch (error) {
+      console.error('Error fetching predictions', error);
+    }
+  };
+
+  const getPlaceDetails = async placeId => {
+    try {
+      const response = await axios.get(
+        `https://maps.googleapis.com/maps/api/place/details/json`,
+        {
+          params: {
+            place_id: placeId,
+            key: MAP_API_KEY,
+          },
+        },
+      );
+
+      const details = response.data?.result;
+      if (details) {
+        const locationName = details.formatted_address || details.name;
+        const lat = details.geometry?.location?.lat;
+        const long = details.geometry?.location?.lng;
+
+        setState(prevState => ({
+          ...prevState,
+          location: {
+            name: locationName,
+            lat,
+            long,
+          },
+        }));
+        setPredictions([]);
+      }
+    } catch (error) {
+      console.error('Error fetching place details', error);
+    }
+  };
+
   return (
     <Container>
       <NormalHeader heading={'Profile'} onBackPress={() => nav.goBack()} />
@@ -383,10 +492,47 @@ const Profile = ({ route }) => {
               inputPlaceHolder={'..........'}
               placeholderTextColor={AppColors.LIGHTGRAY}
               borderRadius={30}
-              onChangeText={text => onChangeText('location', 'name', text)}
+              onChangeText={text => {
+                onChangeText('location', 'name', text);
+                searchLocation(text);
+              }}
               value={state.location.name}
+              inputWidth={75}
+              rightIcon={
+                <TouchableOpacity onPress={currentLocationAndFetchAddress}>
+                  <Icon name="my-location" size={22} color={colors.primary} />
+                </TouchableOpacity>
+              }
               borderColor={AppColors.BLACK}
             />
+            {predictions.length > 0 && (
+              <View
+                style={{
+                  backgroundColor: '#fff',
+                  borderRadius: 8,
+                  marginTop: 5,
+                  elevation: 3,
+                }}
+              >
+                {predictions.map(item => (
+                  <TouchableOpacity
+                    key={item.place_id}
+                    onPress={() => getPlaceDetails(item.place_id)}
+                    style={{
+                      padding: 12,
+                      borderBottomWidth: 0.5,
+                      borderColor: '#eee',
+                    }}
+                  >
+                    <AppText
+                      title={item.description}
+                      textColor={AppColors.BLACK}
+                      textSize={1.6}
+                    />
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
           </View>
           <View>
             <AppText

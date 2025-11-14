@@ -4,15 +4,23 @@ import Button from '../../components/Button';
 import InputField from '../../components/InputField';
 import SocialButtons from '../../components/SocialButtons';
 import AppText from '../../components/AppText';
-import { TouchableOpacity } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useState } from 'react';
-import { formatSSN, responsiveHeight, responsiveWidth } from '../../utils';
+import { useEffect, useState } from 'react';
+import {
+  AppColors,
+  formatSSN,
+  getCurrentLocation,
+  responsiveHeight,
+  responsiveWidth,
+} from '../../utils';
 import Toast from 'react-native-simple-toast';
 import { useRegisterMutation } from '../../redux/services';
 import { pick, types } from '@react-native-documents/picker';
 import moment from 'moment';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import { MAP_API_KEY } from '../../redux/constant';
+import axios from 'axios';
 
 const Signup = ({ route }) => {
   const [state, setState] = useState({
@@ -28,11 +36,59 @@ const Signup = ({ route }) => {
     },
     address: '',
     dob: moment(new Date()).format('DD-MM-YYYY'),
+    lat: '',
+    long: '',
   });
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
+  const [predictions, setPredictions] = useState([]);
   const navigation = useNavigation();
   const [register, { isLoading }] = useRegisterMutation();
   const { type } = route?.params;
+
+  // console.log(state.lat,state.long)
+
+  const currentLocationAndFetchAddress = async () => {
+    try {
+      Toast.show('Fetching current location...',2000,Toast.SHORT)
+      const { latitude, longitude } = await getCurrentLocation();
+      // console.log('Lat Long:', latitude, longitude);
+
+      const address = await convertLatLongToAddress(latitude, longitude);
+      setState(prevState => ({
+        ...prevState,
+        lat: latitude,
+        long: longitude,
+        address: address,
+      }));
+      Toast.show('Current Location Fetched Successfuly!',2000,Toast.SHORT)
+      // console.log('Converted Address:', address);
+    } catch (error) {
+      console.log('Error getting location or converting:', error);
+      Toast.show('Failed to fetch current location...',2000,Toast.SHORT)
+      return null;
+    }
+  };
+
+  const convertLatLongToAddress = async (lat, lng) => {
+    try {
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${MAP_API_KEY}`;
+      const response = await axios.get(url);
+
+      if (
+        response.data.status === 'OK' &&
+        response.data.results &&
+        response.data.results.length > 0
+      ) {
+        return response.data.results[0].formatted_address;
+      } else {
+        console.log('No address found for given coordinates');
+        return null;
+      }
+    } catch (error) {
+      console.log('Error in geocoding API:', error);
+      return null;
+    }
+  };
 
   const onSignupPress = async () => {
     if (!state.name) {
@@ -88,8 +144,9 @@ const Signup = ({ route }) => {
     data.append('ss', state.ss);
     data.append('password', state.password);
     data.append('locationName', state.address);
+    data.append('latitude', state.lat);
+    data.append('longitude', state.long);
     data.append('DOB', state.dob);
-    //latlong will come in future
     data.append('license', {
       uri: state.license.file,
       type: 'application/pdf',
@@ -145,6 +202,62 @@ const Signup = ({ route }) => {
     }
   };
 
+  const searchLocation = async key => {
+    if (!key) {
+      setPredictions([]);
+      return;
+    }
+    try {
+      const response = await axios.get(
+        `https://maps.googleapis.com/maps/api/place/autocomplete/json`,
+        {
+          params: {
+            input: key,
+            key: MAP_API_KEY,
+            components: 'country:us',
+          },
+        },
+      );
+
+      if (response.data?.predictions) {
+        setPredictions(response.data.predictions);
+      }
+    } catch (error) {
+      console.error('Error fetching predictions', error);
+    }
+  };
+
+  const getPlaceDetails = async placeId => {
+    try {
+      const response = await axios.get(
+        `https://maps.googleapis.com/maps/api/place/details/json`,
+        {
+          params: {
+            place_id: placeId,
+            key: MAP_API_KEY,
+          },
+        },
+      );
+
+      const details = response.data?.result;
+      if (details) {
+        const locationName = details.formatted_address || details.name;
+        const lat = details.geometry?.location?.lat;
+        const long = details.geometry?.location?.lng;
+
+        setState(prevState => ({
+          ...prevState,
+          address: locationName,
+          lat,
+          long,
+        }));
+        setPredictions([]);
+      }
+    } catch (error) {
+      console.error('Error fetching place details', error);
+    }
+  };
+
   return (
     <Container
       contentStyle={{ paddingBottom: responsiveHeight(7) }}
@@ -166,13 +279,45 @@ const Signup = ({ route }) => {
       /> */}
       <LineBreak val={2} />
       <InputField
-        onChangeText={text => onChangeText('address', text)}
+        onChangeText={text => {
+          onChangeText('address', text);
+          searchLocation(text);
+        }}
         value={state.address}
-        // icon={true}
-        onLocationPress={() => {}}
-        // innerStyle={{width: responsiveWidth(75)}}
+        icon={true}
+        onLocationPress={currentLocationAndFetchAddress}
+        innerStyle={{width: responsiveWidth(75)}}
         placeholder={'Home Address'}
       />
+      {predictions.length > 0 && (
+        <View
+          style={{
+            backgroundColor: '#fff',
+            borderRadius: 8,
+            marginTop: 5,
+            margin: responsiveHeight(3),
+            elevation: 3,
+          }}
+        >
+          {predictions.map(item => (
+            <TouchableOpacity
+              key={item.place_id}
+              onPress={() => getPlaceDetails(item.place_id)}
+              style={{
+                padding: 12,
+                borderBottomWidth: 0.5,
+                borderColor: '#eee',
+              }}
+            >
+              <AppText
+                title={item.description}
+                textColor={AppColors.BLACK}
+                textSize={1.6}
+              />
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
       {type === 'Technician' && (
         <>
           <LineBreak val={2} />

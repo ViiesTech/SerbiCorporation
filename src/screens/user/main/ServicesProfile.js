@@ -21,7 +21,10 @@ import AppClock from '../../../components/AppClock';
 import { IMAGE_URL } from '../../../redux/constant';
 import { useSelector } from 'react-redux';
 import moment from 'moment';
-import { useCreateRequestFormMutation } from '../../../redux/services';
+import {
+  useCreateRequestFormMutation,
+  useUpdateDiscussionMutation,
+} from '../../../redux/services';
 import Toast from 'react-native-simple-toast';
 
 const ServicesProfile = ({ route }) => {
@@ -30,10 +33,12 @@ const ServicesProfile = ({ route }) => {
   const [date, setDate] = useState(new Date());
   const [time, setTime] = useState(moment().format('hh:mm A'));
   const { user } = useSelector(state => state.persistedData);
-  const [address, setAddress] = useState(user?.location.locationName || '');
+  const [address, setAddress] = useState(user?.location?.locationName || '');
   //   const [comment, setComment] = useState('');
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [createRequestForm, { isLoading }] = useCreateRequestFormMutation();
+  const [updateDiscussion, { isLoading: discussionLoading }] =
+    useUpdateDiscussionMutation();
 
   const { requestData, profileData } = route?.params;
   console.log('requestData ===>', profileData);
@@ -69,10 +74,11 @@ const ServicesProfile = ({ route }) => {
         // Toast.show(res.msg)
         if (res.success) {
           nav.navigate('WorkDone', {
-           profileData:{ 
-            ...profileData,
-            appointmentData: { status: res.data.status, id: res.data._id },
-          }});
+            profileData: {
+              ...profileData,
+              appointmentData: { status: res.data.status, id: res.data._id },
+            },
+          });
         }
       })
       .catch(error => {
@@ -82,8 +88,29 @@ const ServicesProfile = ({ route }) => {
   };
 
   const onCheckStatus = () => {
-    // return console.log('profiledaata',profileData)
-    nav.navigate('PestTechnician', { pest_tech: profileData })
+    nav.navigate('PestTechnician', { pest_tech: profileData });
+  };
+
+  const reviewOrStatus = async status => {
+    if (status === 'Completed') {
+      nav.navigate('PaymentSuccess', { pest_tech: profileData });
+    } else {
+      let data = {
+        formId: profileData?.appointmentData?.id,
+        status: 'Completed',
+      };
+      await updateDiscussion(data)
+        .unwrap()
+        .then(res => {
+          console.log('update status response ===>', res);
+          Toast.show('Job Completed Successfully!',2000,Toast.SHORT)
+          nav.navigate('UserHome');
+        })
+        .catch(error => {
+          console.log('error updating complete status ===>', error);
+          Toast.show('Some problem occured', 2000, Toast.SHORT);
+        });
+    }
   };
 
   return (
@@ -127,14 +154,85 @@ const ServicesProfile = ({ route }) => {
 
         <LineBreak val={2} />
         {profileData?.previousScreen === 'Appointments' ? (
-          <Button
-            onPress={() => onCheckStatus()}
-            title={'View your status'}
-            indicator={isLoading}
-            textTransform={'uppercase'}
-            color={colors.primary}
-            width={90}
-          />
+          <View
+            style={{
+              marginTop: responsiveHeight(2),
+              gap: responsiveHeight(1.5),
+            }}
+          >
+            <AppText
+              title={'Appointment Details'}
+              size={2.2}
+              fontWeight="bold"
+              color={AppColors.BLACK}
+            />
+
+            <AppText
+              title={`Date: ${
+                moment(profileData?.appointmentData?.date).format(
+                  'DD-MM-YYYY',
+                ) || 'N/A'
+              }`}
+              size={1.8}
+              color={AppColors.DARKGRAY}
+            />
+
+            <AppText
+              title={`Time: ${profileData?.appointmentData?.time || 'N/A'}`}
+              size={1.8}
+              color={AppColors.DARKGRAY}
+            />
+
+            {profileData?.appointmentData?.type === 'REQUESTED' && (
+              <AppText
+                title={`Address: ${
+                  profileData?.appointmentData?.address || 'N/A'
+                }`}
+                size={1.8}
+                color={AppColors.DARKGRAY}
+              />
+            )}
+
+            <AppText
+              title={`Status: ${
+                profileData?.appointmentData?.status || 'Pending'
+              }`}
+              size={1.8}
+              color={AppColors.BLACK}
+              fontWeight="bold"
+            />
+
+            <LineBreak val={2} />
+            {(profileData?.appointmentData?.type === 'DISCUSSION' &&
+              profileData?.appointmentData?.status === 'Completed') ||
+            profileData?.appointmentData?.status === 'Stop' ? (
+              <Button
+                onPress={() =>
+                  reviewOrStatus(profileData?.appointmentData?.status)
+                }
+                title={
+                  profileData?.appointmentData?.status === 'Completed'
+                    ? 'Give Feedback'
+                    : 'Complete your job'
+                }
+                indicator={discussionLoading}
+                textTransform={'uppercase'}
+                color={colors.primary}
+                width={90}
+              />
+            ) : (
+              profileData?.appointmentData?.type === 'REQUESTED' && (
+                <Button
+                  onPress={() => onCheckStatus()}
+                  title={'See Technician on Map'}
+                  // indicator={isLoading}
+                  textTransform={'uppercase'}
+                  color={colors.primary}
+                  width={90}
+                />
+              )
+            )}
+          </View>
         ) : (
           <>
             <View style={{ gap: responsiveHeight(1) }}>

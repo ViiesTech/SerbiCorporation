@@ -225,10 +225,11 @@ const Payment = ({ route }) => {
             buttoWidth={92}
             textTransform={'uppercase'}
             handlePress={() => {
-              nav.navigate('PaymentSuccess', {
-                request: request && request,
-                pest_tech,
-              });
+              nav.navigate('UserHome')
+              // nav.navigate('PaymentSuccess', {
+              //   request: request && request,
+              //   pest_tech,
+              // });
               // nav.navigate('PaymentSuccess',{pest_tech});
             }}
           />

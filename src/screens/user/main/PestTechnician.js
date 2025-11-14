@@ -131,12 +131,6 @@ const PestTechnician = ({ route }) => {
         case 'Accepted':
           setStep(3);
           break;
-        case 'Start':
-          setStep(4);
-          break;
-        case 'Stop':
-          setStep(5);
-          break;
         default:
           break;
       }
@@ -348,14 +342,14 @@ const PestTechnician = ({ route }) => {
         return (
           <View style={styles.centerContent}>
             <AppText
-              title={'Job Discussion In Progress'}
+              title={'Proceed to payment'}
               color={AppColors.BLACK}
               size={3}
               fontWeight={'bold'}
             />
             <LineBreak val={2} />
             {progressBar()}
-            <LineBreak val={2} />
+            {/* <LineBreak val={2} />
             <AppText
               title={
                 'Your technician is currently evaluating the issue and filling the job discussion form.'
@@ -365,9 +359,9 @@ const PestTechnician = ({ route }) => {
               align={'center'}
               textWidth={80}
               // fontWeight={'bold'}
-            />
+            /> */}
             <LineBreak val={2} />
-            {/* <AppButton
+            <AppButton
               title={'Proceed to payment'}
               bgColor={colors.secondary_button}
               textColor={AppColors.BLACK}
@@ -381,7 +375,7 @@ const PestTechnician = ({ route }) => {
                   request: false,
                 });
               }}
-            /> */}
+            />
           </View>
         );
 
