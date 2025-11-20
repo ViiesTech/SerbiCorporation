@@ -49,9 +49,31 @@ export const Slice = createSlice({
           }
         },
       );
+    builder.addMatcher(
+      Apis.endpoints.googleLogin.matchFulfilled,
+      (state, action) => {
+        // console.log('user data',state.user)
+        if (action.payload?.success) {
+          if (action.payload?.isExist) {
+            state.user = action.payload.user;
+            state.token = action.payload?.token;
+          }
+        }
+      },
+    );
+    builder.addMatcher(
+      Apis.endpoints.setUserType.matchFulfilled,
+      (state, action) => {
+        // console.log('user data',state.user)
+        if (action.payload?.user) {
+          state.user = action.payload.user;
+          state.token = action.payload?.token;
+        }
+      },
+    );
   },
 });
 
-export const {firstTimeVisit,resetUser} = Slice.actions;
+export const { firstTimeVisit, resetUser } = Slice.actions;
 
 export default Slice.reducer;

@@ -10,6 +10,7 @@ import NormalHeader from '../components/NormalHeader';
 import {
   AppColors,
   getCurrentLocation,
+  getProfileImage,
   getShortFileName,
   responsiveFontSize,
   responsiveHeight,
@@ -42,9 +43,10 @@ const Profile = ({ route }) => {
   // const { user } = useSelector(state => state.persistedData);
   const [state, setState] = useState({
     fullName: user?.fullName || '',
-    image: user?.profileImage
-      ? `${IMAGE_URL}${user.profileImage}`
-      : images.userProfile,
+    // image: user?.profileImage
+    //   ? `${IMAGE_URL}${user.profileImage}`
+    //   : images.userProfile,
+    image: user?.profileImage ? getProfileImage(user?.profileImage) : images.userProfile,
     dob: user?.DOB || moment(new Date()).format('DD-MM-YYYY'),
     phone: user?.phone || '',
     location: {
@@ -400,7 +402,7 @@ const Profile = ({ route }) => {
       <LineBreak val={3} />
       <View style={{ alignItems: 'center' }}>
         <ImageBackground
-          source={state.image ? { uri: state.image } : images.imageProf}
+          source={{ uri: state.image }}
           style={{
             width: 100,
             height: 100,

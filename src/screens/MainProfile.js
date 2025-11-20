@@ -9,7 +9,7 @@ import LineBreak from '../components/LineBreak';
 import { Image } from 'react-native';
 import AppText from '../components/AppText';
 import { images } from '../assets/images';
-import { responsiveHeight } from '../utils';
+import { getProfileImage, responsiveHeight } from '../utils';
 import { StarRatingDisplay } from 'react-native-star-rating-widget';
 import { useLazyGetProfileQuery } from '../redux/services';
 import { useSelector } from 'react-redux';
@@ -31,7 +31,6 @@ const MainProfile = () => {
     }
   }, [isFocused]);
 
-
   return (
     <Container>
       <NormalHeader heading={'ACCOUNT'} onBackPress={() => nav.goBack()} />
@@ -50,29 +49,45 @@ const MainProfile = () => {
                 width: responsiveHeight(12),
                 borderRadius: 100,
               }}
-              source={data?.data?.profileImage ? { uri: `${IMAGE_URL}${data?.data?.profileImage}` } : images.userProfile}
+              source={data?.data.profileImage ? {uri: getProfileImage(data?.data?.profileImage)} : images.userProfile}
+              // source={
+              //   data?.data?.profileImage
+              //     ? {
+              //         uri: data?.data?.isGoogleUser
+              //           ? `${data.data.profileImage}`
+              //           : `${IMAGE_URL}${data.data.profileImage}`,
+              //       }
+              //     : images.userProfile
+              // }
             />
             <LineBreak val={2} />
             <AppText title={data?.data?.fullName} />
             <LineBreak val={3} />
-            <Button onPress={() => nav.navigate('Profile',{user: data?.data})} title={'Edit Profile'} color={colors.secondary_button} />
+            <Button
+              onPress={() => nav.navigate('Profile', { user: data?.data })}
+              title={'Edit Profile'}
+              color={colors.secondary_button}
+            />
             <LineBreak val={2} />
             <AppText title={data?.data?.locationName} />
             <LineBreak val={2.5} />
-          {data?.data?.type !== 'User' &&
-          <> 
-            <AppText size={2.5} fontWeight={'bold'} title={'Review'} />
-            <LineBreak val={1} />
-            <View
-              style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
-            >
-              <StarRatingDisplay rating={1} maxStars={1} />
-              <AppText fontWeight={'bold'} title={data?.data?.avgRating || 0} />
-              <AppText title={`(${data?.data?.totalReviews || 0})`} />
-            </View>
-            <LineBreak val={2.5} />
-            </>
-            }
+            {data?.data?.type !== 'User' && (
+              <>
+                <AppText size={2.5} fontWeight={'bold'} title={'Review'} />
+                <LineBreak val={1} />
+                <View
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
+                >
+                  <StarRatingDisplay rating={1} maxStars={1} />
+                  <AppText
+                    fontWeight={'bold'}
+                    title={data?.data?.avgRating || 0}
+                  />
+                  <AppText title={`(${data?.data?.totalReviews || 0})`} />
+                </View>
+                <LineBreak val={2.5} />
+              </>
+            )}
             <View
               style={{
                 borderBottomWidth: 0.5,

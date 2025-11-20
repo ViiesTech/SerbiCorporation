@@ -1,7 +1,9 @@
 export const BASE_URL = 'https://appsdemo.pro/Serbi-Backend/api/user/';
+// export const BASE_URL = 'http://192.168.100.168:4030/api/user/'
 export const IMAGE_URL = 'https://appsdemo.pro/Serbi-Backend/';
 export const ADMIN_URL = 'https://appsdemo.pro/Serbi-Backend/api/admin/';
 export const MAP_API_KEY = 'AIzaSyD_u0v13rRdMLo4ZpwsSfhT4dGTzcIwXf4'
+export const CLIENT_ID = '584277279555-h1kfoqno737uv4fenrlrcb9felcvhuee.apps.googleusercontent.com'
 
 export const endpoints = {
   SIGNUP: 'signup',
@@ -30,5 +32,7 @@ export const endpoints = {
   UPDATE_DISCUSSION_FORMS: 'updateDiscussionForm',
   GET_ALL_REVIEWS: (id) => `getAllReviews?technicianId=${id}`,
   GET_APPOINTMENT_DETAIL: (id) => `getRequestFormById?formId=${id}`,
-  UPDATE_APPOINTMENT: 'updateRequestForm'
+  UPDATE_APPOINTMENT: 'updateRequestForm',
+  GOOGLE_LOGIN: 'googleLogin',
+  SET_USER_TYPE: 'setUserType'
 };

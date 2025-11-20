@@ -6,6 +6,7 @@ import NormalHeader from '../../../components/NormalHeader';
 import LineBreak from '../../../components/LineBreak';
 import {
   AppColors,
+  getProfileImage,
   responsiveFontSize,
   responsiveHeight,
   responsiveWidth,
@@ -124,7 +125,8 @@ const ServicesProfile = ({ route }) => {
         <HistoryCard
           item={{
             id: profileData?._id,
-            profImg: `${IMAGE_URL}${profileData?.profileImage}`,
+            profImg: getProfileImage(profileData?.profileImage),
+            // profImg: profileData?.isGoogleUser ? `${profileData?.profileImage}` : `${IMAGE_URL}${profileData?.profileImage}`,
             username: `${profileData?.fullName}`,
             designation: 'Pest Technician',
             rating: profileData?.avgRating || 0,

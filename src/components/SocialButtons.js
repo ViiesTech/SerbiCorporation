@@ -6,20 +6,20 @@ import { colors } from '../assets/colors'
 import SVGIcon from './SVGIcon'
 import icons from '../assets/icons'
 
-const SocialButtons = ({heading,onSocialPress}) => {
+const SocialButtons = ({heading,onSocialPress,apiLoader}) => {
   return (
     <View style={styles.wrapper}>
         <AppText title={heading} />
         <LineBreak val={3.5} />
-        <Button icon={
+        {/* <Button icon={
           <SVGIcon width={50} xml={icons.facebook} /> 
         } onPress={() => onSocialPress('facebook')} style={{
           borderRadius: 10,
           alignItems: 'center',
         
-        }} titleColour={colors.white} color={colors.social_color1} title={'Continue with Facebook'} />
-        <LineBreak val={2} />
-        <Button icon={
+        }} titleColour={colors.white} color={colors.social_color1} title={'Continue with Facebook'} /> */}
+        {/* <LineBreak val={2} /> */}
+        <Button indicator={apiLoader} icon={
           <SVGIcon width={50} xml={icons.google} /> 
         } onPress={() => onSocialPress('google')} style={{
           borderWidth: 0.5,

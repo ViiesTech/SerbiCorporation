@@ -182,15 +182,37 @@ export const Apis = createApi({
       },
     }),
     updateRequestAppointment: builder.mutation({
-        query: data => {
-          //   console.log('typeeee',type)
-          return {
-            url: endpoints.UPDATE_APPOINTMENT,
-            method: 'POST',
-            body: data,
-          };
-        },
-      }),
+      query: data => {
+        //   console.log('typeeee',type)
+        return {
+          url: endpoints.UPDATE_APPOINTMENT,
+          method: 'POST',
+          body: data,
+        };
+      },
+    }),
+    googleLogin: builder.mutation({
+      query: data => {
+        return {
+          url: endpoints.GOOGLE_LOGIN,
+          method: 'POST',
+          body: data,
+        };
+      },
+    }),
+    setUserType: builder.mutation({
+      query: ({ type, token }) => {
+        return {
+          url: endpoints.SET_USER_TYPE,
+          method: 'POST',
+          body: {type},
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        };
+      },
+    }),
   }),
 });
 
@@ -214,5 +236,7 @@ export const {
   useUpdateDiscussionMutation,
   useLazyGetAllReviewsQuery,
   useLazyGetAppointmentDetailQuery,
-  useUpdateRequestAppointmentMutation
+  useUpdateRequestAppointmentMutation,
+  useGoogleLoginMutation,
+  useSetUserTypeMutation,
 } = Apis;

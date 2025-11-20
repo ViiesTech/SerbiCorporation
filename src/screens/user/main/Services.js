@@ -8,6 +8,7 @@ import {
   estimateTimeMinutes,
   formatMinutes,
   getDistanceInMiles,
+  getProfileImage,
   responsiveHeight,
   responsiveWidth,
 } from '../../../utils';
@@ -147,7 +148,7 @@ const Services = ({ route }) => {
               width: responsiveWidth(100),
             }}
             region={{
-              latitude:  25.4486 || lat,
+              latitude: 25.4486 || lat,
               longitude: -80.4115 || long,
               latitudeDelta: 0.015,
               longitudeDelta: 0.0121,
@@ -159,9 +160,10 @@ const Services = ({ route }) => {
                   key={index}
                   title={`Technician ${index + 1}`}
                   coordinate={{
-                    latitude:  coord.latitude,
+                    latitude: coord.latitude,
                     longitude: coord.longitude,
-                  }}>
+                  }}
+                >
                   <Image
                     source={images.pin_marker}
                     style={{ height: 70, width: 70, borderRadius: 35 }}
@@ -200,7 +202,10 @@ const Services = ({ route }) => {
                   <HistoryCard
                     disabled={true}
                     item={{
-                      profImg: `${IMAGE_URL}${item.profileImage}`,
+                      profImg: getProfileImage(item.profileImage),
+                      // profImg: item.GoogleUser
+                      //   ? `${item.profileImage}`
+                      //   : `${IMAGE_URL}${item.profileImage}`,
                       username: item.fullName,
                       price: `$${item.price}`,
                       designation: `${item.service?.name + ' ' + 'Technician'}`,

@@ -6,7 +6,7 @@ import NormalHeader from '../../../components/NormalHeader';
 import LineBreak from '../../../components/LineBreak';
 // import { images } from '../../../assets/images';
 import HistoryCard from '../../../components/HistoryCard';
-import { responsiveWidth } from '../../../utils';
+import { getProfileImage, responsiveWidth } from '../../../utils';
 import { useLazyGetDiscussionFormsQuery } from '../../../redux/services';
 import Loader from '../../../components/Loader';
 import { useSelector } from 'react-redux';
@@ -142,14 +142,19 @@ const History = () => {
               <HistoryCard
                 item={{
                   id: item?._id,
-                  profImg: `${IMAGE_URL}${item.technicianId?.profileImage}`,
+                  profImg: getProfileImage(item.technicianId?.profileImage),
+                  // profImg: item.technicianId?.isGoogleUser
+                  //   ? `${item.technicianId?.profileImage}`
+                  //   : `${IMAGE_URL}${item.technicianId?.profileImage}`,
                   username: item.technicianId?.fullName,
                   price: `$${item.amount}`,
                   status: 'Completed',
                   designation: `${item.serviceId.name} Technician`,
                   rating: item?.technicianId?.avgRating || 0,
                   location: item?.technicianId?.locationName,
-                  date: `${moment(item.createdAt).format('ddd, MMM D')} at ${item.time}`,
+                  date: `${moment(item.createdAt).format('ddd, MMM D')} at ${
+                    item.time
+                  }`,
                 }}
                 selectedCard={selectedCard}
                 history={true}

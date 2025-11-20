@@ -8,7 +8,7 @@ import {
   useIsFocused,
   useNavigation,
 } from '@react-navigation/native';
-import { AppColors, responsiveHeight, responsiveWidth } from '../../../utils';
+import { AppColors, getProfileImage, responsiveHeight, responsiveWidth } from '../../../utils';
 import AppText from '../../../components/AppText';
 import HistoryCard from '../../../components/HistoryCard';
 import { colors } from '../../../assets/colors';
@@ -275,7 +275,8 @@ const Appointments = () => {
                   <HistoryCard
                     item={{
                       id: item._id,
-                      profImg: `${IMAGE_URL}${item.technicianId?.profileImage}`,
+                      profImg: getProfileImage(item.technicianId?.profileImage),
+                      // profImg: item.technicianId?.isGoogleUser ? `${item.technicianId?.profileImage}` : `${IMAGE_URL}${item.technicianId?.profileImage}`,
                       username: item.technicianId?.fullName,
                       price:
                         `$${item?.technicianId?.price || item?.amount}` ||

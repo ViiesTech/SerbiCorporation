@@ -3,6 +3,7 @@ import { images } from "../assets/images";
 import Geolocation from 'react-native-geolocation-service';
 import Toast from 'react-native-simple-toast'
 import moment from 'moment'
+import { IMAGE_URL } from "../redux/constant";
 
 const percentageCalculation = (max, val) => max * (val / 100);
 
@@ -173,4 +174,16 @@ export const formatSSN = (value) => {
     formatted = `${cleaned.slice(0, 3)}-${cleaned.slice(3, 5)}-${cleaned.slice(5, 9)}`;
   }
   return formatted;
+};
+
+export const getProfileImage = (profileImage) => {
+  if (!profileImage || typeof profileImage !== "string") {
+     return null;
+  }
+
+  if (profileImage.startsWith('http')) {
+    return profileImage;
+  }
+
+  return `${IMAGE_URL}${profileImage}`;
 };

@@ -9,6 +9,7 @@ import {
 import { useEffect, useState } from 'react';
 import {
   AppColors,
+  getProfileImage,
   responsiveHeight,
   responsiveWidth,
 } from './../../../utils/index';
@@ -238,11 +239,12 @@ const Home = ({ navigation }) => {
               height: responsiveHeight(7.5),
             }}
             borderRadius={100}
-            source={
-              user?.profileImage
-                ? { uri: `${IMAGE_URL}${user.profileImage}` }
-                : images.userProfile
-            }
+            source={user?.profileImage ? {uri: getProfileImage(user?.profileImage)} : images.userProfile}
+            // source={
+            //   user?.profileImage
+            //     ? { uri: `${IMAGE_URL}${user.profileImage}` }
+            //     : images.userProfile
+            // }
           />
           <View>
             <View style={{ flexDirection: 'row', gap: responsiveHeight(1) }}>
