@@ -13,6 +13,7 @@ import PrivacyPolicy from '../screens/PrivacyPolicy';
 import TermsAndCondition from '../screens/TermsAndCondition';
 import Help from '../screens/Help';
 import MainProfile from '../screens/MainProfile';
+import Wallet from '../screens/user/main/Wallet';
 
 const Stack = createStackNavigator();
 
@@ -38,6 +39,7 @@ const Routes = () => {
               <Stack.Screen name="Help" component={Help} />
               <Stack.Screen name="TermsAndCondition" component={TermsAndCondition} />
               <Stack.Screen name="IncomingCall" component={IncomingCall} />
+              <Stack.Screen name="Wallet" component={Wallet} />
             </>
           ) : user?.type === 'Technician' && (
             <>

@@ -21,7 +21,8 @@ const AppButton = ({
   textTransform,
   padding,
   isLoading,
-  alignSelf
+  alignSelf,
+  loaderColor
 }) => {
   return (
     <TouchableOpacity
@@ -40,7 +41,7 @@ const AppButton = ({
         flexDirection: leftIcon ? 'row' : null,
       }}>
      {isLoading  ?
-        <Loader />
+        <Loader color={loaderColor} />
       :
       <>
       {leftIcon}

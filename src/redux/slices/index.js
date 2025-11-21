@@ -5,6 +5,7 @@ const initialState = {
   token: '',
   user: {},
   firstVisit: false,
+  customer_id: null,
 };
 
 export const Slice = createSlice({
@@ -68,6 +69,15 @@ export const Slice = createSlice({
         if (action.payload?.user) {
           state.user = action.payload.user;
           state.token = action.payload?.token;
+        }
+      },
+    );
+    builder.addMatcher(
+      Apis.endpoints.createSetupIntent.matchFulfilled,
+      (state, action) => {
+        // console.log('user data',state.user)
+        if (action.payload?.success) {
+          state.customer_id = action.payload.customerId;
         }
       },
     );

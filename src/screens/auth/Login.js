@@ -85,7 +85,7 @@ const Login = () => {
         const res = await googleLogin(data).unwrap();
 
         console.log('Google API response ===>', res);
-        Toast.show(res?.message ?? 'Success', 2000, Toast.SHORT);
+        Toast.show(res?.message ?? 'Login successfully!', 2000, Toast.SHORT);
 
         if (!res?.isExist) {
           nav.navigate('SelectType',{token: res.token});

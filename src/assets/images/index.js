@@ -17,6 +17,10 @@ export const images = {
   dotsRight: require('../images/dotsRight.png'),
   mapbg: require('../images/mapbg.jpg'),
   userProfile: require('../images/userProfile.jpeg'),
-  pin_marker: require('../images/marker.png')
+  pin_marker: require('../images/marker.png'),
+  mastercard: require('../images/mastercard.png'),
+  visa: require('../images/visa.png'),
+  express: require('../images/express.webp'),
+ 
   // mapbg: require('../images/mapbg.jpg'),
 }

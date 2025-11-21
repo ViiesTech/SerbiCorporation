@@ -205,11 +205,45 @@ export const Apis = createApi({
         return {
           url: endpoints.SET_USER_TYPE,
           method: 'POST',
-          body: {type},
+          body: { type },
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
+        };
+      },
+    }),
+    createSetupIntent: builder.mutation({
+      query: () => {
+        return {
+          url: endpoints.CREATE_SETUP_INTENT,
+          method: 'POST',
+        };
+      },
+    }),
+    saveCard: builder.mutation({
+      query: ({ customerId, paymentMethodId }) => {
+        return {
+          url: endpoints.SAVE_CARD,
+          method: 'POST',
+          body: { customerId, paymentMethodId },
+        };
+      },
+    }),
+    getAllCards: builder.query({
+      query: () => {
+        return {
+          url: endpoints.GET_ALL_CARDS,
+          method: 'GET',
+        };
+      },
+    }),
+    createPayment: builder.mutation({
+      query: (data) => {
+        return {
+          url: endpoints.CREATE_PAYMENT,
+          method: 'POST',
+          body: data,
         };
       },
     }),
@@ -239,4 +273,8 @@ export const {
   useUpdateRequestAppointmentMutation,
   useGoogleLoginMutation,
   useSetUserTypeMutation,
+  useCreateSetupIntentMutation,
+  useSaveCardMutation,
+  useLazyGetAllCardsQuery,
+  useCreatePaymentMutation,
 } = Apis;

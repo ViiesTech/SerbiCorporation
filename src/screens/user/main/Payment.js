@@ -265,13 +265,14 @@ const Payment = ({ route }) => {
                 paddingHorizontal: responsiveWidth(3),
               }}
             >
+           <TouchableOpacity onPress={() => nav.navigate('Wallet')}>   
               <AppText
                 title={'Add New Card'}
                 color={AppColors.BLACK}
                 size={2.5}
                 fontWeight={'bold'}
               />
-
+              </TouchableOpacity>
               <TouchableOpacity
                 style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}
                 onPress={() => setAddNewCarModal(false)}

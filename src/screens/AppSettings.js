@@ -22,6 +22,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useDispatch } from 'react-redux';
 import { resetUser } from '../redux/slices';
 import Toast from 'react-native-simple-toast';
+import AntDesign from 'react-native-vector-icons/AntDesign'
 
 const menuOne = [
   {
@@ -163,6 +164,18 @@ const menuTwo = [
   },
   {
     id: 5,
+    title: 'Wallet',
+    navTo: 'Wallet',
+    leftIcon: (
+      <AntDesign
+        name="wallet"
+        size={responsiveFontSize(2.2)}
+        color={AppColors.BLACK}
+      />
+    ),
+  },
+  {
+    id: 6,
     title: 'Logout',
     logoutAction: true,
     // navTo: 'AuthStack',
@@ -280,7 +293,7 @@ const AppSettings = () => {
                   marginHorizontal: responsiveWidth(5),
                   marginVertical: responsiveHeight(0.5),
                   paddingVertical: responsiveHeight(1),
-                  borderBottomWidth: index == 4 ? 0 : 1,
+                  borderBottomWidth: index == 5 ? 0 : 1,
                   borderBottomColor: AppColors.DARKGRAY,
                 }}
               >
@@ -289,6 +302,7 @@ const AppSettings = () => {
                     flexDirection: 'row',
                     gap: 10,
                     alignItems: 'center',
+                    marginBottom: 10,
                   }}
                 >
                   {item.leftIcon}

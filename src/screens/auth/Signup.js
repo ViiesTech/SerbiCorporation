@@ -386,11 +386,11 @@ const Signup = ({ route }) => {
         title={'SIGN UP'}
       />
       <LineBreak val={3} />
-      <SocialButtons
+      {/* <SocialButtons
         onSocialPress={type => console.log('type', type)}
         heading={'Continue with'}
-      />
-      <LineBreak val={5} />
+      /> */}
+      {/* <LineBreak val={5} /> */}
       <TouchableOpacity onPress={() => navigation.navigate('Login')}>
         <AppText align={'center'} title={'Already have an account? Login'} />
       </TouchableOpacity>
