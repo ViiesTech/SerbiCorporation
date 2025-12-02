@@ -38,8 +38,8 @@ const ServicesProfile = ({ route }) => {
   //   const [comment, setComment] = useState('');
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [createRequestForm, { isLoading }] = useCreateRequestFormMutation();
-  const [updateDiscussion, { isLoading: discussionLoading }] =
-    useUpdateDiscussionMutation();
+  // const [updateDiscussion, { isLoading: discussionLoading }] =
+  //   useUpdateDiscussionMutation();
 
   const { requestData, profileData } = route?.params;
   console.log('requestData ===>', profileData);
@@ -93,25 +93,14 @@ const ServicesProfile = ({ route }) => {
   };
 
   const reviewOrStatus = async status => {
-    if (status === 'Completed') {
-      nav.navigate('PaymentSuccess', { pest_tech: profileData });
-    } else {
-      let data = {
-        formId: profileData?.appointmentData?.id,
-        status: 'Completed',
-      };
-      await updateDiscussion(data)
-        .unwrap()
-        .then(res => {
-          console.log('update status response ===>', res);
-          Toast.show('Job Completed Successfully!',2000,Toast.SHORT)
-          nav.navigate('UserHome');
-        })
-        .catch(error => {
-          console.log('error updating complete status ===>', error);
-          Toast.show('Some problem occured', 2000, Toast.SHORT);
-        });
-    }
+    // return console.log(profileData)
+    // if (status === 'Completed') {
+    //   nav.navigate('PaymentSuccess', { pest_tech: profileData, });
+    // }
+    // {
+    nav.navigate('Payment', { pest_tech: profileData, request: false });
+
+    // }
   };
 
   return (
@@ -205,19 +194,15 @@ const ServicesProfile = ({ route }) => {
             />
 
             <LineBreak val={2} />
-            {(profileData?.appointmentData?.type === 'DISCUSSION' &&
-              profileData?.appointmentData?.status === 'Completed') ||
+            {profileData?.appointmentData?.type === 'DISCUSSION' &&
+            // profileData?.appointmentData?.status === 'Completed') ||
             profileData?.appointmentData?.status === 'Stop' ? (
               <Button
                 onPress={() =>
                   reviewOrStatus(profileData?.appointmentData?.status)
                 }
-                title={
-                  profileData?.appointmentData?.status === 'Completed'
-                    ? 'Give Feedback'
-                    : 'Complete your job'
-                }
-                indicator={discussionLoading}
+                title={'Complete your job'}
+                // indicator={discussionLoading}
                 textTransform={'uppercase'}
                 color={colors.primary}
                 width={90}

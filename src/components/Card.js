@@ -4,9 +4,9 @@ import { responsiveFontSize, responsiveHeight, responsiveWidth } from '../utils'
 import { colors } from '../assets/colors'
 import { images } from '../assets/images'
 
-const Card = ({ type, cardHolder, expiry, cardNumber, onCardPress }) => {
+const Card = ({ type, cardHolder, expiry, cardNumber, onCardPress,borderColor }) => {
   return (
-    <TouchableOpacity onPress={onCardPress} style={styles.cardContainer}>
+    <TouchableOpacity onPress={onCardPress} style={[styles.cardContainer,{borderColor: borderColor}]}>
       <Text style={styles.cardHolder}>{cardHolder}</Text>
       <Text style={styles.cardHolder}>{expiry}</Text>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -25,8 +25,8 @@ const styles = StyleSheet.create({
     marginBottom: responsiveHeight(4),
     paddingVertical: responsiveHeight(2),
     width: responsiveWidth(87),
-    borderWidth: 2,
-    borderColor: colors.primary,
+    borderWidth: 3,
+    borderColor: colors.secondary_button,
     borderRadius: 15,
   },
   cardHolder: {

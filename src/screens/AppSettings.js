@@ -19,10 +19,10 @@ import {
 import AppText from '../components/AppText';
 import { colors } from '../assets/colors';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { resetUser } from '../redux/slices';
 import Toast from 'react-native-simple-toast';
-import AntDesign from 'react-native-vector-icons/AntDesign'
+import AntDesign from 'react-native-vector-icons/AntDesign';
 
 const menuOne = [
   {
@@ -189,10 +189,13 @@ const menuTwo = [
   },
 ];
 
+const technicianMenu = menuTwo.filter(item => item.title !== 'Wallet');
+
 const AppSettings = () => {
   const nav = useNavigation();
   const [isEnabled, setIsEnabled] = useState(false);
   const [isEnabledDarkMode, setIsEnabledDarkMode] = useState(false);
+  const { user } = useSelector(state => state.persistedData);
 
   const dispatch = useDispatch();
 
@@ -268,7 +271,7 @@ const AppSettings = () => {
 
       <View>
         <FlatList
-          data={menuTwo}
+          data={user?.type === 'Technician' ? technicianMenu : menuTwo}
           contentContainerStyle={{
             borderWidth: 1,
             borderColor: AppColors.DARKGRAY,
@@ -293,7 +296,14 @@ const AppSettings = () => {
                   marginHorizontal: responsiveWidth(5),
                   marginVertical: responsiveHeight(0.5),
                   paddingVertical: responsiveHeight(1),
-                  borderBottomWidth: index == 5 ? 0 : 1,
+                  borderBottomWidth:
+                    user?.type === 'Technician'
+                      ? index == 4
+                        ? 0
+                        : 1
+                      : index == 5
+                      ? 0
+                      : 1,
                   borderBottomColor: AppColors.DARKGRAY,
                 }}
               >

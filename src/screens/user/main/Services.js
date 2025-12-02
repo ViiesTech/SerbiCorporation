@@ -87,8 +87,8 @@ const Services = ({ route }) => {
   useEffect(() => {
     getNearbyTechnicians({
       //real lat long goes here coming from params
-      lat: '25.4486',
-      long: '-80.4115',
+      lat: lat,
+      long: long,
       service: service,
     });
   }, [lat, long, service]);
