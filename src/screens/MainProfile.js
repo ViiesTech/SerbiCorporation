@@ -69,7 +69,7 @@ const MainProfile = () => {
               color={colors.secondary_button}
             />
             <LineBreak val={2} />
-            <AppText title={data?.data?.locationName} />
+            <AppText align={'center'} title={data?.data?.locationName} />
             <LineBreak val={2.5} />
             {data?.data?.type !== 'User' && (
               <>

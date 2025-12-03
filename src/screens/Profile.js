@@ -31,13 +31,14 @@ import Toast from 'react-native-simple-toast';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import moment from 'moment';
 import ImageCropPicker from 'react-native-image-crop-picker';
-import { IMAGE_URL, MAP_API_KEY } from '../redux/constant';
+import { IMAGE_URL, MAP_API_KEY, PDF_URL } from '../redux/constant';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { pick, types } from '@react-native-documents/picker';
 import { useLazyGetAllServicesQuery } from '../redux/services/adminApis';
 import Loader from '../components/Loader';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import axios from 'axios';
+import RNFetchBlob from 'react-native-blob-util';
 
 const Profile = ({ route }) => {
   const { user } = route?.params;
@@ -53,13 +54,15 @@ const Profile = ({ route }) => {
     dob: user?.DOB || moment(new Date()).format('DD-MM-YYYY'),
     phone: user?.phone || '',
     location: {
-      name: user?.location?.locationName || '',
+      name: user?.locationName || '',
       lat: '',
       long: '',
     },
     ss: user?.ss || '',
     license:
-      user?.pestControlLicense.length > 0 ? user?.pestControlLicense[0] : [],
+      user?.pestControlLicense?.length > 0
+        ? [{ file: user?.pestControlLicense[0] }]
+        : [{ file: '', name: '' }],
     workingHours: {
       startTime: user?.workingHours?.startTime || '09:00 AM',
       endTime: user?.workingHours?.endTime || '05: 00 PM',
@@ -131,24 +134,15 @@ const Profile = ({ route }) => {
         data.append('service', state.service);
       }
       data.append('workingHours', JSON.stringify(state.workingHours));
-      // if (state.license.file && state.license.file.startsWith('file://')) {
-      //   data.append('license', {
-      //     uri: state.license.file,
-      //     type: 'application/pdf',
-      //     name: state.license.name,
-      //   });
-      // }
-      if (state.license.length > 0) {
+      if (state.license.length > 0 && state.license[0].name) {
         const fileObj = state.license[0];
-        if (fileObj.file && fileObj.file.startsWith('file://')) {
-          data.append('pestControlLicense', {
-            uri: fileObj.file,
+        if (fileObj.file) {  
+          data.append('license', {
+            uri: Platform.OS === 'ios' ? fileObj.file.replace('file://','') : fileObj.file,
             type: 'application/pdf',
-            name: fileObj.name,
+            name: fileObj.name || 'License.pdf'
           });
-        } else if (typeof fileObj.file === 'string') {
-          data.append('pestControlLicense', fileObj.file);
-        }
+        } 
       }
       data.append('ss', state.ss);
       state.portfolio.forEach((file, index) => {
@@ -174,7 +168,7 @@ const Profile = ({ route }) => {
       });
     }
 
-    // console.log(data);
+    console.log(data);
 
     await createUpdateProfile(data)
       .unwrap()
@@ -681,7 +675,7 @@ const Profile = ({ route }) => {
                     inputPlaceHolder={'Choose file...'}
                     placeholderTextColor={AppColors.LIGHTGRAY}
                     borderRadius={30}
-                    value={getFileNameFromUri(state.license)}
+                    value={state.license[0]?.name || state.license[0].file}
                     editable={false}
                     borderColor={AppColors.BLACK}
                   />

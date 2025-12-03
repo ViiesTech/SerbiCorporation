@@ -188,8 +188,9 @@ export const getProfileImage = (profileImage) => {
 };
 
 export const getFileNameFromUri = uri => {
-  if (!uri) return '';
-  const parts = uri.split('/');
+ return console.log(uri) 
+  if (!uri || uri?.length < 1) return '';
+  const parts = uri?.split('/')
   return decodeURIComponent(parts[parts.length - 1]);
 };
 

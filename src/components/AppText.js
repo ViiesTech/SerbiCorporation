@@ -3,9 +3,9 @@ import React from 'react'
 import { colors } from '../assets/colors'
 import { responsiveFontSize, responsiveWidth } from '../utils'
 
-const AppText = ({ fontWeight, size, color, title, align, textTransform, textWidth,textDecorationLine }) => {
+const AppText = ({ fontWeight, size, color, title, align, textTransform, textWidth,textDecorationLine,noOfLine }) => {
   return (
-    <Text  style={{  textDecorationLine: textDecorationLine, textAlign: align, color: color || colors.black, fontSize: responsiveFontSize(size || 2), width: responsiveWidth(textWidth), textTransform: textTransform, fontWeight: fontWeight }}>{title}</Text>
+    <Text numberOfLines={noOfLine}  style={{   textDecorationLine: textDecorationLine, textAlign: align, color: color || colors.black, fontSize: responsiveFontSize(size || 2), width: responsiveWidth(textWidth), textTransform: textTransform, fontWeight: fontWeight }}>{title}</Text>
   )
 }
 

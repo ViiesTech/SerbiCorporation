@@ -103,7 +103,7 @@ const UserHome = () => {
   const dispatch = useDispatch();
   const { user } = useSelector(state => state.persistedData);
 
-  // console.log('service',user?.profileImage);
+  console.log('service',user);
 
      useEffect(() => {
       if (

@@ -101,7 +101,7 @@ const Home = ({ navigation }) => {
 
   const dispatch = useDispatch();
   console.log('status filteration ===>', filterStatusData);
-  console.log('review Data ===>', reviewsData);
+  console.log('review Data ===>', user);
   const combinedTabs = [...data2, ...data3];
 
   const isFocused = useIsFocused();
@@ -255,7 +255,9 @@ const Home = ({ navigation }) => {
               <SVGIcon height={20} width={20} xml={icons.locationPin} />
               <AppText
                 color={'#777777'}
-                title={user?.location?.locationName || 'No location found'}
+                noOfLine={1}
+                textWidth={50}
+                title={user?.locationName || 'No location found'}
               />
             </View>
           </View>

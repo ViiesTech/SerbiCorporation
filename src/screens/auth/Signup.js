@@ -30,10 +30,11 @@ const Signup = ({ route }) => {
     password: '',
     cPassword: '',
     ss: '',
-    license: {
-      name: '',
-      file: '',
-    },
+    // license: {
+    //   name: '',
+    //   file: '',
+    // },
+    license: [{name: '',file: ''}],
     address: '',
     dob: moment(new Date()).format('DD-MM-YYYY'),
     lat: '',
@@ -49,7 +50,7 @@ const Signup = ({ route }) => {
 
   const currentLocationAndFetchAddress = async () => {
     try {
-      Toast.show('Fetching current location...',2000,Toast.SHORT)
+      Toast.show('Fetching current location...', 2000, Toast.SHORT);
       const { latitude, longitude } = await getCurrentLocation();
       // console.log('Lat Long:', latitude, longitude);
 
@@ -60,11 +61,11 @@ const Signup = ({ route }) => {
         long: longitude,
         address: address,
       }));
-      Toast.show('Current Location Fetched Successfuly!',2000,Toast.SHORT)
+      Toast.show('Current Location Fetched Successfuly!', 2000, Toast.SHORT);
       // console.log('Converted Address:', address);
     } catch (error) {
       console.log('Error getting location or converting:', error);
-      Toast.show('Failed to fetch current location...',2000,Toast.SHORT)
+      Toast.show('Failed to fetch current location...', 2000, Toast.SHORT);
       return null;
     }
   };
@@ -127,7 +128,7 @@ const Signup = ({ route }) => {
         return;
       }
 
-      if (!state.license.file) {
+      if (state.license.length < 1) {
         Toast.show(
           'Please upload your pest control license',
           2000,
@@ -147,14 +148,31 @@ const Signup = ({ route }) => {
     data.append('latitude', state.lat);
     data.append('longitude', state.long);
     data.append('DOB', state.dob);
-    if (type === 'Technician'){
-      data.append('license', {
-        uri: state.license.file,
-        type: 'application/pdf',
-        name: state.license.name,
-      });
+    if (type === 'Technician') {
+      if (state.license.length > 0) {
+        // const fileObj = state.license[0];
+        // if (fileObj.file && fileObj.file.startsWith('file://')) {
+        //   data.append('license', {
+        //     uri: fileObj.file,
+        //     type: 'application/pdf',
+        //     name: fileObj.name,
+        //   });
+        // } else if (typeof fileObj.file === 'string') {
+        //   data.append('license', fileObj.file);
+        // }
+        data.append('license',{
+            uri: state.license[0].file,
+            name: state.license[0].name,
+            type: 'application/pdf'
+        })
+      }
+      // data.append('pestControlLicense', {
+      //   uri: state.license.file,
+      //   type: 'application/pdf',
+      //   name: state.license.name,
+      // });
     }
-  console.log('datta',data);
+    console.log('datta', data);
     // let data = {
     //   type: type,
     //   fullName: state.name,
@@ -194,10 +212,12 @@ const Signup = ({ route }) => {
       // console.log('pick result ===>', pickResult);
       setState(prevState => ({
         ...prevState,
-        license: {
-          name: pickResult.name,
-          file: pickResult.uri,
-        },
+        license: [
+          {
+            name: pickResult.name,
+            file: pickResult.uri,
+          },
+        ],
       }));
     } catch (err) {
       console.log('error picking document', err);
@@ -288,7 +308,7 @@ const Signup = ({ route }) => {
         value={state.address}
         icon={true}
         onLocationPress={currentLocationAndFetchAddress}
-        innerStyle={{width: responsiveWidth(75)}}
+        innerStyle={{ width: responsiveWidth(75) }}
         placeholder={'Home Address'}
       />
       {predictions.length > 0 && (
@@ -335,7 +355,7 @@ const Signup = ({ route }) => {
           <LineBreak val={2} />
           <TouchableOpacity onPress={() => onSelectFile()}>
             <InputField
-              value={state.license.name}
+              value={state.license[0]?.name}
               editable={false}
               placeholder={'Choose file… (Pest Control License)'}
             />

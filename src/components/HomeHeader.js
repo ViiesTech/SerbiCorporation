@@ -63,9 +63,11 @@ const HomeHeader = ({
               color={AppColors.PRIMARY}
             />
             <AppText
-              title={user?.location?.locationName || 'No location found'}
+              title={user?.locationName || 'No location found'}
               textColor={AppColors.DARKGRAY}
               size={1.5}
+                noOfLine={1}
+                textWidth={50}
             />
           </View>
         </View>
