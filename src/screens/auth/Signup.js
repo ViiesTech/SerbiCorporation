@@ -147,12 +147,14 @@ const Signup = ({ route }) => {
     data.append('latitude', state.lat);
     data.append('longitude', state.long);
     data.append('DOB', state.dob);
-    data.append('license', {
-      uri: state.license.file,
-      type: 'application/pdf',
-      name: state.license.name,
-    });
-
+    if (type === 'Technician'){
+      data.append('license', {
+        uri: state.license.file,
+        type: 'application/pdf',
+        name: state.license.name,
+      });
+    }
+  console.log('datta',data);
     // let data = {
     //   type: type,
     //   fullName: state.name,

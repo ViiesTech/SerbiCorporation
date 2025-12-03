@@ -10,6 +10,7 @@ import NormalHeader from '../components/NormalHeader';
 import {
   AppColors,
   getCurrentLocation,
+  getFileNameFromUri,
   getProfileImage,
   getShortFileName,
   responsiveFontSize,
@@ -46,7 +47,9 @@ const Profile = ({ route }) => {
     // image: user?.profileImage
     //   ? `${IMAGE_URL}${user.profileImage}`
     //   : images.userProfile,
-    image: user?.profileImage ? getProfileImage(user?.profileImage) : images.userProfile,
+    image: user?.profileImage
+      ? getProfileImage(user?.profileImage)
+      : images.userProfile,
     dob: user?.DOB || moment(new Date()).format('DD-MM-YYYY'),
     phone: user?.phone || '',
     location: {
@@ -55,15 +58,8 @@ const Profile = ({ route }) => {
       long: '',
     },
     ss: user?.ss || '',
-    license: user?.license
-      ? {
-          file: user.license,
-          name: user.license.split('/').pop(),
-        }
-      : {
-          file: '',
-          name: '',
-        },
+    license:
+      user?.pestControlLicense.length > 0 ? user?.pestControlLicense[0] : [],
     workingHours: {
       startTime: user?.workingHours?.startTime || '09:00 AM',
       endTime: user?.workingHours?.endTime || '05: 00 PM',
@@ -88,6 +84,10 @@ const Profile = ({ route }) => {
     useLazyGetAllServicesQuery();
   const nav = useNavigation();
   const [open, setOpen] = useState(false);
+  const profileSrc =
+    typeof state.image === 'string'
+      ? { uri: state.image } // URLs or file paths
+      : state.image || images.userProfile;
   //   const [value, setValue] = useState(null);
   const [items, setItems] = useState([
     { label: 'Test Service', value: 'Test Service' },
@@ -98,7 +98,7 @@ const Profile = ({ route }) => {
 
   // console.log(user);
 
-  // console.log('services data', servicesData);
+  console.log('services data', state.license);
 
   useEffect(() => {
     getAllServices();
@@ -131,12 +131,24 @@ const Profile = ({ route }) => {
         data.append('service', state.service);
       }
       data.append('workingHours', JSON.stringify(state.workingHours));
-      if (state.license.file && state.license.file.startsWith('file://')) {
-        data.append('license', {
-          uri: state.license.file,
-          type: 'application/pdf',
-          name: state.license.name,
-        });
+      // if (state.license.file && state.license.file.startsWith('file://')) {
+      //   data.append('license', {
+      //     uri: state.license.file,
+      //     type: 'application/pdf',
+      //     name: state.license.name,
+      //   });
+      // }
+      if (state.license.length > 0) {
+        const fileObj = state.license[0];
+        if (fileObj.file && fileObj.file.startsWith('file://')) {
+          data.append('pestControlLicense', {
+            uri: fileObj.file,
+            type: 'application/pdf',
+            name: fileObj.name,
+          });
+        } else if (typeof fileObj.file === 'string') {
+          data.append('pestControlLicense', fileObj.file);
+        }
       }
       data.append('ss', state.ss);
       state.portfolio.forEach((file, index) => {
@@ -162,7 +174,7 @@ const Profile = ({ route }) => {
       });
     }
 
-    console.log(data);
+    // console.log(data);
 
     await createUpdateProfile(data)
       .unwrap()
@@ -270,10 +282,12 @@ const Profile = ({ route }) => {
       if (type === 'license') {
         setState(prev => ({
           ...prev,
-          license: {
-            file: pickResult.uri,
-            name: pickResult.name || '',
-          },
+          license: [
+            {
+              file: pickResult.uri,
+              name: pickResult.name || '',
+            },
+          ],
         }));
       } else {
         setState(prev => ({
@@ -281,8 +295,8 @@ const Profile = ({ route }) => {
           portfolio: [
             ...prev.portfolio,
             {
-              uri: pickResult.uri,
-              name: pickResult.name,
+              path: pickResult.uri,
+              filename: pickResult.name,
               type: pickResult.type,
             },
           ],
@@ -402,7 +416,8 @@ const Profile = ({ route }) => {
       <LineBreak val={3} />
       <View style={{ alignItems: 'center' }}>
         <ImageBackground
-          source={{ uri: state.image }}
+          // source={{ uri: state.image }}
+          source={profileSrc}
           style={{
             width: 100,
             height: 100,
@@ -666,7 +681,7 @@ const Profile = ({ route }) => {
                     inputPlaceHolder={'Choose file...'}
                     placeholderTextColor={AppColors.LIGHTGRAY}
                     borderRadius={30}
-                    value={state.license.name}
+                    value={getFileNameFromUri(state.license)}
                     editable={false}
                     borderColor={AppColors.BLACK}
                   />

@@ -2,7 +2,6 @@ import { Dimensions,Platform,PermissionsAndroid } from "react-native";
 import { images } from "../assets/images";
 import Geolocation from 'react-native-geolocation-service';
 import Toast from 'react-native-simple-toast'
-import moment from 'moment'
 import { IMAGE_URL } from "../redux/constant";
 
 const percentageCalculation = (max, val) => max * (val / 100);
@@ -187,3 +186,10 @@ export const getProfileImage = (profileImage) => {
 
   return `${IMAGE_URL}${profileImage}`;
 };
+
+export const getFileNameFromUri = uri => {
+  if (!uri) return '';
+  const parts = uri.split('/');
+  return decodeURIComponent(parts[parts.length - 1]);
+};
+
