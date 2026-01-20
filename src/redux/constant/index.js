@@ -4,6 +4,8 @@ export const IMAGE_URL = 'https://appsdemo.pro/Serbi-Backend/';
 export const ADMIN_URL = 'https://appsdemo.pro/Serbi-Backend/api/admin/';
 export const MAP_API_KEY = 'AIzaSyD_u0v13rRdMLo4ZpwsSfhT4dGTzcIwXf4'
 export const CLIENT_ID = '584277279555-h1kfoqno737uv4fenrlrcb9felcvhuee.apps.googleusercontent.com'
+export const IOS_CLIENT_ID = '584277279555-5j8a1natp1rpi4dutp1r8fn24p3aovd6.apps.googleusercontent.com'
+// export const CLIENT_ID = '584277279555-h1kfoqno737uv4fenrlrcb9felcvhuee.apps.googleusercontent.com'
 export const STRIPE_KEY = 'pk_test_51SVf2OKEUCMHl0MN7pbyBpYvNlmK5LXpZH0NkS2VVdomB9DX9AwOLjXDsrYfBMYJEvfRjzYVzAC22s1OzqEaT3Gl00yDgNXjqn'
 export const PDF_URL = 'https://appsdemo.pro/Serbi-Backend/public/license/'
 

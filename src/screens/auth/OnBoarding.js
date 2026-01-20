@@ -49,16 +49,22 @@ const OnBoarding = () => {
     return (
       <View style={styles.bottomButtons}>
          {activeIndex > 0 ?(
-          <Button onPress={() => sliderRef.current?.goToSlide(activeIndex - 1,true)}  color={colors.secondary_button} width={44} title="PREVIOUS" />
+          <Button onPress={() => sliderRef.current?.goToSlide(activeIndex - 1)}  color={colors.secondary_button} width={44} title="PREVIOUS" />
         ) : (
-           <Button onPress={() => sliderRef.current?.goToSlide(slides.length - 1,true)} color={colors.secondary_button} width={44} title="SKIP" />
+           <Button onPress={() => navigation.replace('Login')} color={colors.secondary_button} width={44} title="SKIP" />
         )
       }
         <Button onPress={() => {
-          if(activeIndex === slides.length - 1) {
-            navigation.navigate('Login')
+          console.log('Next pressed. activeIndex:', activeIndex, 'slides:', slides.length);
+          if (activeIndex === slides.length - 1) {
+             navigation.navigate('Login');
           } else {
-            sliderRef.current?.goToSlide(activeIndex + 1,true)
+             if (sliderRef.current) {
+                console.log('Calling goToSlide', activeIndex + 1);
+                sliderRef.current.goToSlide(activeIndex + 1);
+             } else {
+                console.log('sliderRef.current is null');
+             }
           }
         }} width={44} title={activeIndex === slides.length - 1 ? "CONTINUE TO APP" : "NEXT"} />
       </View>
@@ -110,5 +116,11 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 5,
     backgroundColor: colors.primary,
+  },
+  slide: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.white,
   },
 });

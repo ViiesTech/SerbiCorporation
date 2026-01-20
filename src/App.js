@@ -6,11 +6,12 @@ import { persistor, store } from './redux/store';
 import { PersistGate } from 'redux-persist/integration/react';
 import { LogBox } from 'react-native';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { CLIENT_ID, STRIPE_KEY } from './redux/constant';
+import { CLIENT_ID, IOS_CLIENT_ID, STRIPE_KEY } from './redux/constant';
 import { StripeProvider } from '@stripe/stripe-react-native';
 
 GoogleSignin.configure({
   webClientId: CLIENT_ID,
+  iosClientId: IOS_CLIENT_ID,
 });
 
 const App = () => {

@@ -50,7 +50,7 @@ const Signup = ({ route }) => {
 
   const currentLocationAndFetchAddress = async () => {
     try {
-      Toast.show('Fetching current location...', 2000, Toast.SHORT);
+      Toast.show('Fetching current location...', Toast.SHORT);
       const { latitude, longitude } = await getCurrentLocation();
       // console.log('Lat Long:', latitude, longitude);
 
@@ -61,11 +61,11 @@ const Signup = ({ route }) => {
         long: longitude,
         address: address,
       }));
-      Toast.show('Current Location Fetched Successfuly!', 2000, Toast.SHORT);
+      Toast.show('Current Location Fetched Successfuly!', Toast.SHORT);
       // console.log('Converted Address:', address);
     } catch (error) {
       console.log('Error getting location or converting:', error);
-      Toast.show('Failed to fetch current location...', 2000, Toast.SHORT);
+      Toast.show('Failed to fetch current location...', Toast.SHORT);
       return null;
     }
   };
@@ -93,7 +93,7 @@ const Signup = ({ route }) => {
 
   const onSignupPress = async () => {
     if (!state.name) {
-      Toast.show('Please enter your name', 2000, Toast.SHORT);
+      Toast.show('Please enter your name', Toast.SHORT);
       return;
     }
     // if (!state.number) {
@@ -101,39 +101,35 @@ const Signup = ({ route }) => {
     //   return;
     // }
     if (!state.email) {
-      Toast.show('Please enter your email', 2000, Toast.SHORT);
+      Toast.show('Please enter your email', Toast.SHORT);
       return;
     }
     if (!state.password) {
-      Toast.show('Please enter your password', 2000, Toast.SHORT);
+      Toast.show('Please enter your password', Toast.SHORT);
       return;
     }
     if (state.password.length < 8) {
-      Toast.show('Password is too short', 2000, Toast.SHORT);
+      Toast.show('Password is too short', Toast.SHORT);
       return;
     }
     if (!state.cPassword) {
-      Toast.show('Please confirm your password', 2000, Toast.SHORT);
+      Toast.show('Please confirm your password', Toast.SHORT);
       return;
     }
     if (state.cPassword !== state.password) {
-      Toast.show(`Password doesn't match`, 2000, Toast.SHORT);
+      Toast.show(`Password doesn't match`, Toast.SHORT);
       return;
     }
 
     if (type === 'Technician') {
       const ssnDigits = state.ss.replace(/\D/g, '');
       if (ssnDigits.length !== 9) {
-        Toast.show('Please enter a valid 9-digit SSN', 2000, Toast.SHORT);
+        Toast.show('Please enter a valid 9-digit SSN', Toast.SHORT);
         return;
       }
 
       if (state.license.length < 1) {
-        Toast.show(
-          'Please upload your pest control license',
-          2000,
-          Toast.SHORT,
-        );
+        Toast.show('Please upload your pest control license', Toast.SHORT);
         return;
       }
     }
@@ -185,14 +181,15 @@ const Signup = ({ route }) => {
       .unwrap()
       .then(res => {
         console.log('response of register ===>', res);
-        Toast.show(res.msg, 2000, Toast.SHORT);
+        Toast.show(res.msg, Toast.SHORT);
         if (res.success) {
           navigation.navigate('Otp', { otpData: res.data });
         }
       })
       .catch(error => {
         console.log('error while register ====>', error);
-        Toast.show('Some problem occured', 2000, Toast.SHORT);
+        const errorMessage = error?.data?.message || error?.message || 'Some problem occurred';
+        Toast.show(errorMessage, Toast.SHORT);
       });
   };
 

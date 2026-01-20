@@ -26,11 +26,11 @@ const Login = () => {
 
   const onLoginPress = async () => {
     if (!state.email) {
-      Toast.show('Please enter your email', 2000, Toast.SHORT);
+      Toast.show('Please enter your email', Toast.SHORT);
       return;
     }
     if (!state.password) {
-      Toast.show('Please enter your password', 2000, Toast.SHORT);
+      Toast.show('Please enter your password', Toast.SHORT);
       return;
     }
     let data = {
@@ -41,11 +41,11 @@ const Login = () => {
       .unwrap()
       .then(res => {
         console.log('login response ===>', res);
-        Toast.show(res.msg, 2000, Toast.SHORT);
+        Toast.show(res.msg, Toast.SHORT);
       })
       .catch(error => {
         console.log('error of login ===>', error);
-        Toast.show('Some problem occured', 2000, Toast.SHORT);
+        Toast.show('Some problem occured', Toast.SHORT);
       });
   };
 
@@ -68,7 +68,7 @@ const Login = () => {
       console.log('Google user info ===>', userInfo);
 
       if (userInfo?.type !== 'success') {
-        Toast.show('Google login failed', 2000, Toast.SHORT);
+        Toast.show('Google login failed', Toast.SHORT);
         return;
       }
 
@@ -85,7 +85,7 @@ const Login = () => {
         const res = await googleLogin(data).unwrap();
 
         console.log('Google API response ===>', res);
-        Toast.show(res?.message ?? 'Login successfully!', 2000, Toast.SHORT);
+        Toast.show(res?.message ?? 'Login successfully!', Toast.SHORT);
 
         if (!res?.isExist) {
           nav.navigate('SelectType',{token: res.token});
@@ -94,7 +94,6 @@ const Login = () => {
         console.log('Google login API error:', apiErr);
         Toast.show(
           apiErr?.data?.message || 'Unable to login with Google',
-          2000,
           Toast.SHORT,
         );
       }
@@ -110,7 +109,6 @@ const Login = () => {
 
       Toast.show(
         errorMessages[error.code] || 'Something went wrong during Google login',
-        2000,
         Toast.SHORT,
       );
     }
