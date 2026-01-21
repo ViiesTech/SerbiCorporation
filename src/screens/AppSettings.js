@@ -286,7 +286,7 @@ const AppSettings = () => {
                     nav.navigate(item.navTo);
                   } else if (item.logoutAction) {
                     dispatch(resetUser());
-                    Toast.show('Logout successfully', 2000, Toast.SHORT);
+                    Toast.show('Logout successfully', Toast.SHORT);
                   }
                 }}
                 style={{

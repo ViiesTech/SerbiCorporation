@@ -1,58 +1,61 @@
-import { Dimensions,Platform,PermissionsAndroid } from "react-native";
-import { images } from "../assets/images";
+import { Dimensions, Platform, PermissionsAndroid } from 'react-native';
+import { images } from '../assets/images';
 import Geolocation from 'react-native-geolocation-service';
-import Toast from 'react-native-simple-toast'
-import { IMAGE_URL } from "../redux/constant";
+import Toast from 'react-native-simple-toast';
+import { IMAGE_URL } from '../redux/constant';
 
 const percentageCalculation = (max, val) => max * (val / 100);
 
 const fontCalculation = (height, width, val) => {
   const widthDimension = height > width ? width : height;
   const aspectRatioBasedHeight = (16 / 9) * widthDimension;
-  return percentageCalculation(Math.sqrt(Math.pow(aspectRatioBasedHeight, 2) + Math.pow(widthDimension, 2)), val);
+  return percentageCalculation(
+    Math.sqrt(
+      Math.pow(aspectRatioBasedHeight, 2) + Math.pow(widthDimension, 2),
+    ),
+    val,
+  );
 };
-export const responsiveFontSize = (f) => {
-  const { height, width } = Dimensions.get("window");
+export const responsiveFontSize = f => {
+  const { height, width } = Dimensions.get('window');
   return fontCalculation(height, width, f);
 };
-export const responsiveHeight = (h) => {
-  const { height } = Dimensions.get("window");
-  return height * (h / 100)
-}
-export const responsiveWidth = (w) => {
-  const { width } = Dimensions.get("window");
-  return width * (w / 100)
-}
+export const responsiveHeight = h => {
+  const { height } = Dimensions.get('window');
+  return height * (h / 100);
+};
+export const responsiveWidth = w => {
+  const { width } = Dimensions.get('window');
+  return width * (w / 100);
+};
 
 export const AppColors = {
-  BLACK: "#000000",
-  WHITE: "#FFFFFF",
-  BTNCOLOURS: "#DEDEDE",
+  BLACK: '#000000',
+  WHITE: '#FFFFFF',
+  BTNCOLOURS: '#DEDEDE',
   // LIGHTGRAY: "#D9D9D9",
-  GRAY: "#777777",
-  BLUE: "#001AB0",
-  DARKGRAY: "#939393",
-  PEACHCOLOUR: "#F7D794",
-  INPUTBG: "#F5F5F5",
-  BGCOLOURS: "#80FF45",
-  BGCOLOURS2: "#FE3F9B",
-  PRIMARY: "#A0CCD9",
-  TEXTCOLOR: "#494949",
-  LIGHTGRAY: "#5D5D5D",
-  LIGHTESTGRAY: "#EDEDED",
-  rightArrowCOlor: "#3D56F0",
+  GRAY: '#777777',
+  BLUE: '#001AB0',
+  DARKGRAY: '#939393',
+  PEACHCOLOUR: '#F7D794',
+  INPUTBG: '#F5F5F5',
+  BGCOLOURS: '#80FF45',
+  BGCOLOURS2: '#FE3F9B',
+  PRIMARY: '#A0CCD9',
+  TEXTCOLOR: '#494949',
+  LIGHTGRAY: '#5D5D5D',
+  LIGHTESTGRAY: '#EDEDED',
+  rightArrowCOlor: '#3D56F0',
   ThemeBlue: '#0893fa',
   Yellow: '#FF9C12',
 };
 
 export const DEFAULT_REGION = {
-  latitude: 37.7749,    
+  latitude: 37.7749,
   longitude: -122.4194,
-  latitudeDelta: 5,       
+  latitudeDelta: 5,
   longitudeDelta: 5,
 };
-
-
 
 export const slides = [
   {
@@ -75,10 +78,8 @@ export const slides = [
     sub_title: 'SERBI EXPERTS AT YOUR DOORSTEP!',
     text: 'Lorem ipsum simply dummy text is for using pricing or printing. Dolor sit amet lorem ipsum sit simply dummy text is for using printing or pricing.',
     image: images.slide3,
-  }
+  },
 ];
-
-
 
 export const getCurrentLocation = async () => {
   try {
@@ -88,16 +89,18 @@ export const getCurrentLocation = async () => {
       );
 
       if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-       return Toast.show('Location permission denied')
+        return Toast.show('Location permission denied');
       }
+    } else if (Platform.OS === 'ios') {
+      await Geolocation.requestAuthorization('whenInUse');
     }
 
     return new Promise((resolve, reject) => {
       Geolocation.getCurrentPosition(
-        (position) => {
-          resolve(position.coords); 
+        position => {
+          resolve(position.coords);
         },
-        (error) => {
+        error => {
           reject(error.message);
         },
         {
@@ -111,8 +114,8 @@ export const getCurrentLocation = async () => {
     throw new Error(err);
   }
 };
- 
-export  const getShortFileName = (name = '', maxLength = 25) => {
+
+export const getShortFileName = (name = '', maxLength = 25) => {
   if (name.length <= maxLength) return name;
   const ext = name.split('.').pop();
   return name.substring(0, maxLength - ext.length - 3) + '...' + ext;
@@ -126,19 +129,19 @@ export  const getShortFileName = (name = '', maxLength = 25) => {
 //   } else if (input.isSame(moment().subtract(1, "day"), "day")) {
 //     return "YESTERDAY";
 //   } else {
-//     return input.format("ddd, MMM D"); 
+//     return input.format("ddd, MMM D");
 //   }
 // }
 
 export const getDistanceInMiles = (lat1, lon1, lat2, lon2) => {
   const R = 3958.8; // Earth radius in miles
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
 
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) *
-      Math.cos(lat2 * Math.PI / 180) *
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
       Math.sin(dLon / 2) *
       Math.sin(dLon / 2);
 
@@ -150,19 +153,19 @@ export const estimateTimeMinutes = (miles, speedMph = 40) => {
   return (miles / speedMph) * 60; // in minutes
 };
 
-export const formatMinutes = (minutes) => {
+export const formatMinutes = minutes => {
   if (minutes < 60) {
     return `${Math.round(minutes)}`;
   }
   const hrs = Math.floor(minutes / 60);
   const mins = Math.round(minutes % 60);
   if (mins === 0) {
-    return `${hrs} hr${hrs > 1 ? "s" : ""}`;
+    return `${hrs} hr${hrs > 1 ? 's' : ''}`;
   }
   return `${hrs} hr ${mins}`;
 };
 
-export const formatSSN = (value) => {
+export const formatSSN = value => {
   // Remove all non-digits
   const cleaned = value.replace(/\D/g, '');
   // Apply SSN format: 123-45-6789
@@ -170,14 +173,17 @@ export const formatSSN = (value) => {
   if (cleaned.length > 3 && cleaned.length <= 5) {
     formatted = `${cleaned.slice(0, 3)}-${cleaned.slice(3)}`;
   } else if (cleaned.length > 5) {
-    formatted = `${cleaned.slice(0, 3)}-${cleaned.slice(3, 5)}-${cleaned.slice(5, 9)}`;
+    formatted = `${cleaned.slice(0, 3)}-${cleaned.slice(3, 5)}-${cleaned.slice(
+      5,
+      9,
+    )}`;
   }
   return formatted;
 };
 
-export const getProfileImage = (profileImage) => {
-  if (!profileImage || typeof profileImage !== "string") {
-     return null;
+export const getProfileImage = profileImage => {
+  if (!profileImage || typeof profileImage !== 'string') {
+    return null;
   }
 
   if (profileImage.startsWith('http')) {
@@ -188,9 +194,8 @@ export const getProfileImage = (profileImage) => {
 };
 
 export const getFileNameFromUri = uri => {
- return console.log(uri) 
+  return console.log(uri);
   if (!uri || uri?.length < 1) return '';
-  const parts = uri?.split('/')
+  const parts = uri?.split('/');
   return decodeURIComponent(parts[parts.length - 1]);
 };
-

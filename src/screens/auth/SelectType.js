@@ -31,15 +31,15 @@ const SelectType = ({ route }) => {
   const onSelectType = async type => {
     //   await AsyncStorage.setItem('type',type)
     if (route?.params?.token) {
-      await setUserType({type,token: route?.params?.token})
+      await setUserType({ type, token: route?.params?.token })
         .unwrap()
         .then(res => {
           console.log('response of user type ===>', res);
-          Toast.show('Account created successfully!', 2000, Toast.SHORT);
+          Toast.show('Account created successfully!', Toast.SHORT);
         })
         .catch(error => {
           console.log('error setting user type ===>', error);
-          Toast.show('Some problem occured', 2000, Toast.SHORT);
+          Toast.show('Some problem occured', Toast.SHORT);
         });
     } else {
       navigation.navigate('Signup', { type: type });

@@ -189,7 +189,7 @@ const Payment = ({ route }) => {
         .catch(error => {
           console.log('failed to create customer', error);
           sheetRef?.current.close();
-          return Toast.show('Some problem occured', 2000, Toast.SHORT);
+          return Toast.show('Some problem occured', Toast.SHORT);
         });
     }
   };
@@ -256,71 +256,74 @@ const Payment = ({ route }) => {
   );
 
   const onPayNow = async () => {
-  try {
-    if (!cardDetails?.length) {
-      Toast.show('No cards in your wallet', 2000, Toast.SHORT);
-      return;
-    }
-
-    if (!selectedCard?.methodId) {
-      Toast.show('Please select your card first to proceed', 2000, Toast.SHORT);
-      return;
-    }
-
-    const payload = {
-      amount: pest_tech?.price,
-      formType: request ? 'request' : 'discussion',
-      formId: pest_tech?.appointmentData?.id,
-      customerId: customer_id,
-      paymentMethodId: selectedCard.methodId,
-    };
-
-    const res = await createPayment(payload).unwrap();
-    console.log('payment response ===>', res);
-
-    Toast.show(res.msg, 2000, Toast.SHORT);
-
-    if (!res.success) return;
-
-    const paymentInfo = {
-      amount: res.paymentIntent.amount,
-      created: res.paymentIntent.created,
-      methodType: 'Card',
-      refNumber: Math.random(),
-    };
-
-    if (request) {
-      nav.navigate('PaymentSuccess', {
-        request,
-        pest_tech: { 
-          ...pest_tech,
-          requestPayInfo: paymentInfo 
-        }
-      });
-      return;
-    }
-
-    const updatePayload = {
-      formId: pest_tech?.appointmentData?.id,
-      status: 'Completed',
-    };
-
-    const updateRes = await updateDiscussion(updatePayload).unwrap();
-    console.log('update status response ===>', updateRes);
-
-    nav.navigate('PaymentSuccess', {
-      request: false,
-      pest_tech: { 
-        ...pest_tech, 
-        requestPayInfo: paymentInfo 
+    try {
+      if (!cardDetails?.length) {
+        Toast.show('No cards in your wallet', Toast.SHORT);
+        return;
       }
-    });
 
-  } catch (error) {
-    console.log('payment error ===>', error);
-    Toast.show('Some problem occurred', 2000, Toast.SHORT);
-  }
-};
+      if (!selectedCard?.methodId) {
+        Toast.show(
+          'Please select your card first to proceed',
+          2000,
+          Toast.SHORT,
+        );
+        return;
+      }
+
+      const payload = {
+        amount: pest_tech?.price,
+        formType: request ? 'request' : 'discussion',
+        formId: pest_tech?.appointmentData?.id,
+        customerId: customer_id,
+        paymentMethodId: selectedCard.methodId,
+      };
+
+      const res = await createPayment(payload).unwrap();
+      console.log('payment response ===>', res);
+
+      Toast.show(res.msg, Toast.SHORT);
+
+      if (!res.success) return;
+
+      const paymentInfo = {
+        amount: res.paymentIntent.amount,
+        created: res.paymentIntent.created,
+        methodType: 'Card',
+        refNumber: Math.random(),
+      };
+
+      if (request) {
+        nav.navigate('PaymentSuccess', {
+          request,
+          pest_tech: {
+            ...pest_tech,
+            requestPayInfo: paymentInfo,
+          },
+        });
+        return;
+      }
+
+      const updatePayload = {
+        formId: pest_tech?.appointmentData?.id,
+        status: 'Completed',
+      };
+
+      const updateRes = await updateDiscussion(updatePayload).unwrap();
+      console.log('update status response ===>', updateRes);
+
+      nav.navigate('PaymentSuccess', {
+        request: false,
+        pest_tech: {
+          ...pest_tech,
+          requestPayInfo: paymentInfo,
+        },
+      });
+    } catch (error) {
+      console.log('payment error ===>', error);
+      Toast.show('Some problem occurred', Toast.SHORT);
+    }
+  };
 
   return (
     <Container>

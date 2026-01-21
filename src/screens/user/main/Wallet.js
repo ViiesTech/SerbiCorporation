@@ -152,7 +152,7 @@ const Wallet = () => {
         .catch(error => {
           console.log('failed to create customer', error);
           sheetRef?.current.close();
-          return Toast.show('Some problem occured', 2000, Toast.SHORT);
+          return Toast.show('Some problem occured', Toast.SHORT);
         });
     }
   };

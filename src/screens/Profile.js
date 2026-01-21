@@ -136,13 +136,16 @@ const Profile = ({ route }) => {
       data.append('workingHours', JSON.stringify(state.workingHours));
       if (state.license.length > 0 && state.license[0].name) {
         const fileObj = state.license[0];
-        if (fileObj.file) {  
+        if (fileObj.file) {
           data.append('license', {
-            uri: Platform.OS === 'ios' ? fileObj.file.replace('file://','') : fileObj.file,
+            uri:
+              Platform.OS === 'ios'
+                ? fileObj.file.replace('file://', '')
+                : fileObj.file,
             type: 'application/pdf',
-            name: fileObj.name || 'License.pdf'
+            name: fileObj.name || 'License.pdf',
           });
-        } 
+        }
       }
       data.append('ss', state.ss);
       state.portfolio.forEach((file, index) => {
@@ -174,12 +177,12 @@ const Profile = ({ route }) => {
       .unwrap()
       .then(res => {
         console.log('response of profile/creation', res);
-        Toast.show(res.msg, 2000, Toast.SHORT);
+        Toast.show(res.msg, Toast.SHORT);
         nav.goBack();
       })
       .catch(error => {
         console.log('error of profile/creation ===>', error);
-        Toast.show('Some problem occured', 2000, Toast.SHORT);
+        Toast.show('Some problem occured', Toast.SHORT);
       });
   };
 
@@ -303,7 +306,7 @@ const Profile = ({ route }) => {
 
   const currentLocationAndFetchAddress = async () => {
     try {
-      Toast.show('Fetching current location...', 2000, Toast.SHORT);
+      Toast.show('Fetching current location...', Toast.SHORT);
       const { latitude, longitude } = await getCurrentLocation();
       // console.log('Lat Long:', latitude, longitude);
 
@@ -316,11 +319,11 @@ const Profile = ({ route }) => {
           long: longitude,
         },
       }));
-      Toast.show('Current Location Fetched Successfuly!', 2000, Toast.SHORT);
+      Toast.show('Current Location Fetched Successfuly!', Toast.SHORT);
       // console.log('Converted Address:', address);
     } catch (error) {
       console.log('Error getting location or converting:', error);
-      Toast.show('Failed to fetch current location...', 2000, Toast.SHORT);
+      Toast.show('Failed to fetch current location...', Toast.SHORT);
       return null;
     }
   };

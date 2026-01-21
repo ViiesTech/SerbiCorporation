@@ -15,7 +15,16 @@ export const AdminApis = createApi({
     // },
   }),
   endpoints: builder => ({
-     getAllServices: builder.query({
+    getAllServices: builder.query({
+      query: () => {
+        //   console.log('typeeee',type)
+        return {
+          url: endpoints.GET_ALL_SERVICES,
+          method: 'GET',
+        };
+      },
+    }),
+    allServices: builder.query({
       query: () => {
         //   console.log('typeeee',type)
         return {
@@ -27,6 +36,5 @@ export const AdminApis = createApi({
   }),
 });
 
-export const {
-  useLazyGetAllServicesQuery
-} = AdminApis;
+export const { useLazyGetAllServicesQuery, useLazyAllServicesQuery } =
+  AdminApis;

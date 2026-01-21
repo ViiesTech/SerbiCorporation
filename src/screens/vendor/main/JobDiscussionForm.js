@@ -88,7 +88,6 @@ const JobDiscussionForm = ({ route, navigation }) => {
     if (!pestValue) {
       Toast.show(
         'Please select the type of pest before submitting the form.',
-        2000,
         Toast.SHORT,
       );
       return;
@@ -96,21 +95,20 @@ const JobDiscussionForm = ({ route, navigation }) => {
     if (!propertyValue) {
       Toast.show(
         'Please select the type of property before submitting the form.',
-        2000,
         Toast.SHORT,
       );
       return;
     }
     if (!severityValue) {
-      Toast.show('Issue severity is required.', 2000, Toast.SHORT);
+      Toast.show('Issue severity is required.', Toast.SHORT);
       return;
     }
     if (!note) {
-      Toast.show('Please enter the note', 2000, Toast.SHORT);
+      Toast.show('Please enter the note', Toast.SHORT);
       return;
     }
     if (!amount) {
-      Toast.show('Please select the amount', 2000, Toast.SHORT);
+      Toast.show('Please select the amount', Toast.SHORT);
       return;
     }
     let data = {
@@ -132,14 +130,14 @@ const JobDiscussionForm = ({ route, navigation }) => {
       .unwrap()
       .then(res => {
         console.log('response of creating the discussion form', res);
-        Toast.show(res.msg, 2000, Toast.SHORT);
+        Toast.show(res.msg, Toast.SHORT);
         if (res.success) {
           navigation.navigate('Home');
         }
       })
       .catch(error => {
         console.log('error creating discussion form', error);
-        Toast.show('Some problem occured', 2000, Toast.SHORT);
+        Toast.show('Some problem occured', Toast.SHORT);
       });
   };
 

@@ -4,7 +4,10 @@ import LineBreak from '../../components/LineBreak';
 import Button from '../../components/Button';
 import CodeField from '../../components/CodeField';
 import { useState } from 'react';
-import { useLazyVerifyOTPPasswordQuery, useVerifyOTPMutation } from '../../redux/services';
+import {
+  useLazyVerifyOTPPasswordQuery,
+  useVerifyOTPMutation,
+} from '../../redux/services';
 import Toast from 'react-native-simple-toast';
 import { useDispatch } from 'react-redux';
 import { firstTimeVisit } from '../../redux/slices';
@@ -14,9 +17,10 @@ const Otp = ({ route }) => {
   const { otpData } = route?.params;
   const [value, setValue] = useState(otpData?.OTP.toString() || '');
   const [verifyOTP, { isLoading }] = useVerifyOTPMutation();
-  const [verifyOTPPassword, { isLoading: resetLoader }] = useLazyVerifyOTPPasswordQuery();
-  const dispatch = useDispatch()
-  const nav = useNavigation()
+  const [verifyOTPPassword, { isLoading: resetLoader }] =
+    useLazyVerifyOTPPasswordQuery();
+  const dispatch = useDispatch();
+  const nav = useNavigation();
 
   console.log('otpdata===>', otpData);
 
@@ -40,43 +44,48 @@ const Otp = ({ route }) => {
 
   const onOTPVerify = async () => {
     if (!value) {
-      Toast.show('Please enter your 4 digit code', 2000, Toast.SHORT);
+      Toast.show('Please enter your 4 digit code', Toast.SHORT);
       return;
-    }  
+    }
     let data = {
       email: otpData?.email,
       OTP: value,
       signupToken: otpData?.signupToken && otpData?.signupToken,
     };
 
-    if(otpData?.type === 'reset') {
-    await verifyOTPPassword({email: otpData?.email,otp: value}).unwrap().then((res) => {
-      console.log('response of otp for password ===>',res)
-      Toast.show(res.msg,2000,Toast.SHORT)
-      if(res.success) {
-            nav.navigate('ResetPassword',{id: otpData?._id})
-      }
-    }).catch((error) => {
-      console.log('error of otp for password ===>',error)
-      Toast.show('Some problem occured',2000,Toast.SHORT)
-    })
+    if (otpData?.type === 'reset') {
+      await verifyOTPPassword({ email: otpData?.email, otp: value })
+        .unwrap()
+        .then(res => {
+          console.log('response of otp for password ===>', res);
+          Toast.show(res.msg, Toast.SHORT);
+          if (res.success) {
+            nav.navigate('ResetPassword', { id: otpData?._id });
+          }
+        })
+        .catch(error => {
+          console.log('error of otp for password ===>', error);
+          Toast.show('Some problem occured', Toast.SHORT);
+        });
     } else {
-    await verifyOTP(data).unwrap().then((res) => {
-      console.log('response of otp ===>',res)
-      Toast.show(res.msg,2000,Toast.SHORT)
-      if(res.success) {
-        dispatch(firstTimeVisit(true))
-        // setShowLoginSuccess(true);
-      }
-    }).catch((error) => {
-      console.log('error of otp ===>',error)
-      Toast.show('Some problem occured',2000,Toast.SHORT)
-    })
+      await verifyOTP(data)
+        .unwrap()
+        .then(res => {
+          console.log('response of otp ===>', res);
+          Toast.show(res.msg, Toast.SHORT);
+          if (res.success) {
+            dispatch(firstTimeVisit(true));
+            // setShowLoginSuccess(true);
+          }
+        })
+        .catch(error => {
+          console.log('error of otp ===>', error);
+          Toast.show('Some problem occured', Toast.SHORT);
+        });
     }
-
   };
 
-  return  (
+  return (
     <Container space={25} authHeading={'ENTER PASS CODE'}>
       <LineBreak val={1} />
       <AppText
@@ -93,7 +102,6 @@ const Otp = ({ route }) => {
         title="SUBMIT"
       />
     </Container>
-   
   );
 };
 

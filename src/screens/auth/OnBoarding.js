@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import AppIntroSlider from 'react-native-app-intro-slider';
 import { responsiveHeight, responsiveWidth, slides } from '../../utils';
@@ -5,14 +6,14 @@ import AppText from '../../components/AppText';
 import LineBreak from '../../components/LineBreak';
 import Button from '../../components/Button';
 import { colors } from '../../assets/colors';
-import { useRef } from 'react';
 import { useNavigation } from '@react-navigation/native';
 
 const OnBoarding = () => {
-   const sliderRef = useRef(null);
-   const navigation = useNavigation()
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const sliderRef = useRef(null);
+  const navigation = useNavigation();
 
-  const renderItem = ({ item,index }) => {
+  const renderItem = ({ item, index }) => {
     return (
       <View style={styles.slide}>
         <Image
@@ -24,71 +25,102 @@ const OnBoarding = () => {
           }}
           source={item.image}
         />
-         <View style={styles.dotsRow}>
-        {slides.map((_, i) => (
-          <View
-            key={i}
-            style={[styles.dot, i === index && styles.activeDot]}
-          />
-        ))}
-      </View>
-      <View style={{
-        padding: responsiveHeight(2)
-      }}> 
-        <AppText size={2.3} title={item.title} />
-        <LineBreak val={2} />
-        <AppText size={3.5} fontWeight={'bold'} title={item.sub_title} />
-        <LineBreak val={2} />
-        <AppText title={item.text} />
-        </View> 
+        <View style={styles.dotsRow}>
+          {slides.map((_, i) => (
+            <View
+              key={i}
+              style={[styles.dot, i === index && styles.activeDot]}
+            />
+          ))}
+        </View>
+        <View
+          style={{
+            padding: responsiveHeight(2),
+          }}
+        >
+          <AppText size={2.3} title={item.title} />
+          <LineBreak val={2} />
+          <AppText size={3.5} fontWeight={'bold'} title={item.sub_title} />
+          <LineBreak val={2} />
+          <AppText title={item.text} />
+        </View>
       </View>
     );
   };
 
-   const renderPagination = (activeIndex) => {
+  const renderPagination = () => {
     return (
       <View style={styles.bottomButtons}>
-         {activeIndex > 0 ?(
-          <Button onPress={() => sliderRef.current?.goToSlide(activeIndex - 1)}  color={colors.secondary_button} width={44} title="PREVIOUS" />
+        {currentIndex > 0 ? (
+          <Button
+            onPress={() => {
+              const prevIndex = currentIndex - 1;
+              setCurrentIndex(prevIndex);
+              sliderRef.current?.goToSlide(prevIndex);
+            }}
+            color={colors.secondary_button}
+            width={44}
+            title="PREVIOUS"
+          />
         ) : (
-           <Button onPress={() => navigation.replace('Login')} color={colors.secondary_button} width={44} title="SKIP" />
-        )
-      }
-        <Button onPress={() => {
-          console.log('Next pressed. activeIndex:', activeIndex, 'slides:', slides.length);
-          if (activeIndex === slides.length - 1) {
-             navigation.navigate('Login');
-          } else {
-             if (sliderRef.current) {
-                console.log('Calling goToSlide', activeIndex + 1);
-                sliderRef.current.goToSlide(activeIndex + 1);
-             } else {
+          <Button
+            onPress={() => navigation.replace('Login')}
+            color={colors.secondary_button}
+            width={44}
+            title="SKIP"
+          />
+        )}
+        <Button
+          onPress={() => {
+            console.log(
+              'Next pressed. currentIndex:',
+              currentIndex,
+              'slides:',
+              slides.length,
+            );
+            if (currentIndex === slides.length - 1) {
+              navigation.replace('Login');
+            } else {
+              if (sliderRef.current) {
+                const nextIndex = currentIndex + 1;
+                console.log('Calling goToSlide', nextIndex);
+                setCurrentIndex(nextIndex); // Update state before goToSlide
+                sliderRef.current.goToSlide(nextIndex);
+              } else {
                 console.log('sliderRef.current is null');
-             }
+              }
+            }
+          }}
+          width={44}
+          title={
+            currentIndex === slides.length - 1 ? 'CONTINUE TO APP' : 'NEXT'
           }
-        }} width={44} title={activeIndex === slides.length - 1 ? "CONTINUE TO APP" : "NEXT"} />
+        />
       </View>
     );
   };
 
   return (
-      <AppIntroSlider
-        data={slides}
-        ref={sliderRef} 
-        renderItem={renderItem}
-        renderPagination={renderPagination}
-      />
+    <AppIntroSlider
+      data={slides}
+      ref={sliderRef}
+      renderItem={renderItem}
+      renderPagination={renderPagination}
+      onSlideChange={index => {
+        setCurrentIndex(index + 1);
+      }}
+    />
   );
 };
 
 export default OnBoarding;
 
 const styles = StyleSheet.create({
-  buttonStyle:{
+  buttonStyle: {
     position: 'absolute',
     top: 10,
   },
-   bottomButtons: {
+  bottomButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: responsiveHeight(2),
@@ -98,10 +130,10 @@ const styles = StyleSheet.create({
     // left: 0,
     // right: 0,
   },
-    dotsRow: {
+  dotsRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: responsiveHeight(2)
+    marginTop: responsiveHeight(2),
   },
   dot: {
     width: 8,
@@ -109,7 +141,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     marginHorizontal: 5,
     // opacity: 0.4,
-    backgroundColor:  colors.secondary_button,
+    backgroundColor: colors.secondary_button,
   },
   activeDot: {
     width: responsiveWidth(6.5),

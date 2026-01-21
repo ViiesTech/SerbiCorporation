@@ -46,7 +46,7 @@ const ServicesProfile = ({ route }) => {
 
   const onConfirmBooking = async () => {
     if (!address) {
-      Toast.show('Please enter your address', 2000, Toast.SHORT);
+      Toast.show('Please enter your address', Toast.SHORT);
       return;
     }
     let data = {

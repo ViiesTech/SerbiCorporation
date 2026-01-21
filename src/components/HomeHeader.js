@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react';
-import {Image, TouchableOpacity, View} from 'react-native';
+import { Image, TouchableOpacity, View } from 'react-native';
 import AppText from './AppText';
 import Entypo from 'react-native-vector-icons/Entypo';
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -9,9 +9,13 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 // import SVGXml from './SVGXML';
 // import {APPICONS} from '../assets/icons/AppIcons';
 // import AppImages from '../assets/AppImages';
-import { AppColors, responsiveFontSize, responsiveHeight, responsiveWidth } from '../utils';
+import {
+  AppColors,
+  responsiveFontSize,
+  responsiveHeight,
+  responsiveWidth,
+} from '../utils';
 import { useSelector } from 'react-redux';
-
 
 const HomeHeader = ({
   menuIconOnPress,
@@ -20,11 +24,10 @@ const HomeHeader = ({
   diverHead,
   callOnPress,
 }) => {
+  const { user } = useSelector(state => state.persistedData);
 
-  const {user} = useSelector(state => state.persistedData)
+  // console.log('user data ===>',user)
 
-  console.log('user data ===>',user)
-  
   return (
     <View
       style={{
@@ -32,20 +35,22 @@ const HomeHeader = ({
         justifyContent: 'space-between',
         paddingHorizontal: responsiveWidth(4),
         paddingVertical: responsiveHeight(2),
-      }}>
+      }}
+    >
       <View
         style={
           diverHead
-            ? {flexDirection: 'row', gap: 10, alignItems: 'center'}
+            ? { flexDirection: 'row', gap: 10, alignItems: 'center' }
             : null
-        }>
+        }
+      >
         {/* {diverHead && (
           <View>
             <Image source={AppImages.user} style={{width: 50, height: 50}} />
           </View>
         )} */}
         <View>
-          <View style={{flexDirection: 'row', gap: 5, alignItems: 'center'}}>
+          <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
             <AppText
               title={'Good Morning!'}
               textColor={AppColors.BLACK}
@@ -56,7 +61,7 @@ const HomeHeader = ({
             />
             {/* <SVGXml icon={APPICONS.flower} width={20} height={20} /> */}
           </View>
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Entypo
               name="location-pin"
               size={responsiveFontSize(2.2)}
@@ -66,15 +71,18 @@ const HomeHeader = ({
               title={user?.locationName || 'No location found'}
               textColor={AppColors.DARKGRAY}
               size={1.5}
-                noOfLine={1}
-                textWidth={50}
+              noOfLine={1}
+              textWidth={50}
             />
           </View>
         </View>
       </View>
-      <View style={{flexDirection: 'row', alignItems: 'center', gap: 15}}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}>
         {diverHead ? (
-          <TouchableOpacity style={{position: 'relative'}} onPress={callOnPress}>
+          <TouchableOpacity
+            style={{ position: 'relative' }}
+            onPress={callOnPress}
+          >
             <View
               style={{
                 backgroundColor: AppColors.ThemeBlue,
@@ -87,7 +95,8 @@ const HomeHeader = ({
                 justifyContent: 'center',
                 alignItems: 'center',
                 borderRadius: 100,
-              }}>
+              }}
+            >
               <AppText
                 title={'2'}
                 textColor={AppColors.WHITE}
@@ -101,36 +110,35 @@ const HomeHeader = ({
               color={AppColors.BLACK}
             />
           </TouchableOpacity>
-        ) : (
-          null
-          // <TouchableOpacity style={{position: 'relative'}} onPress={favOnPress}>
-          //   <View
-          //     style={{
-          //       backgroundColor: AppColors.ThemeBlue,
-          //       position: 'absolute',
-          //       right: -4,
-          //       top: -5,
-          //       zIndex: 999,
-          //       width: 12,
-          //       height: 12,
-          //       justifyContent: 'center',
-          //       alignItems: 'center',
-          //       borderRadius: 100,
-          //     }}>
-          //     <AppText
-          //       title={'2'}
-          //       textColor={AppColors.WHITE}
-          //       textSize={1}
-          //       textFontWeight
-          //     />
-          //   </View>
-          //   <AntDesign
-          //     name="heart"
-          //     size={responsiveFontSize(2.5)}
-          //     color={AppColors.BLACK}
-          //   />
-          // </TouchableOpacity>
-        )}
+        ) : null
+        // <TouchableOpacity style={{position: 'relative'}} onPress={favOnPress}>
+        //   <View
+        //     style={{
+        //       backgroundColor: AppColors.ThemeBlue,
+        //       position: 'absolute',
+        //       right: -4,
+        //       top: -5,
+        //       zIndex: 999,
+        //       width: 12,
+        //       height: 12,
+        //       justifyContent: 'center',
+        //       alignItems: 'center',
+        //       borderRadius: 100,
+        //     }}>
+        //     <AppText
+        //       title={'2'}
+        //       textColor={AppColors.WHITE}
+        //       textSize={1}
+        //       textFontWeight
+        //     />
+        //   </View>
+        //   <AntDesign
+        //     name="heart"
+        //     size={responsiveFontSize(2.5)}
+        //     color={AppColors.BLACK}
+        //   />
+        // </TouchableOpacity>
+        }
         {/* <TouchableOpacity
           style={{position: 'relative'}}
           onPress={chatIconOnPress}>

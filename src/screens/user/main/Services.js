@@ -114,7 +114,7 @@ const Services = ({ route }) => {
       .unwrap()
       .then(res => {
         console.log('response of adding into wishlist ===>', res.data);
-        Toast.show(res.msg, 2000, Toast.SHORT);
+        Toast.show(res.msg, Toast.SHORT);
         if (res.success) {
           getNearbyTechnicians({
             lat: '25.4486',
@@ -125,9 +125,11 @@ const Services = ({ route }) => {
       })
       .catch(error => {
         console.log('error adding into wishlist ===>', error);
-        Toast.show('Some problem occured', 2000, Toast.SHORT);
+        Toast.show('Some problem occured', Toast.SHORT);
       });
   };
+
+  // console.log('AAAA', lat, long, service);
 
   return (
     <Container>

@@ -41,7 +41,7 @@ const StartJob = ({ route, navigation }) => {
         : null;
 
     if (!nextStatus) {
-      Toast.show('No action available.', 2000, Toast.SHORT);
+      Toast.show('No action available.', Toast.SHORT);
       return;
     }
 
@@ -75,7 +75,7 @@ const StartJob = ({ route, navigation }) => {
       })
       .catch(error => {
         console.log('error while changing job status ===>', error);
-        Toast.show('Some problem occured', 2000, Toast.SHORT);
+        Toast.show('Some problem occured', Toast.SHORT);
       });
   };
 

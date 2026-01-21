@@ -18,19 +18,19 @@ const ResetPassword = ({ route }) => {
 
   const onResetPassword = async () => {
     if (!newPassword) {
-      Toast.show('Please enter your new password', 2000, Toast.SHORT);
+      Toast.show('Please enter your new password', Toast.SHORT);
       return;
     }
     if (newPassword.length < 8) {
-      Toast.show('Password is too short', 2000, Toast.SHORT);
+      Toast.show('Password is too short', Toast.SHORT);
       return;
     }
     if (!cPassword) {
-      Toast.show('Please confirm your password', 2000, Toast.SHORT);
+      Toast.show('Please confirm your password', Toast.SHORT);
       return;
     }
     if (cPassword !== newPassword) {
-      Toast.show(`Password doesn't match`, 2000, Toast.SHORT);
+      Toast.show(`Password doesn't match`, Toast.SHORT);
       return;
     }
     let data = {
@@ -48,7 +48,7 @@ const ResetPassword = ({ route }) => {
       })
       .catch(error => {
         console.log('error of reset password ===>', error);
-        Toast.show('Some problem occured', 2000, Toast.SHORT);
+        Toast.show('Some problem occured', Toast.SHORT);
       });
   };
 

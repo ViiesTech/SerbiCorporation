@@ -33,7 +33,7 @@ import {
 import Loader from '../../../components/Loader';
 import moment from 'moment';
 import { useIsFocused } from '@react-navigation/native';
-import Toast from 'react-native-simple-toast'
+import Toast from 'react-native-simple-toast';
 const cardsData = [
   { id: 1, title: 'Roland Hopper' },
   { id: 2, title: 'Alexis Clark' },
@@ -62,7 +62,7 @@ const data2 = [
     id: 3,
     sub_title: 'Arrived',
   },
-    {
+  {
     id: 4,
     sub_title: 'Accepted',
   },
@@ -85,7 +85,6 @@ const data3 = [
     id: 4,
     sub_title: 'Completed',
   },
-
 ];
 
 const Home = ({ navigation }) => {
@@ -107,9 +106,9 @@ const Home = ({ navigation }) => {
   const isFocused = useIsFocused();
 
   useEffect(() => {
-   if(isFocused) { 
-    getAllAppointments({ id: user?._id, type: user?.type });
-    getAllReviews(user?._id);
+    if (isFocused) {
+      getAllAppointments({ id: user?._id, type: user?.type });
+      getAllReviews(user?._id);
     }
   }, [isFocused]);
 
@@ -239,7 +238,11 @@ const Home = ({ navigation }) => {
               height: responsiveHeight(7.5),
             }}
             borderRadius={100}
-            source={user?.profileImage ? {uri: getProfileImage(user?.profileImage)} : images.userProfile}
+            source={
+              user?.profileImage
+                ? { uri: getProfileImage(user?.profileImage) }
+                : images.userProfile
+            }
             // source={
             //   user?.profileImage
             //     ? { uri: `${IMAGE_URL}${user.profileImage}` }
@@ -402,7 +405,7 @@ const Home = ({ navigation }) => {
                           reviewData: filterData,
                         });
                       } else {
-                        Toast.show('No Feedback Found',2000,Toast.SHORT)
+                        Toast.show('No Feedback Found', Toast.SHORT);
                       }
                     } else {
                       navigation.navigate('Services', {

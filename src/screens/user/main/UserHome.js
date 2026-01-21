@@ -15,13 +15,16 @@ import { images } from '../../../assets/images';
 import LineBreak from '../../../components/LineBreak';
 import icons from '../../../assets/icons';
 import AppText from '../../../components/AppText';
-import { useNavigation } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import SVGIcon from '../../../components/SVGIcon';
 import Button from '../../../components/Button';
 import { useDispatch, useSelector } from 'react-redux';
 import { firstTimeVisit } from '../../../redux/slices';
 import { colors } from '../../../assets/colors';
-import { useLazyGetAllServicesQuery } from '../../../redux/services/adminApis';
+import {
+  useLazyAllServicesQuery,
+  useLazyGetAllServicesQuery,
+} from '../../../redux/services/adminApis';
 import Loader from '../../../components/Loader';
 import DropDownPicker from 'react-native-dropdown-picker';
 import Toast from 'react-native-simple-toast';
@@ -61,9 +64,9 @@ const iconMap = {
 const UserHome = () => {
   const [openDrawer, setOpenDrawer] = useState(false);
   const [coordinates, setCoordinates] = useState({});
+  const [servicesData, setServicesData] = useState([]);
   const { firstVisit } = useSelector(state => state.persistedData);
-  const [getAllServices, { data: servicesData, isLoading: serviceLoader }] =
-    useLazyGetAllServicesQuery();
+  const [allServices, { isLoading: serviceLoader }] = useLazyAllServicesQuery();
   const [selectedService, setSelectedService] = useState(null);
   const [residentialOpen, setResidentialOpen] = useState(false);
   const [residentialValue, setResidentialValue] = useState('');
@@ -97,33 +100,31 @@ const UserHome = () => {
   const [areaValue, setAreaValue] = useState('');
   const [note, setNote] = useState('');
   const [mapReady, setMapReady] = useState(false);
-  const mapRef = useRef(false);
+  const mapRef = useRef(null);
 
   const nav = useNavigation();
   const dispatch = useDispatch();
   const { user } = useSelector(state => state.persistedData);
+  const isFocused = useIsFocused();
 
-  console.log('service',user);
+  // console.log('user:-', user);
 
-     useEffect(() => {
-      if (
-        coordinates &&
-        mapReady
-      ) {
-        const region = {
+  useEffect(() => {
+    if (coordinates && mapReady) {
+      const region = {
         latitude: coordinates?.latitude,
         longitude: coordinates?.longitude,
         latitudeDelta: 0.5,
         longitudeDelta: 0.5,
       };
-  
+
       mapRef.current?.animateToRegion(region, 1000);
-      }
-    }, [mapReady]);
+    }
+  }, [mapReady]);
 
   useEffect(() => {
     getUserLocation();
-    getAllServices();
+    _getAllServices();
   }, []);
 
   useEffect(() => {
@@ -133,10 +134,17 @@ const UserHome = () => {
   }, [firstVisit]);
 
   useEffect(() => {
-    if (servicesData?.data?.length > 0) {
-      setSelectedService({ id: servicesData.data[0]._id });
+    if (servicesData?.length > 0) {
+      setSelectedService({ id: servicesData?.[0]?._id });
     }
   }, [servicesData]);
+
+  const _getAllServices = async () => {
+    await allServices()
+      ?.unwrap()
+      .then(res => setServicesData(res?.data))
+      .catch(err => console.log('err:---------->', err));
+  };
 
   const showLoginMessage = () => {
     return (
@@ -164,7 +172,7 @@ const UserHome = () => {
   const getUserLocation = async () => {
     const { latitude, longitude } = await getCurrentLocation();
     setCoordinates({ latitude, longitude });
-    // console.log('lat long ===>',latitude,longitude)
+    // console.log('lat long ===>>', latitude, longitude);
   };
 
   if (firstVisit) {
@@ -172,21 +180,21 @@ const UserHome = () => {
   }
 
   const services =
-    servicesData?.data?.map(item => ({
+    servicesData?.map(item => ({
       id: item._id,
       title: item.name,
       icon: iconMap[item.name],
     })) || [];
 
-  const onRequestFormSubmit = async () => {
+  const onRequestFormSubmit = () => {
     if (!propertyValue) {
-      Toast.show('Please select the property type', 2000, Toast.SHORT);
+      Toast.show('Please select the property type', Toast.SHORT);
       return;
     }
 
     if (propertyValue === 'Residential') {
       if (!residentialValue) {
-        Toast.show('Please select the residential', 2000, Toast.SHORT);
+        Toast.show('Please select the residential', Toast.SHORT);
         return;
       }
     }
@@ -194,28 +202,23 @@ const UserHome = () => {
     if (!areaValue) {
       Toast.show(
         'Please select the area which will be going to treat',
-        2000,
         Toast.SHORT,
       );
       return;
     }
 
     if (!severityValue) {
-      Toast.show('Please select the severity', 2000, Toast.SHORT);
+      Toast.show('Please select the severity', Toast.SHORT);
       return;
     }
 
     if (!note) {
-      Toast.show(
-        'Please give some special instructions or note',
-        2000,
-        Toast.SHORT,
-      );
+      Toast.show('Please give some special instructions or note', Toast.SHORT);
       return;
     }
 
     nav.navigate('Services', {
-      service: selectedService.id,
+      service: selectedService?.id,
       lat: coordinates?.latitude,
       long: coordinates?.longitude,
       requestData: {
@@ -227,6 +230,9 @@ const UserHome = () => {
       },
     });
   };
+
+  // console.log('servicesData:---------->', servicesData);
+  console.log('selectedService:---------->', selectedService);
 
   return (
     <Container contentStyle={{ paddingBottom: responsiveHeight(5) }}>
@@ -260,7 +266,7 @@ const UserHome = () => {
           {/* <LineBreak val={1} /> */}
           {coordinates?.latitude && coordinates?.longitude && (
             <MapView
-              provider={PROVIDER_GOOGLE} 
+              // provider={PROVIDER_GOOGLE}
               ref={mapRef}
               style={{
                 height: responsiveHeight(50),
@@ -269,11 +275,11 @@ const UserHome = () => {
               onMapReady={() => setMapReady(true)}
               initialRegion={DEFAULT_REGION}
             >
-              <Marker
-                title="Current Location"
-                coordinate={coordinates}
-              >
-                <Image style={{height: 70,width: 70,borderRadius: 35}} source={images.pin_marker} />
+              <Marker title="Current Location" coordinate={coordinates}>
+                <Image
+                  style={{ height: 70, width: 70, borderRadius: 35 }}
+                  source={images.pin_marker}
+                />
               </Marker>
             </MapView>
           )}

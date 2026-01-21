@@ -14,8 +14,8 @@ import { useNavigation } from '@react-navigation/native';
 import { AppColors, responsiveFontSize, responsiveWidth } from '../utils';
 import AppText from './AppText';
 import { useDispatch } from 'react-redux';
-import {resetUser} from '../redux/slices/index'
-import Toast from 'react-native-simple-toast'
+import { resetUser } from '../redux/slices/index';
+import Toast from 'react-native-simple-toast';
 
 const data = [
   {
@@ -80,13 +80,9 @@ const data = [
   },
 ];
 
-const Drawer = ({
-  isVisible = true,
-  onBackdropPress,
-  closeIconOnPress,
-}) => {
+const Drawer = ({ isVisible = true, onBackdropPress, closeIconOnPress }) => {
   const navigation = useNavigation();
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   return (
     <Modal
@@ -98,13 +94,15 @@ const Drawer = ({
         margin: 0,
         justifyContent: 'flex-start',
         alignItems: 'flex-end',
-      }}>
+      }}
+    >
       <View
         style={{
           height: '100%',
           width: responsiveWidth(55),
           backgroundColor: AppColors.WHITE,
-        }}>
+        }}
+      >
         <LineBreak val={1} />
         <View style={{ marginHorizontal: responsiveWidth(2) }}>
           <TouchableOpacity onPress={closeIconOnPress}>
@@ -125,7 +123,11 @@ const Drawer = ({
             renderItem={({ item }) => {
               return (
                 <TouchableOpacity
-                  style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}
+                  style={{
+                    flexDirection: 'row',
+                    gap: 10,
+                    alignItems: 'center',
+                  }}
                   onPress={() => {
                     if (item.navTo) {
                       navigation.navigate(item.navTo, { screen: item.title });
@@ -152,12 +154,13 @@ const Drawer = ({
             flex: 1,
             justifyContent: 'flex-end',
             marginHorizontal: responsiveWidth(4),
-          }}>
+          }}
+        >
           <TouchableOpacity
             style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}
             onPress={() => {
-              dispatch(resetUser())
-              Toast.show('Logout successfully',2000,Toast.SHORT)
+              dispatch(resetUser());
+              Toast.show('Logout successfully', Toast.SHORT);
               // navigation.navigate('AuthStack');
               onBackdropPress();
             }}
@@ -166,7 +169,7 @@ const Drawer = ({
               name="logout"
               size={responsiveFontSize(2.2)}
               color={AppColors.BLACK}
-            />  
+            />
             <AppText
               title={'Logout'}
               color={AppColors.BLACK}
