@@ -88,7 +88,7 @@ const Login = () => {
         Toast.show(res?.message ?? 'Login successfully!', Toast.SHORT);
 
         if (!res?.isExist) {
-          nav.navigate('SelectType',{token: res.token});
+          nav.navigate('SelectType', { token: res.token });
         }
       } catch (apiErr) {
         console.log('Google login API error:', apiErr);
@@ -98,19 +98,26 @@ const Login = () => {
         );
       }
     } catch (error) {
-      console.log('Google Sign-In error:', error);
+      console.log('Google Sign-In error details:', {
+        code: error.code,
+        message: error.message,
+        error,
+      });
 
-      const errorMessages = {
-        [statusCodes.SIGN_IN_CANCELLED]: 'Sign in cancelled',
-        [statusCodes.IN_PROGRESS]: 'Sign in already in progress',
-        [statusCodes.PLAY_SERVICES_NOT_AVAILABLE]:
-          'Google Play Services unavailable',
-      };
+      let errorMessage = 'Something went wrong during Google login';
 
-      Toast.show(
-        errorMessages[error.code] || 'Something went wrong during Google login',
-        Toast.SHORT,
-      );
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        errorMessage = 'Sign in cancelled';
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        errorMessage = 'Sign in already in progress';
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        errorMessage = 'Google Play Services unavailable';
+      } else if (error.code === statusCodes.DEVELOPER_ERROR) {
+        errorMessage =
+          'Configuration error (DEVELOPER_ERROR). Please check SHA-1 and Client ID.';
+      }
+
+      Toast.show(errorMessage, Toast.SHORT);
     }
   };
 

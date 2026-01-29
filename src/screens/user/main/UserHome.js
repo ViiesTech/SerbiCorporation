@@ -46,20 +46,35 @@ import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 // ];
 
 const iconMap = {
-  Rats: icons.mouse,
-  Termites: icons.termites,
-  Spiders: icons.spiders,
-  Roaches: icons.roaches,
-  Mice: icons.mice,
-  Mouse: icons.mouse,
-  Gnats: icons.gnats,
-  Flies: icons.flies,
-  'Drain Flies': icons.drain_flies,
-  Bees: icons.bee,
-  'Bed Bugs': icons.bed_bug,
-  Ants: icons.ants,
-  Other: icons.termites,
+  Rats: images.rat,
+  Termites: images.other,
+  Spiders: images.spider,
+  Roaches: images.roaches,
+  Mice: images.mice,
+  Mouse: images.rat,
+  Gnats: images.gnats,
+  Flies: images.flies,
+  'Drain Flies': images.drainFlies,
+  Bees: images.bee,
+  'Bed Bugs': images.bedBug,
+  Ants: images.ant,
+  Other: images.other,
 };
+// const iconMap = {
+//   Rats: icons.mouse,
+//   Termites: icons.termites,
+//   Spiders: icons.spiders,
+//   Roaches: icons.roaches,
+//   Mice: icons.mice,
+//   Mouse: icons.mouse,
+//   Gnats: icons.gnats,
+//   Flies: icons.flies,
+//   'Drain Flies': icons.drain_flies,
+//   Bees: icons.bee,
+//   'Bed Bugs': icons.bed_bug,
+//   Ants: icons.ants,
+//   Other: icons.termites,
+// };
 
 const UserHome = () => {
   const [openDrawer, setOpenDrawer] = useState(false);
@@ -86,6 +101,7 @@ const UserHome = () => {
     { label: 'Commercial', value: 'Commercial' },
     { label: 'Industrial', value: 'Industrial' },
   ]);
+
   const [areaOpen, setAreaOpen] = useState(false);
   const [areaItems, setAreaItems] = useState([
     { label: 'Kitchen', value: 'Kitchen' },
@@ -93,6 +109,7 @@ const UserHome = () => {
   const [severityOpen, setSeverityOpen] = useState(false);
   const [severityItems, setSeverityItems] = useState([
     { label: 'Low', value: 'Low' },
+    { label: 'Medium', value: 'Medium' },
     { label: 'High', value: 'High' },
   ]);
   const [propertyValue, setPropertyValue] = useState('');
@@ -276,10 +293,7 @@ const UserHome = () => {
               initialRegion={DEFAULT_REGION}
             >
               <Marker title="Current Location" coordinate={coordinates}>
-                <Image
-                  style={{ height: 70, width: 70, borderRadius: 35 }}
-                  source={images.pin_marker}
-                />
+                <Image source={images.pin_marker} />
               </Marker>
             </MapView>
           )}
@@ -302,50 +316,57 @@ const UserHome = () => {
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ gap: 15 }}
-              renderItem={({ item }) => {
+              renderItem={({ item, index }) => {
                 return (
-                  <TouchableOpacity
-                    style={{
-                      borderWidth: 1,
-                      borderColor: AppColors.BLACK,
-                      paddingVertical: responsiveHeight(1.5),
-                      width: responsiveWidth(35),
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      gap: 6,
-                      borderRadius: 6,
-                      backgroundColor:
-                        selectedService?.id == item.id
-                          ? AppColors.PRIMARY
-                          : AppColors.WHITE,
-                    }}
-                    onPress={() => {
-                      setSelectedService({ id: item.id });
-                    }}
-                  >
-                    <View
+                  <View>
+                    <TouchableOpacity
                       style={{
                         borderWidth: 1,
                         borderColor: AppColors.BLACK,
-                        padding: responsiveWidth(2),
-                        borderRadius: 100,
-                        backgroundColor: AppColors.WHITE,
+                        paddingVertical: responsiveHeight(1.5),
+                        width: responsiveWidth(35),
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        gap: 6,
+                        borderRadius: 6,
+                        backgroundColor:
+                          selectedService?.id == item.id
+                            ? AppColors.PRIMARY
+                            : AppColors.WHITE,
+                      }}
+                      onPress={() => {
+                        setSelectedService({ id: item.id });
                       }}
                     >
-                      <SVGIcon xml={item.icon} width={50} height={50} />
-                    </View>
-                    <AppText
-                      title={item.title}
-                      textColor={
-                        selectedService?.id == item.id
-                          ? AppColors.WHITE
-                          : AppColors.PRIMARY
-                      }
-                      size={1.2}
-                      fontWeight={'bold'}
-                      textTransform={'uppercase'}
-                    />
-                  </TouchableOpacity>
+                      <View
+                        style={{
+                          borderWidth: 1,
+                          borderColor: AppColors.BLACK,
+                          padding: responsiveWidth(2),
+                          borderRadius: 100,
+                          backgroundColor: AppColors.WHITE,
+                          overflow: 'hidden',
+                        }}
+                      >
+                        {/* <SVGIcon xml={item.icon} width={50} height={50} /> */}
+                        <Image
+                          source={iconMap[item.title]}
+                          style={{ width: 50, height: 50 }}
+                        />
+                      </View>
+                      <AppText
+                        title={item.title}
+                        textColor={
+                          selectedService?.id == item.id
+                            ? AppColors.WHITE
+                            : AppColors.PRIMARY
+                        }
+                        size={1.2}
+                        fontWeight={'bold'}
+                        textTransform={'uppercase'}
+                      />
+                    </TouchableOpacity>
+                  </View>
                 );
               }}
             />
@@ -467,7 +488,7 @@ const UserHome = () => {
                 fontWeight={'bold'}
               />
               <View style={{ zIndex: 1000 }}>
-                <DropDownPicker
+                {/* <DropDownPicker
                   open={areaOpen}
                   value={areaValue}
                   items={areaItems}
@@ -483,6 +504,12 @@ const UserHome = () => {
                   setOpen={setAreaOpen}
                   setValue={setAreaValue}
                   setItems={setAreaItems}
+                /> */}
+                <AppTextInput
+                  inputPlaceHolder={'Area To Be Treated'}
+                  value={areaValue}
+                  onChangeText={text => setAreaValue(text)}
+                  borderRadius={30}
                 />
               </View>
               <View>

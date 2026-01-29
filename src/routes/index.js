@@ -19,7 +19,6 @@ const Stack = createStackNavigator();
 
 const Routes = () => {
   const { user, token } = useSelector(state => state.persistedData);
-  console.log('userdata===>', token);
 
   return (
     <>
@@ -37,23 +36,30 @@ const Routes = () => {
               <Stack.Screen name="Chat" component={Chat} />
               <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicy} />
               <Stack.Screen name="Help" component={Help} />
-              <Stack.Screen name="TermsAndCondition" component={TermsAndCondition} />
+              <Stack.Screen
+                name="TermsAndCondition"
+                component={TermsAndCondition}
+              />
               <Stack.Screen name="IncomingCall" component={IncomingCall} />
               <Stack.Screen name="Wallet" component={Wallet} />
             </>
-          ) : user?.type === 'Technician' && (
-            <>
-              <Stack.Screen name="VendorRoutes" component={VendorStack} />
-              <Stack.Screen name="MainProfile" component={MainProfile} />
-              <Stack.Screen name="Profile" component={Profile} />
-              <Stack.Screen name="AppSettings" component={AppSettings} />
-              <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicy} />
-              <Stack.Screen name="Help" component={Help} />
-              <Stack.Screen name="TermsAndCondition" component={TermsAndCondition} />
-              <Stack.Screen name="Chat" component={Chat} />
-              <Stack.Screen name="IncomingCall" component={IncomingCall} />
-
-            </>
+          ) : (
+            user?.type === 'Technician' && (
+              <>
+                <Stack.Screen name="VendorRoutes" component={VendorStack} />
+                <Stack.Screen name="MainProfile" component={MainProfile} />
+                <Stack.Screen name="Profile" component={Profile} />
+                <Stack.Screen name="AppSettings" component={AppSettings} />
+                <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicy} />
+                <Stack.Screen name="Help" component={Help} />
+                <Stack.Screen
+                  name="TermsAndCondition"
+                  component={TermsAndCondition}
+                />
+                <Stack.Screen name="Chat" component={Chat} />
+                <Stack.Screen name="IncomingCall" component={IncomingCall} />
+              </>
+            )
           )}
         </Stack.Navigator>
       </NavigationContainer>

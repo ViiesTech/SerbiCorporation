@@ -12,6 +12,8 @@ import { StripeProvider } from '@stripe/stripe-react-native';
 GoogleSignin.configure({
   webClientId: CLIENT_ID,
   iosClientId: IOS_CLIENT_ID,
+  offlineAccess: true,
+  scopes: ['profile', 'email'],
 });
 
 const App = () => {

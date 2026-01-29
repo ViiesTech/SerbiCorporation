@@ -21,6 +21,18 @@ export const images = {
   mastercard: require('../images/mastercard.png'),
   visa: require('../images/visa.png'),
   express: require('../images/express.webp'),
- 
+  // ------ Ants
+  ant: require('../images/ant.png'),
+  bedBug: require('../images/bedBug.jpg'),
+  bee: require('../images/bee.png'),
+  drainFlies: require('../images/drainFly.png'),
+  flies: require('../images/flies.png'),
+  gnats: require('../images/gnat.png'),
+  mice: require('../images/mice.png'),
+  other: require('../images/other.png'),
+  rat: require('../images/rat.png'),
+  roaches: require('../images/roaches.png'),
+  spider: require('../images/spider.png'),
+
   // mapbg: require('../images/mapbg.jpg'),
-}
+};
