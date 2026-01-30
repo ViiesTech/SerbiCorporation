@@ -58,7 +58,7 @@ const iconMap = {
   Bees: images.bee,
   'Bed Bugs': images.bedBug,
   Ants: images.ant,
-  Other: images.other,
+  Other: images.ant,
 };
 // const iconMap = {
 //   Rats: icons.mouse,
@@ -281,22 +281,22 @@ const UserHome = () => {
       </View> */}
 
           {/* <LineBreak val={1} /> */}
-          {coordinates?.latitude && coordinates?.longitude && (
-            <MapView
-              // provider={PROVIDER_GOOGLE}
-              ref={mapRef}
-              style={{
-                height: responsiveHeight(50),
-                width: responsiveWidth(100),
-              }}
-              onMapReady={() => setMapReady(true)}
-              initialRegion={DEFAULT_REGION}
-            >
+          <MapView
+            provider={PROVIDER_GOOGLE}
+            ref={mapRef}
+            style={{
+              height: responsiveHeight(50),
+              width: responsiveWidth(100),
+            }}
+            onMapReady={() => setMapReady(true)}
+            initialRegion={DEFAULT_REGION}
+          >
+            {coordinates?.latitude && coordinates?.longitude && (
               <Marker title="Current Location" coordinate={coordinates}>
                 <Image source={images.pin_marker} />
               </Marker>
-            </MapView>
-          )}
+            )}
+          </MapView>
 
           {/* <Image source={images.map} style={{ width: responsiveWidth(100) }} /> */}
 

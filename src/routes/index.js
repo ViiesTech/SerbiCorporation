@@ -1,4 +1,7 @@
-import { createStackNavigator } from '@react-navigation/stack';
+import {
+  createStackNavigator,
+  CardStyleInterpolators,
+} from '@react-navigation/stack';
 import AuthStack from './AuthStack/authStack';
 import { NavigationContainer } from '@react-navigation/native';
 import AppStatusBar from '../components/AppStatusBar';
@@ -24,7 +27,12 @@ const Routes = () => {
     <>
       <AppStatusBar />
       <NavigationContainer>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Navigator
+          screenOptions={{
+            headerShown: false,
+            cardStyleInterpolator: CardStyleInterpolators.forFadeFromCenter,
+          }}
+        >
           {!token ? (
             <Stack.Screen name="AuthStack" component={AuthStack} />
           ) : user?.type === 'User' ? (

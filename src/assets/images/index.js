@@ -27,7 +27,7 @@ export const images = {
   bee: require('../images/bee.png'),
   drainFlies: require('../images/drainFly.png'),
   flies: require('../images/flies.png'),
-  gnats: require('../images/gnat.png'),
+  gnats: require('../images/gnat.jpg'),
   mice: require('../images/mice.png'),
   other: require('../images/other.png'),
   rat: require('../images/rat.png'),
