@@ -22,6 +22,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { firstTimeVisit } from '../../../redux/slices';
 import { colors } from '../../../assets/colors';
 import {
+  useLazyAllPropertyTypesQuery,
   useLazyAllServicesQuery,
   useLazyGetAllServicesQuery,
 } from '../../../redux/services/adminApis';
@@ -82,6 +83,8 @@ const UserHome = () => {
   const [servicesData, setServicesData] = useState([]);
   const { firstVisit } = useSelector(state => state.persistedData);
   const [allServices, { isLoading: serviceLoader }] = useLazyAllServicesQuery();
+  const [allPropertyTypes, { isLoading: typeLoader }] =
+    useLazyAllPropertyTypesQuery();
   const [selectedService, setSelectedService] = useState(null);
   const [residentialOpen, setResidentialOpen] = useState(false);
   const [residentialValue, setResidentialValue] = useState('');
@@ -96,11 +99,7 @@ const UserHome = () => {
     },
   ]);
   const [openProperty, setOpenProperty] = useState(false);
-  const [propertyItems, setPropertyItems] = useState([
-    { label: 'Residential', value: 'Residential' },
-    { label: 'Commercial', value: 'Commercial' },
-    { label: 'Industrial', value: 'Industrial' },
-  ]);
+  const [propertyItems, setPropertyItems] = useState([]);
 
   const [areaOpen, setAreaOpen] = useState(false);
   const [areaItems, setAreaItems] = useState([
@@ -127,21 +126,22 @@ const UserHome = () => {
   // console.log('user:-', user);
 
   useEffect(() => {
-    if (coordinates && mapReady) {
+    if (coordinates?.latitude && coordinates?.longitude && mapReady) {
       const region = {
         latitude: coordinates?.latitude,
         longitude: coordinates?.longitude,
-        latitudeDelta: 0.5,
-        longitudeDelta: 0.5,
+        latitudeDelta: 0.1,
+        longitudeDelta: 0.1,
       };
 
-      mapRef.current?.animateToRegion(region, 1000);
+      mapRef.current?.animateToRegion(region, 2000);
     }
-  }, [mapReady]);
+  }, [mapReady, coordinates]);
 
   useEffect(() => {
     getUserLocation();
     _getAllServices();
+    _getAllPropertyTypes();
   }, []);
 
   useEffect(() => {
@@ -160,6 +160,19 @@ const UserHome = () => {
     await allServices()
       ?.unwrap()
       .then(res => setServicesData(res?.data))
+      .catch(err => console.log('err:---------->', err));
+  };
+
+  const _getAllPropertyTypes = async () => {
+    await allPropertyTypes()
+      ?.unwrap()
+      .then(res => {
+        const types = res?.data?.map(item => ({
+          label: item.propertyType,
+          value: item.propertyType,
+        }));
+        setPropertyItems(types);
+      })
       .catch(err => console.log('err:---------->', err));
   };
 
@@ -249,12 +262,13 @@ const UserHome = () => {
   };
 
   // console.log('servicesData:---------->', servicesData);
-  console.log('selectedService:---------->', selectedService);
+  // console.log('selectedService:---------->', selectedService);
+  console.log('propertyItems:-', propertyItems);
 
   return (
     <Container contentStyle={{ paddingBottom: responsiveHeight(5) }}>
       <HomeHeader menuIconOnPress={() => setOpenDrawer(true)} />
-      {serviceLoader ? (
+      {serviceLoader || typeLoader ? (
         <Loader />
       ) : (
         <>
@@ -280,7 +294,7 @@ const UserHome = () => {
         />
       </View> */}
 
-          {/* <LineBreak val={1} /> */}
+          <LineBreak val={1} />
           <MapView
             provider={PROVIDER_GOOGLE}
             ref={mapRef}

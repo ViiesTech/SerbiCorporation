@@ -3,7 +3,7 @@ export const BASE_URL = 'https://serbi.apiforapp.link/api/user/';
 // export const BASE_URL = 'http://192.168.100.168:4030/api/user/'
 export const IMAGE_URL = 'https://serbi.apiforapp.link/';
 export const ADMIN_URL = 'https://serbi.apiforapp.link/api/admin/';
-export const MAP_API_KEY = 'AIzaSyD_u0v13rRdMLo4ZpwsSfhT4dGTzcIwXf4';
+export const MAP_API_KEY = 'AIzaSyCq9nyeDdwfJJg5z5se51OxsL19aW4-Vdo';
 export const CLIENT_ID =
   '584277279555-h1kfoqno737uv4fenrlrcb9felcvhuee.apps.googleusercontent.com';
 export const IOS_CLIENT_ID =
@@ -47,4 +47,5 @@ export const endpoints = {
   SAVE_CARD: 'savePaymentMethod',
   CREATE_PAYMENT: 'createPayment',
   GET_ALL_CARDS: 'getSavedCards',
+  GET_ALL_PROPERTY_TYPES: 'getAllPropertyTypes',
 };

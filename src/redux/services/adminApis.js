@@ -33,8 +33,19 @@ export const AdminApis = createApi({
         };
       },
     }),
+    allPropertyTypes: builder.query({
+      query: () => {
+        return {
+          url: endpoints.GET_ALL_PROPERTY_TYPES,
+          method: 'GET',
+        };
+      },
+    }),
   }),
 });
 
-export const { useLazyGetAllServicesQuery, useLazyAllServicesQuery } =
-  AdminApis;
+export const {
+  useLazyGetAllServicesQuery,
+  useLazyAllServicesQuery,
+  useLazyAllPropertyTypesQuery,
+} = AdminApis;
