@@ -12,7 +12,12 @@ import NormalHeader from '../../../components/NormalHeader';
 import LineBreak from '../../../components/LineBreak';
 import { Image } from 'react-native';
 import { images } from '../../../assets/images';
-import { AppColors, getProfileImage, responsiveHeight, responsiveWidth } from '../../../utils';
+import {
+  AppColors,
+  getProfileImage,
+  responsiveHeight,
+  responsiveWidth,
+} from '../../../utils';
 import Icon from 'react-native-vector-icons/Feather';
 import AppText from '../../../components/AppText';
 import { colors } from '../../../assets/colors';
@@ -243,7 +248,11 @@ const PestTechnician = ({ route }) => {
             {/* Contact Card */}
             <View style={styles.contactCard}>
               <Image
-              source={technicianData?.profileImage ? {uri: getProfileImage(technicianData?.profileImage)} : images.userProfile}
+                source={
+                  technicianData?.profileImage
+                    ? { uri: getProfileImage(technicianData?.profileImage) }
+                    : images.userProfile
+                }
                 // source={
                 //   technicianData?.profileImage
                 //     ? {

@@ -37,7 +37,8 @@ const HistoryCard = ({
   favourite,
   myAppointments,
   history,
-  disabled
+  disabled,
+  activeOpacity = 0.7,
 }) => {
   const nav = useNavigation();
 
@@ -45,6 +46,7 @@ const HistoryCard = ({
 
   return (
     <TouchableOpacity
+      activeOpacity={activeOpacity}
       disabled={disabled}
       style={{
         borderWidth: selectedCard?.id == item._id ? 0 : 1,
@@ -416,7 +418,7 @@ const HistoryCard = ({
                   />
                 </TouchableOpacity>
               </View>
-            ) : (  
+            ) : (
               <AppText
                 title={item.price}
                 color={AppColors.BLACK}

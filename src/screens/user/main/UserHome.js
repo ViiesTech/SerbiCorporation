@@ -167,9 +167,11 @@ const UserHome = () => {
     await allPropertyTypes()
       ?.unwrap()
       .then(res => {
+        console.log('res in property types:-', res);
         const types = res?.data?.map(item => ({
           label: item.propertyType,
           value: item.propertyType,
+          id: item._id,
         }));
         setPropertyItems(types);
       })

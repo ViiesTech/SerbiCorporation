@@ -164,6 +164,7 @@ const Services = ({ route, navigation }) => {
   };
 
   // console.log(ids);
+  console.log('IDS == appointment user', ids?.user);
 
   return appointmentLoader ? (
     <Loader

@@ -77,18 +77,17 @@ const Services = ({ route }) => {
   const { _id } = useSelector(state => state.persistedData.user);
   const [getNearbyTechnicians, { data, isLoading }] =
     useLazyGetNearbyTechniciansQuery();
-  const [addToFavourites, { isLoading: favouritesLoader }] =
-    useAddToFavouritesMutation();
+  const [addToFavourites] = useAddToFavouritesMutation();
   const [nearbyCoordinates, setNearbyCoordinates] = useState([]);
   const { service, lat, long, requestData } = route?.params;
 
-  console.log('nearby technicians ===>', service);
+  console.log('nearby technicians ===>', service, lat, long);
 
   useEffect(() => {
     getNearbyTechnicians({
       //real lat long goes here coming from params
-      lat: lat,
-      long: long,
+      lat: '37.4219983', // lat,
+      long: '-122.084', // long,
       service: service,
     });
   }, [lat, long, service]);

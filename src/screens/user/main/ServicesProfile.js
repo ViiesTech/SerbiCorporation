@@ -27,6 +27,8 @@ import {
   useUpdateDiscussionMutation,
 } from '../../../redux/services';
 import Toast from 'react-native-simple-toast';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import { MAP_API_KEY } from '../../../redux/constant';
 
 const ServicesProfile = ({ route }) => {
   const nav = useNavigation();
@@ -35,14 +37,14 @@ const ServicesProfile = ({ route }) => {
   const [time, setTime] = useState(moment().format('hh:mm A'));
   const { user } = useSelector(state => state.persistedData);
   const [address, setAddress] = useState(user?.location?.locationName || '');
-  //   const [comment, setComment] = useState('');
+  const [latitude, setLatitude] = useState(25.4482); // Default latitude
+  const [longitude, setLongitude] = useState(-80.4808); // Default longitude
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [createRequestForm, { isLoading }] = useCreateRequestFormMutation();
+  //   const [comment, setComment] = useState('');
   // const [updateDiscussion, { isLoading: discussionLoading }] =
   //   useUpdateDiscussionMutation();
-
   const { requestData, profileData } = route?.params;
-  console.log('requestData ===>', profileData);
 
   const onConfirmBooking = async () => {
     if (!address) {
@@ -64,8 +66,8 @@ const ServicesProfile = ({ route }) => {
       time,
       address,
       notes: requestData.note,
-      longitude: -80.4808,
-      latitude: 25.4482,
+      longitude,
+      latitude,
       // locationName: "Florida City Canal Park"
     };
     await createRequestForm(data)
@@ -103,6 +105,7 @@ const ServicesProfile = ({ route }) => {
     // }
   };
 
+  // console.log('requestData ===>', profileData);
   return (
     <Container>
       <NormalHeader
@@ -112,6 +115,7 @@ const ServicesProfile = ({ route }) => {
       <LineBreak val={2} />
       <View style={{ paddingHorizontal: responsiveWidth(4) }}>
         <HistoryCard
+          activeOpacity={1}
           item={{
             id: profileData?._id,
             profImg: getProfileImage(profileData?.profileImage),
@@ -295,20 +299,62 @@ const ServicesProfile = ({ route }) => {
                   fontWeight={'bold'}
                 />
                 <LineBreak val={0.5} />
-                <AppTextInput
-                  inputPlaceHolder={'371 7th Ave, New York, NY 10001'}
-                  borderRadius={30}
-                  inputWidth={77}
-                  placeholderTextColor={AppColors.GRAY}
-                  value={address}
-                  onChangeText={text => setAddress(text)}
-                  rightIcon={
-                    <Entypo
-                      name="location-pin"
-                      size={responsiveFontSize(3.5)}
-                      color={AppColors.BLACK}
-                    />
-                  }
+
+                <GooglePlacesAutocomplete
+                  placeholder="Address"
+                  fetchDetails={true}
+                  onPress={(data, details = null) => {
+                    console.log('data, details:-', data, details);
+                    setAddress(data.description);
+                    if (details) {
+                      setLatitude(details.geometry.location.lat);
+                      setLongitude(details.geometry.location.lng);
+                    }
+                  }}
+                  query={{
+                    key: MAP_API_KEY,
+                    language: 'en',
+                  }}
+                  onFail={error => console.error(error)}
+                  prepopulatedValue={address}
+                  enablePoweredByContainer={false}
+                  minLength={2}
+                  styles={{
+                    container: {
+                      flex: 0,
+                    },
+                    textInputContainer: {
+                      borderWidth: 1,
+                      borderColor: AppColors.PRIMARY,
+                      borderRadius: 30,
+                      backgroundColor: AppColors.WHITE,
+                      paddingRight: 10,
+                    },
+                    textInput: {
+                      height: responsiveHeight(5),
+                      color: AppColors.BLACK,
+                      fontSize: responsiveFontSize(1.8),
+                      backgroundColor: 'transparent',
+                    },
+                    listView: {
+                      backgroundColor: AppColors.WHITE,
+                      zIndex: 1000,
+                      position: 'absolute',
+                      top: 50,
+                    },
+                  }}
+                  textInputProps={{
+                    placeholderTextColor: AppColors.GRAY,
+                  }}
+                  renderRightButton={() => (
+                    <View style={{ justifyContent: 'center' }}>
+                      <Entypo
+                        name="location-pin"
+                        size={responsiveFontSize(3.5)}
+                        color={AppColors.BLACK}
+                      />
+                    </View>
+                  )}
                 />
               </View>
               {/* <View>

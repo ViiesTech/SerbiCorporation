@@ -101,7 +101,7 @@ const Profile = ({ route }) => {
 
   // console.log(user);
 
-  console.log('services data', state.license);
+  // console.log('services data:-', state.license);
 
   useEffect(() => {
     getAllServices();
@@ -120,54 +120,64 @@ const Profile = ({ route }) => {
   // console.log('state ===>', user);
 
   const onProfilePress = async () => {
-    let data = new FormData();
-    data.append('userId', user?._id);
-    data.append('fullName', state.fullName);
-    data.append('phone', state.phone);
-    data.append('DOB', state.dob);
-    data.append('longitude', state.location.long);
-    data.append('latitude', state.location.lat);
-    data.append('locationName', state.location.name);
+    const data = new FormData();
+    data.append('userId', String(user?._id || ''));
+    data.append('fullName', String(state.fullName || ''));
+    data.append('phone', String(state.phone || ''));
+    data.append('DOB', String(state.dob || ''));
+    data.append('longitude', String(state.location.long || ''));
+    data.append('latitude', String(state.location.lat || ''));
+    data.append('locationName', String(state.location.name || ''));
+
     if (user?.type === 'Technician') {
-      data.append('price', parseInt(state.price));
+      data.append('price', String(state.price || '0'));
       if (state.service) {
-        data.append('service', state.service);
+        data.append('service', String(state.service));
       }
       data.append('workingHours', JSON.stringify(state.workingHours));
-      if (state.license.length > 0 && state.license[0].name) {
+      data.append('ss', String(state.ss || ''));
+
+      // License handling - only if it's a new local file
+      if (state.license && state.license.length > 0) {
         const fileObj = state.license[0];
-        if (fileObj.file) {
+        if (
+          fileObj.file &&
+          typeof fileObj.file === 'string' &&
+          fileObj.file.startsWith('file')
+        ) {
           data.append('license', {
-            uri:
-              Platform.OS === 'ios'
-                ? fileObj.file.replace('file://', '')
-                : fileObj.file,
+            uri: fileObj.file,
             type: 'application/pdf',
             name: fileObj.name || 'License.pdf',
           });
         }
       }
-      data.append('ss', state.ss);
-      state.portfolio.forEach((file, index) => {
-        data.append('portfolio', {
-          uri:
-            Platform.OS === 'android'
-              ? file.path
-              : file.path.replace('file://', ''),
-          type: 'image/jpeg',
-          name: file.filename || `portfolio${index}.pdf`,
+
+      // Portfolio handling - only local files
+      if (state.portfolio && Array.isArray(state.portfolio)) {
+        state.portfolio.forEach((file, index) => {
+          const uri = file.path || file.uri;
+          if (uri && typeof uri === 'string' && uri.startsWith('file')) {
+            data.append('portfolio', {
+              uri: uri,
+              type: file.type || 'image/jpeg',
+              name: file.filename || file.name || `portfolio_${index}.jpg`,
+            });
+          }
         });
-      });
+      }
     }
 
-    if (state.image) {
+    // Profile Image handling - only if it's a new local file
+    if (
+      state.image &&
+      typeof state.image === 'string' &&
+      state.image.startsWith('file')
+    ) {
       data.append('profileImage', {
-        uri:
-          Platform.OS === 'android'
-            ? state.image
-            : state.image.replace('file://', ''),
+        uri: state.image,
         type: 'image/jpeg',
-        name: `image.jpg`,
+        name: 'profile_image.jpg',
       });
     }
 

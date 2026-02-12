@@ -7,7 +7,6 @@ export const Apis = createApi({
     baseUrl: BASE_URL,
     prepareHeaders: (headers, { getState }) => {
       const token = getState().persistedData.token;
-      console.log('state ===>', token);
       if (token) {
         headers.set('authorization', `Bearer ${token}`);
       }
@@ -239,7 +238,7 @@ export const Apis = createApi({
       },
     }),
     createPayment: builder.mutation({
-      query: (data) => {
+      query: data => {
         return {
           url: endpoints.CREATE_PAYMENT,
           method: 'POST',

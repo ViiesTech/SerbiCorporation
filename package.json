@@ -9,7 +9,8 @@
     "start": "react-native start",
     "test": "jest",
     "cleanBuild": "cd android && ./gradlew clean && cd ..",
-    "build": "cd android && ./gradlew assembleRelease && cd .."
+    "build": "cd android && ./gradlew assembleRelease && cd ..",
+    "logAndroid": "react-native log-android"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",
@@ -32,6 +33,7 @@
     "react-native-dropdown-picker": "^5.4.6",
     "react-native-geolocation-service": "^5.3.1",
     "react-native-gesture-handler": "^2.28.0",
+    "react-native-google-places-autocomplete": "^2.6.4",
     "react-native-image-crop-picker": "^0.51.0",
     "react-native-maps": "^1.17.1",
     "react-native-maps-directions": "^1.9.0",
