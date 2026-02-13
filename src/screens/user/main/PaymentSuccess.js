@@ -58,16 +58,15 @@ const PaymentSuccess = ({ route }) => {
       subTitle: `$${pest_tech?.requestPayInfo?.amount / 100}.00` || '$49.00',
     },
   ];
-//   console.log('pest', pest_tech);
+  //   console.log('pest', pest_tech);
 
   useEffect(() => {
     if (!request) {
       null;
-    }
-    else {
-        setTimeout(() => {
-            nav.navigate('UserHome');
-        }, 2000);
+    } else {
+      setTimeout(() => {
+        nav.navigate('UserHome');
+      }, 2000);
     }
   }, [nav, request]);
 
@@ -83,14 +82,14 @@ const PaymentSuccess = ({ route }) => {
       .unwrap()
       .then(res => {
         console.log('response of client review ===>', res);
-        Toast.show(res.msg);
+        Toast.show(res.msg, Toast.SHORT);
         if (res.success) {
           nav.navigate('UserHome');
         }
       })
       .catch(error => {
         console.log('error while adding review ===>>>', error);
-        Toast.show('Some problem occured');
+        Toast.show('Some problem occured', Toast.SHORT);
       });
   };
 

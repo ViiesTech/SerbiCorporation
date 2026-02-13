@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react';
-import {View, TextInput} from 'react-native';
+import { View, TextInput } from 'react-native';
 import { AppColors, responsiveHeight, responsiveWidth } from '../utils';
 
 const AppTextInput = ({
@@ -38,7 +38,8 @@ const AppTextInput = ({
         borderBottomWidth: borderBottomWidth,
         borderBottomColor: borderBottomColor,
         borderColor: borderColor ? borderColor : AppColors.PRIMARY,
-      }}>
+      }}
+    >
       {logo}
 
       <TextInput
@@ -51,12 +52,13 @@ const AppTextInput = ({
           placeholderTextColor ? placeholderTextColor : AppColors.BLACK
         }
         style={{
+          height: inputHeight ? responsiveHeight(inputHeight) : 40,
           width: responsiveWidth(inputWidth),
           color: AppColors.BLACK,
-          height: inputHeight ? responsiveHeight(inputHeight) : null,
           fontWeight: placeholderTextfontWeight
             ? placeholderTextfontWeight
             : null,
+          paddingLeft: 5,
         }}
         secureTextEntry={secureTextEntry}
         textAlignVertical={textAlignVertical}

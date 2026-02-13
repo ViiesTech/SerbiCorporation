@@ -1,15 +1,16 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Switch } from 'react-native';
+import {
+  View,
+  FlatList,
+  TouchableOpacity,
+  Switch,
+  StyleSheet,
+} from 'react-native';
 import Container from '../components/Container';
 import LineBreak from '../components/LineBreak';
 import NormalHeader from '../components/NormalHeader';
 import { useNavigation } from '@react-navigation/native';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import Entypo from 'react-native-vector-icons/Entypo';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import Feather from 'react-native-vector-icons/Feather';
-import Octicons from 'react-native-vector-icons/Octicons';
 import {
   AppColors,
   responsiveFontSize,
@@ -18,318 +19,537 @@ import {
 } from '../utils';
 import AppText from '../components/AppText';
 import { colors } from '../assets/colors';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useDispatch, useSelector } from 'react-redux';
 import { resetUser } from '../redux/slices';
 import Toast from 'react-native-simple-toast';
+
+// Icons
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import Entypo from 'react-native-vector-icons/Entypo';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import Feather from 'react-native-vector-icons/Feather';
+import Octicons from 'react-native-vector-icons/Octicons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-
-const menuOne = [
-  {
-    id: 1,
-    title: 'Account',
-    leftIcon: (
-      <FontAwesome
-        name="user-o"
-        size={responsiveFontSize(2.2)}
-        color={AppColors.BLACK}
-      />
-    ),
-    rightIcon: (
-      <Entypo
-        name="chevron-small-right"
-        size={responsiveFontSize(4)}
-        color={AppColors.BLACK}
-      />
-    ),
-    navTo: 'MainProfile',
-  },
-  {
-    id: 2,
-    title: 'Notifications',
-    leftIcon: (
-      <Ionicons
-        name="notifications-outline"
-        size={responsiveFontSize(2.2)}
-        color={AppColors.BLACK}
-      />
-    ),
-  },
-  {
-    id: 3,
-    title: 'Dark Mode',
-    leftIcon: (
-      <Octicons
-        name="moon"
-        size={responsiveFontSize(2.2)}
-        color={AppColors.BLACK}
-      />
-    ),
-  },
-  {
-    id: 4,
-    title: 'Language',
-    leftIcon: (
-      <Ionicons
-        name="language-outline"
-        size={responsiveFontSize(2.2)}
-        color={AppColors.BLACK}
-      />
-    ),
-    rightIcon: (
-      <Entypo
-        name="chevron-small-right"
-        size={responsiveFontSize(4)}
-        color={AppColors.BLACK}
-      />
-    ),
-  },
-];
-
-const menuTwo = [
-  {
-    id: 1,
-    title: 'Security',
-    leftIcon: (
-      <Ionicons
-        name="shield-checkmark-outline"
-        size={responsiveFontSize(2.2)}
-        color={AppColors.BLACK}
-      />
-    ),
-    rightIcon: (
-      <Entypo
-        name="chevron-small-right"
-        size={responsiveFontSize(4)}
-        color={AppColors.BLACK}
-      />
-    ),
-  },
-  {
-    id: 2,
-    title: 'Terms & Conditions',
-    navTo: 'TermsAndCondition',
-    leftIcon: (
-      <Feather
-        name="file"
-        size={responsiveFontSize(2.2)}
-        color={AppColors.BLACK}
-      />
-    ),
-    rightIcon: (
-      <Entypo
-        name="chevron-small-right"
-        size={responsiveFontSize(4)}
-        color={AppColors.BLACK}
-      />
-    ),
-  },
-  {
-    id: 3,
-    title: 'Privacy Policy',
-    navTo: 'PrivacyPolicy',
-    leftIcon: (
-      <Octicons
-        name="lock"
-        size={responsiveFontSize(2.2)}
-        color={AppColors.BLACK}
-      />
-    ),
-    rightIcon: (
-      <Entypo
-        name="chevron-small-right"
-        size={responsiveFontSize(4)}
-        color={AppColors.BLACK}
-      />
-    ),
-  },
-  {
-    id: 4,
-    title: 'Help',
-    navTo: 'Help',
-    leftIcon: (
-      <Feather
-        name="alert-circle"
-        size={responsiveFontSize(2.2)}
-        color={AppColors.BLACK}
-      />
-    ),
-    rightIcon: (
-      <Entypo
-        name="chevron-small-right"
-        size={responsiveFontSize(4)}
-        color={AppColors.BLACK}
-      />
-    ),
-  },
-  {
-    id: 5,
-    title: 'Wallet',
-    navTo: 'Wallet',
-    leftIcon: (
-      <AntDesign
-        name="wallet"
-        size={responsiveFontSize(2.2)}
-        color={AppColors.BLACK}
-      />
-    ),
-  },
-  {
-    id: 6,
-    title: 'Logout',
-    logoutAction: true,
-    // navTo: 'AuthStack',
-    leftIcon: (
-      <MaterialIcons
-        name="logout"
-        size={responsiveFontSize(2.2)}
-        color={AppColors.BLACK}
-      />
-    ),
-  },
-];
-
-const technicianMenu = menuTwo.filter(item => item.title !== 'Wallet');
 
 const AppSettings = () => {
   const nav = useNavigation();
-  const [isEnabled, setIsEnabled] = useState(false);
-  const [isEnabledDarkMode, setIsEnabledDarkMode] = useState(false);
+  const dispatch = useDispatch();
   const { user } = useSelector(state => state.persistedData);
 
-  const dispatch = useDispatch();
+  const [notificationEnabled, setNotificationEnabled] = useState(false);
+  const [darkModeEnabled, setDarkModeEnabled] = useState(false);
+
+  const menuOne = [
+    {
+      id: 'account',
+      title: 'Account',
+      icon: <FontAwesome name="user-o" size={responsiveFontSize(2.2)} />,
+      navTo: 'MainProfile',
+    },
+    {
+      id: 'notifications',
+      title: 'Notifications',
+      icon: (
+        <Ionicons name="notifications-outline" size={responsiveFontSize(2.2)} />
+      ),
+      isSwitch: true,
+      value: notificationEnabled,
+      onToggle: setNotificationEnabled,
+    },
+    {
+      id: 'darkmode',
+      title: 'Dark Mode',
+      icon: <Octicons name="moon" size={responsiveFontSize(2.2)} />,
+      isSwitch: true,
+      value: darkModeEnabled,
+      onToggle: setDarkModeEnabled,
+    },
+    {
+      id: 'language',
+      title: 'Language',
+      icon: <Ionicons name="language-outline" size={responsiveFontSize(2.2)} />,
+    },
+  ];
+
+  const menuTwo = [
+    {
+      id: 'security',
+      title: 'Security',
+      icon: (
+        <Ionicons
+          name="shield-checkmark-outline"
+          size={responsiveFontSize(2.2)}
+        />
+      ),
+    },
+    {
+      id: 'terms',
+      title: 'Terms & Conditions',
+      navTo: 'TermsAndCondition',
+      icon: <Feather name="file" size={responsiveFontSize(2.2)} />,
+    },
+    {
+      id: 'privacy',
+      title: 'Privacy Policy',
+      navTo: 'PrivacyPolicy',
+      icon: <Octicons name="lock" size={responsiveFontSize(2.2)} />,
+    },
+    {
+      id: 'help',
+      title: 'Help',
+      navTo: 'Help',
+      icon: <Feather name="alert-circle" size={responsiveFontSize(2.2)} />,
+    },
+    ...(user?.type !== 'Technician'
+      ? [
+          {
+            id: 'wallet',
+            title: 'Wallet',
+            navTo: 'Wallet',
+            icon: <AntDesign name="wallet" size={responsiveFontSize(2.2)} />,
+          },
+        ]
+      : []),
+    {
+      id: 'logout',
+      title: 'Logout',
+      logoutAction: true,
+      icon: <MaterialIcons name="logout" size={responsiveFontSize(2.2)} />,
+    },
+  ];
+
+  const renderMenuItem = ({ item, index, dataLength }) => {
+    const isLast = index === dataLength - 1;
+
+    return (
+      <TouchableOpacity
+        activeOpacity={item.isSwitch ? 1 : 0.7}
+        style={[styles.itemContainer, !isLast && styles.borderBottom]}
+        onPress={() => {
+          if (item.navTo) {
+            nav.navigate(item.navTo);
+          }
+          if (item.logoutAction) {
+            dispatch(resetUser());
+            Toast.show('Logout successfully', Toast.SHORT);
+          }
+        }}
+      >
+        <View style={styles.leftSection}>
+          {item.icon}
+          <AppText title={item.title} color={AppColors.BLACK} size={1.8} />
+        </View>
+
+        {item.isSwitch ? (
+          <Switch
+            value={item.value}
+            onValueChange={item.onToggle}
+            thumbColor={item.value ? '#fff' : '#f4f3f4'}
+            trackColor={{ false: '#727272', true: colors.primary }}
+          />
+        ) : (
+          item.navTo && (
+            <Entypo
+              name="chevron-small-right"
+              size={responsiveFontSize(4)}
+              color={AppColors.BLACK}
+            />
+          )
+        )}
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <Container>
-      <NormalHeader heading={'Settings'} onBackPress={() => nav.goBack()} />
-      <LineBreak val={2} />
-      <View>
-        <FlatList
-          data={menuOne}
-          contentContainerStyle={{
-            borderWidth: 1,
-            borderColor: AppColors.DARKGRAY,
-            borderRadius: 10,
-            marginHorizontal: responsiveWidth(5),
-          }}
-          renderItem={({ item, index }) => {
-            const id = Number(item.id);
-            const isSecond = id === 2;
-            const value = isSecond ? isEnabled : isEnabledDarkMode;
-            return (
-              <TouchableOpacity
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginHorizontal: responsiveWidth(5),
-                  marginVertical: responsiveHeight(0.5),
-                  paddingVertical: responsiveHeight(1),
-                  borderBottomWidth: index == 3 ? 0 : 1,
-                  borderBottomColor: AppColors.DARKGRAY,
-                }}
-                activeOpacity={item.id == 2 || item.id == 3 ? 1 : 0}
-                onPress={() => {
-                  if (item.navTo) {
-                    nav.navigate(item.navTo);
-                  }
-                }}
-              >
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    gap: 10,
-                    alignItems: 'center',
-                  }}
-                >
-                  {item.leftIcon}
-                  <AppText
-                    title={item.title}
-                    color={AppColors.BLACK}
-                    size={1.8}
-                  />
-                </View>
-                {id === 2 || id === 3 ? (
-                  <Switch
-                    value={value}
-                    onValueChange={val => {
-                      if (isSecond) setIsEnabled(val);
-                      else setIsEnabledDarkMode(val);
-                    }}
-                    thumbColor={value ? '#fff' : '#f4f3f4'}
-                    trackColor={{ false: '#727272ff', true: colors.primary }}
-                  />
-                ) : (
-                  item.rightIcon
-                )}
-              </TouchableOpacity>
-            );
-          }}
-        />
-      </View>
+      <NormalHeader heading="Settings" onBackPress={() => nav.goBack()} />
       <LineBreak val={2} />
 
-      <View>
-        <FlatList
-          data={user?.type === 'Technician' ? technicianMenu : menuTwo}
-          contentContainerStyle={{
-            borderWidth: 1,
-            borderColor: AppColors.DARKGRAY,
-            borderRadius: 10,
-            marginHorizontal: responsiveWidth(5),
-          }}
-          renderItem={({ item, index }) => {
-            return (
-              <TouchableOpacity
-                onPress={() => {
-                  if (item.navTo) {
-                    nav.navigate(item.navTo);
-                  } else if (item.logoutAction) {
-                    dispatch(resetUser());
-                    Toast.show('Logout successfully', Toast.SHORT);
-                  }
-                }}
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginHorizontal: responsiveWidth(5),
-                  marginVertical: responsiveHeight(0.5),
-                  paddingVertical: responsiveHeight(1),
-                  borderBottomWidth:
-                    user?.type === 'Technician'
-                      ? index == 4
-                        ? 0
-                        : 1
-                      : index == 5
-                      ? 0
-                      : 1,
-                  borderBottomColor: AppColors.DARKGRAY,
-                }}
-              >
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    gap: 10,
-                    alignItems: 'center',
-                    marginBottom: 10,
-                  }}
-                >
-                  {item.leftIcon}
-                  <AppText
-                    title={item.title}
-                    color={AppColors.BLACK}
-                    size={1.8}
-                  />
-                </View>
-                {item.rightIcon}
-              </TouchableOpacity>
-            );
-          }}
-        />
-      </View>
+      <FlatList
+        data={menuOne}
+        keyExtractor={item => item.id}
+        scrollEnabled={false}
+        contentContainerStyle={styles.listContainer}
+        renderItem={({ item, index }) =>
+          renderMenuItem({ item, index, dataLength: menuOne.length })
+        }
+      />
+
+      <LineBreak val={2} />
+
+      <FlatList
+        data={menuTwo}
+        keyExtractor={item => item.id}
+        scrollEnabled={false}
+        contentContainerStyle={styles.listContainer}
+        renderItem={({ item, index }) =>
+          renderMenuItem({ item, index, dataLength: menuTwo.length })
+        }
+      />
     </Container>
   );
 };
 
 export default AppSettings;
+
+const styles = StyleSheet.create({
+  listContainer: {
+    borderWidth: 1,
+    borderColor: AppColors.DARKGRAY,
+    borderRadius: 10,
+    marginHorizontal: responsiveWidth(5),
+  },
+  itemContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginHorizontal: responsiveWidth(5),
+    paddingVertical: responsiveHeight(1.2),
+  },
+  borderBottom: {
+    borderBottomWidth: 1,
+    borderBottomColor: AppColors.DARKGRAY,
+  },
+  leftSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+});
+
+// /* eslint-disable react-native/no-inline-styles */
+// import React, { useState } from 'react';
+// import { View, Text, FlatList, TouchableOpacity, Switch } from 'react-native';
+// import Container from '../components/Container';
+// import LineBreak from '../components/LineBreak';
+// import NormalHeader from '../components/NormalHeader';
+// import { useNavigation } from '@react-navigation/native';
+// import FontAwesome from 'react-native-vector-icons/FontAwesome';
+// import Entypo from 'react-native-vector-icons/Entypo';
+// import Ionicons from 'react-native-vector-icons/Ionicons';
+// import Feather from 'react-native-vector-icons/Feather';
+// import Octicons from 'react-native-vector-icons/Octicons';
+// import {
+//   AppColors,
+//   responsiveFontSize,
+//   responsiveHeight,
+//   responsiveWidth,
+// } from '../utils';
+// import AppText from '../components/AppText';
+// import { colors } from '../assets/colors';
+// import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+// import { useDispatch, useSelector } from 'react-redux';
+// import { resetUser } from '../redux/slices';
+// import Toast from 'react-native-simple-toast';
+// import AntDesign from 'react-native-vector-icons/AntDesign';
+
+// const menuOne = [
+//   {
+//     id: 1,
+//     title: 'Account',
+//     leftIcon: (
+//       <FontAwesome
+//         name="user-o"
+//         size={responsiveFontSize(2.2)}
+//         color={AppColors.BLACK}
+//       />
+//     ),
+//     rightIcon: (
+//       <Entypo
+//         name="chevron-small-right"
+//         size={responsiveFontSize(4)}
+//         color={AppColors.BLACK}
+//       />
+//     ),
+//     navTo: 'MainProfile',
+//   },
+//   {
+//     id: 2,
+//     title: 'Notifications',
+//     leftIcon: (
+//       <Ionicons
+//         name="notifications-outline"
+//         size={responsiveFontSize(2.2)}
+//         color={AppColors.BLACK}
+//       />
+//     ),
+//   },
+//   {
+//     id: 3,
+//     title: 'Dark Mode',
+//     leftIcon: (
+//       <Octicons
+//         name="moon"
+//         size={responsiveFontSize(2.2)}
+//         color={AppColors.BLACK}
+//       />
+//     ),
+//   },
+//   {
+//     id: 4,
+//     title: 'Language',
+//     leftIcon: (
+//       <Ionicons
+//         name="language-outline"
+//         size={responsiveFontSize(2.2)}
+//         color={AppColors.BLACK}
+//       />
+//     ),
+//     rightIcon: (
+//       <Entypo
+//         name="chevron-small-right"
+//         size={responsiveFontSize(4)}
+//         color={AppColors.BLACK}
+//       />
+//     ),
+//   },
+// ];
+
+// const menuTwo = [
+//   {
+//     id: 1,
+//     title: 'Security',
+//     leftIcon: (
+//       <Ionicons
+//         name="shield-checkmark-outline"
+//         size={responsiveFontSize(2.2)}
+//         color={AppColors.BLACK}
+//       />
+//     ),
+//     rightIcon: (
+//       <Entypo
+//         name="chevron-small-right"
+//         size={responsiveFontSize(4)}
+//         color={AppColors.BLACK}
+//       />
+//     ),
+//   },
+//   {
+//     id: 2,
+//     title: 'Terms & Conditions',
+//     navTo: 'TermsAndCondition',
+//     leftIcon: (
+//       <Feather
+//         name="file"
+//         size={responsiveFontSize(2.2)}
+//         color={AppColors.BLACK}
+//       />
+//     ),
+//     rightIcon: (
+//       <Entypo
+//         name="chevron-small-right"
+//         size={responsiveFontSize(4)}
+//         color={AppColors.BLACK}
+//       />
+//     ),
+//   },
+//   {
+//     id: 3,
+//     title: 'Privacy Policy',
+//     navTo: 'PrivacyPolicy',
+//     leftIcon: (
+//       <Octicons
+//         name="lock"
+//         size={responsiveFontSize(2.2)}
+//         color={AppColors.BLACK}
+//       />
+//     ),
+//     rightIcon: (
+//       <Entypo
+//         name="chevron-small-right"
+//         size={responsiveFontSize(4)}
+//         color={AppColors.BLACK}
+//       />
+//     ),
+//   },
+//   {
+//     id: 4,
+//     title: 'Help',
+//     navTo: 'Help',
+//     leftIcon: (
+//       <Feather
+//         name="alert-circle"
+//         size={responsiveFontSize(2.2)}
+//         color={AppColors.BLACK}
+//       />
+//     ),
+//     rightIcon: (
+//       <Entypo
+//         name="chevron-small-right"
+//         size={responsiveFontSize(4)}
+//         color={AppColors.BLACK}
+//       />
+//     ),
+//   },
+//   {
+//     id: 5,
+//     title: 'Wallet',
+//     navTo: 'Wallet',
+//     leftIcon: (
+//       <AntDesign
+//         name="wallet"
+//         size={responsiveFontSize(2.2)}
+//         color={AppColors.BLACK}
+//       />
+//     ),
+//   },
+//   {
+//     id: 6,
+//     title: 'Logout',
+//     logoutAction: true,
+//     // navTo: 'AuthStack',
+//     leftIcon: (
+//       <MaterialIcons
+//         name="logout"
+//         size={responsiveFontSize(2.2)}
+//         color={AppColors.BLACK}
+//       />
+//     ),
+//   },
+// ];
+
+// const technicianMenu = menuTwo.filter(item => item.title !== 'Wallet');
+
+// const AppSettings = () => {
+//   const nav = useNavigation();
+//   const [isEnabled, setIsEnabled] = useState(false);
+//   const [isEnabledDarkMode, setIsEnabledDarkMode] = useState(false);
+//   const { user } = useSelector(state => state.persistedData);
+
+//   const dispatch = useDispatch();
+
+//   return (
+//     <Container>
+//       <NormalHeader heading={'Settings'} onBackPress={() => nav.goBack()} />
+//       <LineBreak val={2} />
+//       <View>
+//         <FlatList
+//           data={menuOne}
+//           contentContainerStyle={{
+//             borderWidth: 1,
+//             borderColor: AppColors.DARKGRAY,
+//             borderRadius: 10,
+//             marginHorizontal: responsiveWidth(5),
+//           }}
+//           renderItem={({ item, index }) => {
+//             const id = Number(item.id);
+//             const isSecond = id === 2;
+//             const value = isSecond ? isEnabled : isEnabledDarkMode;
+//             return (
+//               <TouchableOpacity
+//                 style={{
+//                   flexDirection: 'row',
+//                   justifyContent: 'space-between',
+//                   alignItems: 'center',
+//                   marginHorizontal: responsiveWidth(5),
+//                   marginVertical: responsiveHeight(0.5),
+//                   paddingVertical: responsiveHeight(1),
+//                   borderBottomWidth: index == 3 ? 0 : 1,
+//                   borderBottomColor: AppColors.DARKGRAY,
+//                 }}
+//                 activeOpacity={item.id == 2 || item.id == 3 ? 1 : 0}
+//                 onPress={() => {
+//                   if (item.navTo) {
+//                     nav.navigate(item.navTo);
+//                   }
+//                 }}
+//               >
+//                 <View
+//                   style={{
+//                     flexDirection: 'row',
+//                     gap: 10,
+//                     alignItems: 'center',
+//                   }}
+//                 >
+//                   {item.leftIcon}
+//                   <AppText
+//                     title={item.title}
+//                     color={AppColors.BLACK}
+//                     size={1.8}
+//                   />
+//                 </View>
+//                 {id === 2 || id === 3 ? (
+//                   <Switch
+//                     value={value}
+//                     onValueChange={val => {
+//                       if (isSecond) setIsEnabled(val);
+//                       else setIsEnabledDarkMode(val);
+//                     }}
+//                     thumbColor={value ? '#fff' : '#f4f3f4'}
+//                     trackColor={{ false: '#727272ff', true: colors.primary }}
+//                   />
+//                 ) : (
+//                   item.rightIcon
+//                 )}
+//               </TouchableOpacity>
+//             );
+//           }}
+//         />
+//       </View>
+//       <LineBreak val={2} />
+
+//       <View>
+//         <FlatList
+//           data={user?.type === 'Technician' ? technicianMenu : menuTwo}
+//           contentContainerStyle={{
+//             borderWidth: 1,
+//             borderColor: AppColors.DARKGRAY,
+//             borderRadius: 10,
+//             marginHorizontal: responsiveWidth(5),
+//           }}
+//           renderItem={({ item, index }) => {
+//             return (
+//               <TouchableOpacity
+//                 onPress={() => {
+//                   if (item.navTo) {
+//                     nav.navigate(item.navTo);
+//                   } else if (item.logoutAction) {
+//                     dispatch(resetUser());
+//                     Toast.show('Logout successfully', Toast.SHORT);
+//                   }
+//                 }}
+//                 style={{
+//                   flexDirection: 'row',
+//                   justifyContent: 'space-between',
+//                   alignItems: 'center',
+//                   marginHorizontal: responsiveWidth(5),
+//                   marginVertical: responsiveHeight(0.5),
+//                   paddingVertical: responsiveHeight(1),
+//                   borderBottomWidth:
+//                     user?.type === 'Technician'
+//                       ? index == 4
+//                         ? 0
+//                         : 1
+//                       : index == 5
+//                       ? 0
+//                       : 1,
+//                   borderBottomColor: AppColors.DARKGRAY,
+//                 }}
+//               >
+//                 <View
+//                   style={{
+//                     flexDirection: 'row',
+//                     gap: 10,
+//                     alignItems: 'center',
+//                     marginBottom: 10,
+//                   }}
+//                 >
+//                   {item.leftIcon}
+//                   <AppText
+//                     title={item.title}
+//                     color={AppColors.BLACK}
+//                     size={1.8}
+//                   />
+//                 </View>
+//                 {item.rightIcon}
+//               </TouchableOpacity>
+//             );
+//           }}
+//         />
+//       </View>
+//     </Container>
+//   );
+// };
+
+// export default AppSettings;

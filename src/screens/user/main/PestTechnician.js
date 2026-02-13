@@ -427,7 +427,7 @@ const PestTechnician = ({ route }) => {
       />
       {destination && technicianLocation && (
         <MapView
-          provider={PROVIDER_GOOGLE}
+          provider={Platform.OS === 'ios' ? undefined : PROVIDER_GOOGLE}
           style={{
             height: responsiveHeight(30),
             width: responsiveWidth(100),

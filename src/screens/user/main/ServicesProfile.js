@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, TouchableOpacity } from 'react-native';
 import Container from '../../../components/Container';
 import { useNavigation } from '@react-navigation/native';
@@ -37,14 +37,22 @@ const ServicesProfile = ({ route }) => {
   const [time, setTime] = useState(moment().format('hh:mm A'));
   const { user } = useSelector(state => state.persistedData);
   const [address, setAddress] = useState(user?.location?.locationName || '');
-  const [latitude, setLatitude] = useState(25.4482); // Default latitude
-  const [longitude, setLongitude] = useState(-80.4808); // Default longitude
+  const [latitude, setLatitude] = useState(); // Default latitude
+  const [longitude, setLongitude] = useState(); // Default longitude
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [createRequestForm, { isLoading }] = useCreateRequestFormMutation();
   //   const [comment, setComment] = useState('');
   // const [updateDiscussion, { isLoading: discussionLoading }] =
   //   useUpdateDiscussionMutation();
-  const { requestData, profileData } = route?.params;
+  const { requestData, profileData, coordinates } = route?.params;
+  const selectedTab = route?.params;
+
+  useEffect(() => {
+    if (coordinates) {
+      setLatitude(coordinates.lat);
+      setLongitude(coordinates.lng);
+    }
+  }, [coordinates]);
 
   const onConfirmBooking = async () => {
     if (!address) {
@@ -105,7 +113,9 @@ const ServicesProfile = ({ route }) => {
     // }
   };
 
-  // console.log('requestData ===>', profileData);
+  // console.log('profileData:-', profileData?.appointmentData);
+
+  // console.log('Latitude and Longitude:- ', latitude, longitude);
   return (
     <Container>
       <NormalHeader
@@ -163,11 +173,7 @@ const ServicesProfile = ({ route }) => {
             />
 
             <AppText
-              title={`Date: ${
-                moment(profileData?.appointmentData?.date).format(
-                  'DD-MM-YYYY',
-                ) || 'N/A'
-              }`}
+              title={`Date: ${profileData?.appointmentData?.date}`}
               size={1.8}
               color={AppColors.DARKGRAY}
             />
@@ -199,20 +205,26 @@ const ServicesProfile = ({ route }) => {
 
             <LineBreak val={2} />
             {profileData?.appointmentData?.type === 'DISCUSSION' &&
-            // profileData?.appointmentData?.status === 'Completed') ||
-            profileData?.appointmentData?.status === 'Stop' ? (
+            (profileData?.appointmentData?.status === 'Completed' ||
+              profileData?.appointmentData?.status === 'Stop') ? (
               <Button
                 onPress={() =>
                   reviewOrStatus(profileData?.appointmentData?.status)
                 }
-                title={'Complete your job'}
+                title={
+                  profileData?.appointmentData?.status === 'Completed'
+                    ? 'Pay'
+                    : 'Complete your job'
+                }
                 // indicator={discussionLoading}
                 textTransform={'uppercase'}
                 color={colors.primary}
                 width={90}
               />
             ) : (
-              profileData?.appointmentData?.type === 'REQUESTED' && (
+              profileData?.appointmentData?.type === 'REQUESTED' &&
+              selectedTab?.profileData?.appointmentData?.status ==
+                'On The Way' && (
                 <Button
                   onPress={() => onCheckStatus()}
                   title={'See Technician on Map'}
@@ -257,6 +269,7 @@ const ServicesProfile = ({ route }) => {
                   <AppCalendar changeDate={day => setDate(day)} date={date} />
                 )}
               </View>
+
               <View>
                 <AppText
                   title={'Select Time'}
@@ -291,6 +304,7 @@ const ServicesProfile = ({ route }) => {
                   setDatePickerVisibility={setDatePickerVisibility}
                 />
               </View>
+
               <View>
                 <AppText
                   title={'Address'}

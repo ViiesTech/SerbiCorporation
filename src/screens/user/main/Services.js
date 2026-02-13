@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, Image } from 'react-native';
+import { View, FlatList, Image, Platform } from 'react-native';
 import Container from '../../../components/Container';
 import { useNavigation } from '@react-navigation/native';
 import NormalHeader from './../../../components/NormalHeader';
@@ -143,14 +143,14 @@ const Services = ({ route }) => {
       ) : (
         <>
           <MapView
-            provider={PROVIDER_GOOGLE}
+            provider={Platform.OS === 'ios' ? undefined : PROVIDER_GOOGLE}
             style={{
               height: responsiveHeight(50),
               width: responsiveWidth(100),
             }}
             region={{
-              latitude: 25.4486 || lat,
-              longitude: -80.4115 || long,
+              latitude: lat || 25.4486,
+              longitude: long || -80.4115,
               latitudeDelta: 0.015,
               longitudeDelta: 0.0121,
             }}
@@ -201,7 +201,17 @@ const Services = ({ route }) => {
                 const minutes = estimateTimeMinutes(distanceMiles);
                 return (
                   <HistoryCard
-                    disabled={true}
+                    onCardPress={() =>
+                      nav.navigate('ServicesProfile', {
+                        requestData: { ...requestData, service },
+                        profileData: item,
+                        coordinates: {
+                          lat: lat,
+                          lng: long,
+                        },
+                      })
+                    }
+                    disabled={false}
                     item={{
                       profImg: getProfileImage(item.profileImage),
                       // profImg: item.GoogleUser
@@ -219,7 +229,7 @@ const Services = ({ route }) => {
                     favourite={item.favouriteBy?.includes(_id)}
                     onHeartPress={() => onFavouritePress(item._id)}
                     selectedCard={selectedCard}
-                    onCardPress={() => setSelectedCard({ id: item._id })}
+                    // onCardPress={() => setSelectedCard({ id: item._id })}
                     services={'services'}
                     isHideClose={false}
                     isShowBadge={true}
@@ -227,6 +237,10 @@ const Services = ({ route }) => {
                       nav.navigate('ServicesProfile', {
                         requestData: { ...requestData, service },
                         profileData: item,
+                        coordinates: {
+                          lat: lat,
+                          lng: long,
+                        },
                       })
                     }
                   />

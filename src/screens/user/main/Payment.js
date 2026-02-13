@@ -306,7 +306,7 @@ const Payment = ({ route }) => {
 
       const updatePayload = {
         formId: pest_tech?.appointmentData?.id,
-        status: 'Completed',
+        status: 'Paid',
       };
 
       const updateRes = await updateDiscussion(updatePayload).unwrap();

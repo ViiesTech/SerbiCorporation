@@ -42,7 +42,7 @@ const HistoryCard = ({
 }) => {
   const nav = useNavigation();
 
-  // console.log(item.profImg)
+  // console.log('item.profImg:-', item.profImg);
 
   return (
     <TouchableOpacity
@@ -109,6 +109,7 @@ const HistoryCard = ({
             width: component || profiles ? 80 : 70,
             height: component || profiles ? 80 : 70,
             borderRadius: component || profiles ? 10 : 100,
+            backgroundColor: '#Fafafa',
           }}
         />
         <View style={{ gap: 4 }}>
@@ -166,7 +167,11 @@ const HistoryCard = ({
               </View>
             ) : (
               <AppText
-                title={item.status}
+                title={
+                  item?.status?.toLowerCase() === 'accepted'
+                    ? 'Paid'
+                    : item.status || 'Active'
+                }
                 color={AppColors.BLACK}
                 // color={
                 //   selectedCard?.id == item.id

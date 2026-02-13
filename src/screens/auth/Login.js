@@ -1,4 +1,4 @@
-import { StyleSheet, TouchableOpacity } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import Container from '../../components/Container';
 import LineBreak from '../../components/LineBreak';
 import Button from '../../components/Button';
@@ -141,12 +141,16 @@ const Login = () => {
         placeholder={'Password'}
       />
       <LineBreak val={1.5} />
-      <TouchableOpacity
-        onPress={() => nav.navigate('ForgetPassword')}
+      <View
         style={{ alignItems: 'flex-end', marginRight: responsiveHeight(3) }}
       >
-        <AppText fontWeight={'bold'} size={1.8} title={'Forgot Password'} />
-      </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => nav.navigate('ForgetPassword')}
+          style={{ alignItems: 'center' }}
+        >
+          <AppText fontWeight={'bold'} size={1.8} title={'Forgot Password'} />
+        </TouchableOpacity>
+      </View>
       <LineBreak val={3} />
       <Button
         indicator={isLoading}

@@ -23,7 +23,7 @@ const MainProfile = () => {
 
   const isFocused = useIsFocused();
 
-  // console.log('user data ===>', data?.data);
+  // console.log('user data ===>', data?.data.profileImage);
 
   useEffect(() => {
     if (isFocused) {
@@ -48,6 +48,7 @@ const MainProfile = () => {
                 height: responsiveHeight(12),
                 width: responsiveHeight(12),
                 borderRadius: 100,
+                backgroundColor: '#fafafa',
               }}
               source={
                 data?.data.profileImage
