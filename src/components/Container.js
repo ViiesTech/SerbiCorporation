@@ -7,7 +7,7 @@ import LineBreak from './LineBreak';
 const Container = ({
   children,
   scrollEnabled,
-  showScrollIndicator,
+  showScrollIndicator = false,
   contentStyle,
   style,
   authHeading,
@@ -20,7 +20,8 @@ const Container = ({
         style={[{ backgroundColor: colors.white }, style]}
         scrollEnabled={scrollEnabled}
         showsVerticalScrollIndicator={showScrollIndicator}
-        keyboardShouldPersistTaps="handled"
+        keyboardShouldPersistTaps="always"
+        nestedScrollEnabled={true}
       >
         {authHeading && (
           <>

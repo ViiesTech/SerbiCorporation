@@ -8,18 +8,20 @@ import { useGoogleLoginMutation, useLoginMutation } from '../../redux/services';
 import { useState } from 'react';
 import Toast from 'react-native-simple-toast';
 import AppText from '../../components/AppText';
-import { responsiveHeight } from '../../utils';
+import { AppColors, responsiveHeight } from '../../utils';
 import { useNavigation } from '@react-navigation/native';
 import {
   GoogleSignin,
   statusCodes,
 } from '@react-native-google-signin/google-signin';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const Login = () => {
   const [state, setState] = useState({
     email: '',
     password: '',
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [login, { isLoading }] = useLoginMutation();
   const [googleLogin, { isLoading: googleLoading }] = useGoogleLoginMutation();
   const nav = useNavigation();
@@ -139,6 +141,16 @@ const Login = () => {
         value={state.password}
         onChangeText={text => onChangeText('password', text)}
         placeholder={'Password'}
+        secureTextEntry={!showPassword}
+        rightIcon={
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            <Ionicons
+              name={showPassword ? 'eye-outline' : 'eye-off-outline'}
+              size={22}
+              color={AppColors.PRIMARY}
+            />
+          </TouchableOpacity>
+        }
       />
       <LineBreak val={1.5} />
       <View

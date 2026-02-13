@@ -81,13 +81,13 @@ const Services = ({ route }) => {
   const [nearbyCoordinates, setNearbyCoordinates] = useState([]);
   const { service, lat, long, requestData } = route?.params;
 
-  console.log('nearby technicians ===>', service, lat, long);
+  // console.log('nearby technicians ===>', service, lat, long);
 
   useEffect(() => {
     getNearbyTechnicians({
       //real lat long goes here coming from params
-      lat: '37.4219983', // lat,
-      long: '-122.084', // long,
+      lat: lat || '37.4219983',
+      long: long || '-122.084',
       service: service,
     });
   }, [lat, long, service]);

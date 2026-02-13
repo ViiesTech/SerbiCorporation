@@ -7,11 +7,19 @@ import LineBreak from '../../components/LineBreak';
 import Button from '../../components/Button';
 import { colors } from '../../assets/colors';
 import { useNavigation } from '@react-navigation/native';
+import { useDispatch } from 'react-redux';
+import { completeOnboarding } from '../../redux/slices';
 
 const OnBoarding = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const sliderRef = useRef(null);
   const navigation = useNavigation();
+  const dispatch = useDispatch();
+
+  const handleFinish = () => {
+    dispatch(completeOnboarding());
+    navigation.replace('Login');
+  };
 
   const renderItem = ({ item, index }) => {
     return (
@@ -64,7 +72,7 @@ const OnBoarding = () => {
           />
         ) : (
           <Button
-            onPress={() => navigation.replace('Login')}
+            onPress={handleFinish}
             color={colors.secondary_button}
             width={44}
             title="SKIP"
@@ -79,7 +87,7 @@ const OnBoarding = () => {
               slides.length,
             );
             if (currentIndex === slides.length - 1) {
-              navigation.replace('Login');
+              handleFinish();
             } else {
               if (sliderRef.current) {
                 const nextIndex = currentIndex + 1;

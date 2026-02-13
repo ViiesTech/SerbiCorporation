@@ -297,7 +297,7 @@ const UserHome = () => {
                       borderRadius: 15,
                     }}
                     style={{
-                      borderRadius: 100,
+                      borderRadius: openProperty ? 15 : 30,
                       borderColor: colors.secondary_button,
                     }}
                     setOpen={setOpenProperty}
@@ -326,11 +326,11 @@ const UserHome = () => {
                       dropDownDirection="BOTTOM"
                       placeholder="Select"
                       dropDownContainerStyle={{
-                        borderColor: colors.social_color1,
+                        borderColor: colors.secondary_button,
                         borderRadius: 15,
                       }}
                       style={{
-                        borderRadius: 100,
+                        borderRadius: residentialOpen ? 15 : 30,
                         borderColor: colors.secondary_button,
                       }}
                       setOpen={setResidentialOpen}
@@ -376,7 +376,7 @@ const UserHome = () => {
                       borderRadius: 15,
                     }}
                     style={{
-                      borderRadius: 100,
+                      borderRadius: severityOpen ? 15 : 30,
                       borderColor: colors.secondary_button,
                     }}
                     setOpen={setSeverityOpen}

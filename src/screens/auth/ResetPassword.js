@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, TouchableOpacity } from 'react-native';
 import { useState } from 'react';
 import Container from '../../components/Container';
 import LineBreak from '../../components/LineBreak';
@@ -7,10 +7,14 @@ import Button from '../../components/Button';
 import { useResetPasswordMutation } from '../../redux/services';
 import Toast from 'react-native-simple-toast';
 import { useNavigation } from '@react-navigation/native';
+import { AppColors } from '../../utils';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const ResetPassword = ({ route }) => {
   const [newPassword, setNewPassword] = useState('');
   const [cPassword, setCPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showCPassword, setShowCPassword] = useState(false);
   const [resetPassword, { isLoading }] = useResetPasswordMutation();
   const nav = useNavigation();
 
@@ -59,12 +63,32 @@ const ResetPassword = ({ route }) => {
         value={newPassword}
         onChangeText={text => setNewPassword(text)}
         placeholder={'New Password'}
+        secureTextEntry={!showPassword}
+        rightIcon={
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            <Ionicons
+              name={showPassword ? 'eye-outline' : 'eye-off-outline'}
+              size={22}
+              color={AppColors.PRIMARY}
+            />
+          </TouchableOpacity>
+        }
       />
       <LineBreak val={3} />
       <InputField
         value={cPassword}
         onChangeText={text => setCPassword(text)}
         placeholder={'Confirm Password'}
+        secureTextEntry={!showCPassword}
+        rightIcon={
+          <TouchableOpacity onPress={() => setShowCPassword(!showCPassword)}>
+            <Ionicons
+              name={showCPassword ? 'eye-outline' : 'eye-off-outline'}
+              size={22}
+              color={AppColors.PRIMARY}
+            />
+          </TouchableOpacity>
+        }
       />
       <LineBreak val={4} />
       <Button

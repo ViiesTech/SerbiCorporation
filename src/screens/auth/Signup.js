@@ -6,6 +6,7 @@ import moment from 'moment';
 import { pick, types } from '@react-native-documents/picker';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import axios from 'axios';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 // Custom Components & Utils
 import Container from '../../components/Container';
@@ -38,6 +39,8 @@ const Signup = ({ route }) => {
   });
 
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showCPassword, setShowCPassword] = useState(false);
   const [predictions, setPredictions] = useState([]);
   const navigation = useNavigation();
   const [register, { isLoading }] = useRegisterMutation();
@@ -323,16 +326,34 @@ const Signup = ({ route }) => {
       <InputField
         onChangeText={text => onChangeText('password', text)}
         value={state.password}
-        secureTextEntry // Recommended for passwords
+        secureTextEntry={!showPassword}
         placeholder={'Password'}
+        rightIcon={
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            <Ionicons
+              name={showPassword ? 'eye-outline' : 'eye-off-outline'}
+              size={22}
+              color={AppColors.PRIMARY}
+            />
+          </TouchableOpacity>
+        }
       />
 
       <LineBreak val={2} />
       <InputField
         onChangeText={text => onChangeText('cPassword', text)}
         value={state.cPassword}
-        secureTextEntry
+        secureTextEntry={!showCPassword}
         placeholder={'Confirm Password'}
+        rightIcon={
+          <TouchableOpacity onPress={() => setShowCPassword(!showCPassword)}>
+            <Ionicons
+              name={showCPassword ? 'eye-outline' : 'eye-off-outline'}
+              size={22}
+              color={AppColors.PRIMARY}
+            />
+          </TouchableOpacity>
+        }
       />
 
       <LineBreak val={4} />

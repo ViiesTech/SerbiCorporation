@@ -15,7 +15,8 @@ const InputField = ({
   secureTextEntry,
   width,
   icon,
-  onLocationPress
+  onLocationPress,
+  rightIcon,
 }) => {
   return (
     <View
@@ -23,7 +24,7 @@ const InputField = ({
         styles.inputStyle,
         {
           width: responsiveWidth(width || 88),
-          flexDirection: icon ? 'row' : null,
+          flexDirection: 'row',
           alignItems: 'center',
         },
         style,
@@ -32,7 +33,11 @@ const InputField = ({
       <TextInput
         placeholder={placeholder}
         value={value}
-        style={[styles.input, innerStyle]}
+        style={[
+          styles.input,
+          innerStyle,
+          { width: responsiveWidth(icon || rightIcon ? 75 : 80) },
+        ]}
         onChangeText={onChangeText}
         keyboardType={keyboardType}
         maxLength={length}
@@ -40,14 +45,11 @@ const InputField = ({
         editable={editable}
       />
       {icon && (
-      <TouchableOpacity onPress={onLocationPress}>  
-        <Icon
-          name="my-location"
-          size={22}
-          color={colors.primary}
-        />
+        <TouchableOpacity onPress={onLocationPress}>
+          <Icon name="my-location" size={22} color={colors.primary} />
         </TouchableOpacity>
       )}
+      {rightIcon && <View>{rightIcon}</View>}
     </View>
   );
 };
@@ -65,6 +67,7 @@ const styles = StyleSheet.create({
     padding: responsiveHeight(1),
   },
   input: {
+    height: responsiveHeight(3.5),
     color: colors.black,
     width: responsiveWidth(80),
   },

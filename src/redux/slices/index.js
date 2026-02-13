@@ -6,6 +6,7 @@ const initialState = {
   user: {},
   firstVisit: false,
   customer_id: null,
+  isOnboardingCompleted: false,
 };
 
 export const Slice = createSlice({
@@ -17,6 +18,9 @@ export const Slice = createSlice({
     },
     firstTimeVisit: (state, action) => {
       state.firstVisit = action.payload;
+    },
+    completeOnboarding: state => {
+      state.isOnboardingCompleted = true;
     },
   },
   extraReducers: builder => {
@@ -84,6 +88,6 @@ export const Slice = createSlice({
   },
 });
 
-export const { firstTimeVisit, resetUser } = Slice.actions;
+export const { firstTimeVisit, resetUser, completeOnboarding } = Slice.actions;
 
 export default Slice.reducer;

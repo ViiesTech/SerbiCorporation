@@ -33,8 +33,8 @@ import { MAP_API_KEY } from '../../../redux/constant';
 const ServicesProfile = ({ route }) => {
   const nav = useNavigation();
   const [isShowCalendar, setIsShowCalendar] = useState(false);
-  const [date, setDate] = useState(new Date());
-  const [time, setTime] = useState(moment().format('hh:mm A'));
+  const [date, setDate] = useState(null);
+  const [time, setTime] = useState('');
   const { user } = useSelector(state => state.persistedData);
   const [address, setAddress] = useState(user?.location?.locationName || '');
   const [latitude, setLatitude] = useState(); // Default latitude
@@ -55,6 +55,14 @@ const ServicesProfile = ({ route }) => {
   }, [coordinates]);
 
   const onConfirmBooking = async () => {
+    if (!date) {
+      Toast.show('Please select booking date', Toast.SHORT);
+      return;
+    }
+    if (!time) {
+      Toast.show('Please select booking time', Toast.SHORT);
+      return;
+    }
     if (!address) {
       Toast.show('Please enter your address', Toast.SHORT);
       return;
@@ -94,7 +102,12 @@ const ServicesProfile = ({ route }) => {
       })
       .catch(error => {
         console.log('error while creating request form ===>', error);
-        Toast.show('Some problem occured');
+        console.log('error msg ===>', error?.data?.msg);
+        let msg = error?.data?.msg;
+        if (msg?.includes('Existing booking')) {
+          msg = 'Technician already have an appointment on this time.';
+        }
+        Toast.show(msg || 'Some problem occured', Toast.SHORT);
       });
   };
 
@@ -113,8 +126,7 @@ const ServicesProfile = ({ route }) => {
     // }
   };
 
-  // console.log('profileData:-', profileData?.appointmentData);
-
+  console.log('profileData:-', profileData);
   // console.log('Latitude and Longitude:- ', latitude, longitude);
   return (
     <Container>
@@ -251,10 +263,10 @@ const ServicesProfile = ({ route }) => {
                   onPress={() => setIsShowCalendar(!isShowCalendar)}
                 >
                   <AppTextInput
-                    inputPlaceHolder={'03/17/2025'}
+                    inputPlaceHolder={'MM/DD/YYYY'} // Assuming user wants this or similar placeholder
                     borderRadius={30}
                     editable={false}
-                    value={moment(date).format('DD/MM/YYYY')}
+                    value={date ? moment(date).format('MM/DD/YYYY') : ''}
                     inputWidth={77}
                     rightIcon={
                       <Entypo
@@ -266,7 +278,13 @@ const ServicesProfile = ({ route }) => {
                   />
                 </TouchableOpacity>
                 {isShowCalendar && (
-                  <AppCalendar changeDate={day => setDate(day)} date={date} />
+                  <AppCalendar
+                    date={date}
+                    changeDate={day => {
+                      setDate(day);
+                      setIsShowCalendar(false);
+                    }}
+                  />
                 )}
               </View>
 
@@ -282,7 +300,7 @@ const ServicesProfile = ({ route }) => {
                   onPress={() => setDatePickerVisibility(!isDatePickerVisible)}
                 >
                   <AppTextInput
-                    inputPlaceHolder={'10:00 AM'}
+                    inputPlaceHolder={'Select Time'}
                     borderRadius={30}
                     inputWidth={77}
                     editable={false}
@@ -305,7 +323,7 @@ const ServicesProfile = ({ route }) => {
                 />
               </View>
 
-              <View>
+              <View style={{ zIndex: 10000, position: 'relative' }}>
                 <AppText
                   title={'Address'}
                   color={AppColors.BLACK}
@@ -329,13 +347,42 @@ const ServicesProfile = ({ route }) => {
                     key: MAP_API_KEY,
                     language: 'en',
                   }}
-                  onFail={error => console.error(error)}
-                  prepopulatedValue={address}
-                  enablePoweredByContainer={false}
+                  onFail={error => {
+                    console.error('Google Places Library Error: ', error);
+                    Toast.show(
+                      `Library Error: ${error?.message || 'Unknown error'}`,
+                      Toast.LONG,
+                    );
+                  }}
+                  onTimeout={() => {
+                    console.log('Google Places Timeout');
+                    // Toast.show('Google Places Timeout', Toast.SHORT);
+                  }}
+                  onNotFound={() => {
+                    console.log('Google Places Not Found');
+                    // Toast.show('Google Places Not Found', Toast.SHORT);
+                  }}
+                  debounce={400}
                   minLength={2}
+                  enablePoweredByContainer={false}
+                  keepResultsAfterBlur={true}
+                  keyboardShouldPersistTaps={'always'}
+                  listEmptyComponent={() => (
+                    <View
+                      style={{ padding: 10, backgroundColor: AppColors.WHITE }}
+                    >
+                      <AppText
+                        title="No matching places found"
+                        color={AppColors.BLACK}
+                        size={1.5}
+                      />
+                    </View>
+                  )}
+                  prepopulatedValue={address}
                   styles={{
                     container: {
                       flex: 0,
+                      zIndex: 10000,
                     },
                     textInputContainer: {
                       borderWidth: 1,
@@ -352,13 +399,45 @@ const ServicesProfile = ({ route }) => {
                     },
                     listView: {
                       backgroundColor: AppColors.WHITE,
-                      zIndex: 1000,
+                      zIndex: 10000,
                       position: 'absolute',
                       top: 50,
+                      elevation: 5,
                     },
                   }}
                   textInputProps={{
                     placeholderTextColor: AppColors.GRAY,
+                    onChangeText: async text => {
+                      if (text.length >= 2) {
+                        console.log('Manual Fetch Diagnostic for:', text);
+                        try {
+                          const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
+                            text,
+                          )}&key=${MAP_API_KEY}&language=en`;
+                          const response = await fetch(url);
+                          const json = await response.json();
+                          console.log('Manual Fetch Result:', {
+                            status: response.status,
+                            ok: response.ok,
+                            data: json,
+                          });
+                          if (!response.ok || json.status !== 'OK') {
+                            Toast.show(
+                              `API Diagnostic: ${json.status} - ${
+                                json.error_message || 'Check logs'
+                              }`,
+                              Toast.LONG,
+                            );
+                          }
+                        } catch (err) {
+                          console.error('Manual Fetch Network Error:', err);
+                          Toast.show(
+                            `Network Error: ${err.message}`,
+                            Toast.LONG,
+                          );
+                        }
+                      }
+                    },
                   }}
                   renderRightButton={() => (
                     <View style={{ justifyContent: 'center' }}>
@@ -371,25 +450,6 @@ const ServicesProfile = ({ route }) => {
                   )}
                 />
               </View>
-              {/* <View>
-            <AppText
-              title={'Add Comment'}
-              color={AppColors.BLACK}
-              size={1.8}
-              fontWeight={'bold'}
-            />
-            <LineBreak val={0.5} />
-            <AppTextInput
-              inputPlaceHolder={'Lorem ipsum...'}
-              borderRadius={7}
-              value={comment}
-              onChangeText={text => setComment(text)}
-              inputWidth={77}
-              inputHeight={12}
-              multiline={true}
-              textAlignVertical={'top'}
-            />
-          </View> */}
             </View>
 
             <LineBreak val={4} />
