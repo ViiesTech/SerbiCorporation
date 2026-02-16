@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
     padding: responsiveHeight(1),
   },
   input: {
-    height: responsiveHeight(3.5),
+    height: responsiveHeight(4),
     color: colors.black,
     width: responsiveWidth(80),
   },

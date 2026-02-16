@@ -4,6 +4,7 @@ import {
   Image,
   TouchableOpacity,
   Platform,
+  PermissionsAndroid,
 } from 'react-native';
 import React, {
   useCallback,
@@ -32,6 +33,7 @@ import {
   useUpdateRequestAppointmentMutation,
   useLazyGetDiscussionFormsQuery,
   useUpdateDiscussionMutation,
+  useCreateUpdateProfileMutation,
 } from '../../../redux/services/index';
 import { IMAGE_URL, MAP_API_KEY } from '../../../redux/constant';
 import Toast from 'react-native-simple-toast';
@@ -39,6 +41,7 @@ import Loader from '../../../components/Loader';
 import MapViewDirections from 'react-native-maps-directions';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { useSelector } from 'react-redux';
+import Geolocation from 'react-native-geolocation-service';
 
 const Services = ({ route, navigation }) => {
   const [currentStatus, setCurrentStatus] = useState(null);
@@ -61,7 +64,9 @@ const Services = ({ route, navigation }) => {
     getDiscussionForms,
     { data: discussionData, isLoading: discussionLoader },
   ] = useLazyGetDiscussionFormsQuery();
+  const [createUpdateProfile] = useCreateUpdateProfileMutation();
   const mapRef = useRef(null);
+  const watchId = useRef(null);
 
   console.log('data========>', data);
 
@@ -99,30 +104,79 @@ const Services = ({ route, navigation }) => {
   // console.log(technicianLocation)
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTechnicianLocation(prev => {
-        if (!ids?.coordinates?.lat || !ids?.coordinates?.lng || !prev)
-          return prev; // Safety check
-
-        const latDiff = ids.coordinates.lat - prev.latitude;
-        const lngDiff = ids.coordinates.lng - prev.longitude;
-
-        // Stop when very close
-        if (Math.abs(latDiff) < 0.0001 && Math.abs(lngDiff) < 0.0001) {
-          // alert('hello')
-          clearInterval(interval);
-          return prev;
+    const startTracking = async () => {
+      if (Platform.OS === 'android') {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        );
+        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+          return;
         }
+      }
 
-        return {
-          latitude: prev.latitude + latDiff * 0.01,
-          longitude: prev.longitude + lngDiff * 0.01,
-        };
-      });
-    }, 30000);
+      watchId.current = Geolocation.watchPosition(
+        async position => {
+          const { latitude, longitude } = position.coords;
+          console.log('Technician location updated:', latitude, longitude);
+          setTechnicianLocation({ latitude, longitude });
 
-    return () => clearInterval(interval);
-  }, [ids?.coordinates]);
+          // Sync with server if "On The Way"
+          if (currentStatus === 'On The Way') {
+            const userId = user?._id || user?.id;
+            if (!userId) {
+              console.error('TECH_TRACKING: No User ID found for sync');
+              return;
+            }
+
+            const formData = new FormData();
+            formData.append('userId', String(userId));
+            formData.append('latitude', String(latitude));
+            formData.append('longitude', String(longitude));
+
+            console.log(
+              'TECH_TRACKING: Sending sync request for User:',
+              userId,
+            );
+
+            createUpdateProfile(formData)
+              .unwrap()
+              .then(res => {
+                console.log('TECH_TRACKING: Location synced successfully', {
+                  lat: latitude,
+                  lng: longitude,
+                  msg: res.msg,
+                });
+              })
+              .catch(err => {
+                console.error('TECH_TRACKING: Sync Error', err);
+              });
+          }
+        },
+        error => console.log('Geolocation Error:', error),
+        {
+          enableHighAccuracy: true,
+          distanceFilter: 10,
+          interval: 5000,
+          fastestInterval: 2000,
+        },
+      );
+    };
+
+    if (currentStatus === 'On The Way') {
+      startTracking();
+    } else {
+      if (watchId.current !== null) {
+        Geolocation.clearWatch(watchId.current);
+        watchId.current = null;
+      }
+    }
+
+    return () => {
+      if (watchId.current !== null) {
+        Geolocation.clearWatch(watchId.current);
+      }
+    };
+  }, [currentStatus, user?._id, createUpdateProfile]);
 
   useEffect(() => {
     if (ids?.requestFormId) {

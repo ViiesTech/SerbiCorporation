@@ -350,7 +350,7 @@ const UserHome = () => {
                 <AppTextInput
                   inputPlaceHolder={'Area To Be Treated'}
                   value={areaValue}
-                  keyboardType={'numeric'}
+                  keyboardType={'default'}
                   onChangeText={text => setAreaValue(text)}
                   borderRadius={100}
                   inputWidth={70}

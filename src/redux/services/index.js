@@ -172,7 +172,6 @@ export const Apis = createApi({
     }),
     getAppointmentDetail: builder.query({
       query: id => {
-        console.log('id!23#', id);
         return {
           url: endpoints.GET_APPOINTMENT_DETAIL(id),
           method: 'GET',

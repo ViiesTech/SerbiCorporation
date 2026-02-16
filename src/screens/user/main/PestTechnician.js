@@ -14,6 +14,8 @@ import { Image } from 'react-native';
 import { images } from '../../../assets/images';
 import {
   AppColors,
+  getDistanceInMiles,
+  estimateTimeMinutes,
   getProfileImage,
   responsiveHeight,
   responsiveWidth,
@@ -28,6 +30,7 @@ import { IMAGE_URL, MAP_API_KEY } from '../../../redux/constant';
 import MapViewDirections from 'react-native-maps-directions';
 import Geolocation from 'react-native-geolocation-service';
 import { useLazyGetAppointmentDetailQuery } from '../../../redux/services';
+import { useRef } from 'react';
 
 const PestTechnician = ({ route }) => {
   const nav = useNavigation();
@@ -41,6 +44,12 @@ const PestTechnician = ({ route }) => {
   });
   const [getAppointmentDetail, { data, isLoading }] =
     useLazyGetAppointmentDetailQuery();
+  const mapRef = useRef(null);
+
+  const destination = {
+    longitude: user?.location?.coordinates?.[0] || -80.1918,
+    latitude: user?.location?.coordinates?.[1] || 25.7617,
+  };
 
   // console.log('hello',technicianData.appointmentData.id)
   const id = technicianData?.appointmentData?.id;
@@ -67,10 +76,6 @@ const PestTechnician = ({ route }) => {
 
   // Progress values mapped to steps
   const steps = [0.1, 0.4, 0.7, 1.0];
-  const destination = {
-    longitude: user?.location?.coordinates[0],
-    latitude: user?.location?.coordinates[1],
-  };
 
   // useEffect(() => {
   //   let watchId;
@@ -120,8 +125,8 @@ const PestTechnician = ({ route }) => {
   }, [id]);
 
   useEffect(() => {
-    if (data?.data?.status) {
-      console.log('Updated status:', data.data.status);
+    if (data?.data) {
+      console.log('USER_TRACKING: Polled Status:', data.data.status);
 
       switch (data.data.status) {
         case 'Pending':
@@ -139,31 +144,85 @@ const PestTechnician = ({ route }) => {
         default:
           break;
       }
+
+      // Live location tracking: update technician position from server data
+      const techLocationObj =
+        data.data.technicianId?.location ||
+        data.data.technicianId?.locationName;
+      console.log('USER_TRACKING: Tech Raw Data:', {
+        id: data.data.technicianId?._id,
+        location: data.data.technicianId?.location,
+      });
+
+      if (data.data.technicianId?.location?.coordinates) {
+        const coords = data.data.technicianId.location.coordinates;
+        console.log('USER_TRACKING: Updating marker to:', coords[1], coords[0]);
+        const newTechLoc = {
+          longitude: coords[0],
+          latitude: coords[1],
+        };
+        setTechnicianLocation(newTechLoc);
+
+        // Animate map to fit both user and technician
+        if (mapRef.current) {
+          mapRef.current.animateToRegion(
+            {
+              latitude: (destination.latitude + newTechLoc.latitude) / 2,
+              longitude: (destination.longitude + newTechLoc.longitude) / 2,
+              latitudeDelta:
+                Math.abs(destination.latitude - newTechLoc.latitude) * 2 + 0.01,
+              longitudeDelta:
+                Math.abs(destination.longitude - newTechLoc.longitude) * 2 +
+                0.01,
+            },
+            1000,
+          );
+        }
+
+        // Fallback ETA calculation if Directions API fails
+        if (eta === null) {
+          const distance = getDistanceInMiles(
+            destination.latitude,
+            destination.longitude,
+            newTechLoc.latitude,
+            newTechLoc.longitude,
+          );
+          const minutes = estimateTimeMinutes(distance);
+          setEta(Math.round(minutes));
+        }
+      }
     }
   }, [data]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTechnicianLocation(prev => {
-        const latDiff = destination.latitude - prev.latitude;
-        const lngDiff = destination.longitude - prev.longitude;
+    const testNetwork = async () => {
+      console.log('--- ADVANCED Diagnostic Start ---');
+      try {
+        const test1 = await fetch('https://www.google.com');
+        console.log('Fetch Test 1 (Google.com): Success', test1.status);
+      } catch (err) {
+        console.error('Fetch Test 1 FAILED:', err.message);
+      }
 
-        // Stop when very close
-        if (Math.abs(latDiff) < 0.0001 && Math.abs(lngDiff) < 0.0001) {
-          // alert('hello')
-          clearInterval(interval);
-          return prev;
-        }
+      try {
+        const url = `https://maps.googleapis.com/maps/api/directions/json?origin=25,70&destination=25,71&key=${MAP_API_KEY}`;
+        console.log('Testing URL:', url);
+        const test2 = await fetch(url);
+        const json = await test2.json();
+        console.log('Fetch Test 2 (Maps API):', json.status);
+      } catch (err) {
+        console.error('Fetch Test 2 FAILED:', err.message);
+        console.log(
+          'Suggestion: This might be an iOS SSL or DNS issue with Google Maps domains.',
+        );
+      }
+      console.log('--- ADVANCED Diagnostic End ---');
+    };
 
-        return {
-          latitude: prev.latitude + latDiff * 0.01,
-          longitude: prev.longitude + lngDiff * 0.01,
-        };
-      });
-    }, 30000);
+    testNetwork();
+  }, []);
 
-    return () => clearInterval(interval);
-  }, [destination]);
+  // Removed simulation logic - location is now live from server
 
   // const nextStep = () => {
   //   const next = (step + 1) % steps.length;
@@ -428,16 +487,22 @@ const PestTechnician = ({ route }) => {
       {destination && technicianLocation && (
         <MapView
           provider={Platform.OS === 'ios' ? undefined : PROVIDER_GOOGLE}
+          ref={mapRef}
           style={{
             height: responsiveHeight(30),
             width: responsiveWidth(100),
           }}
           initialRegion={{
-            latitude: (destination.latitude + technicianLocation.latitude) / 2,
+            latitude:
+              (destination.latitude +
+                (technicianLocation.latitude || destination.latitude)) /
+              2,
             longitude:
-              (destination.longitude + technicianLocation.longitude) / 2,
-            latitudeDelta: 0.015,
-            longitudeDelta: 0.0121,
+              (destination.longitude +
+                (technicianLocation.longitude || destination.longitude)) /
+              2,
+            latitudeDelta: 0.05,
+            longitudeDelta: 0.05,
           }}
         >
           <Marker coordinate={destination} title="You" pinColor="green" />

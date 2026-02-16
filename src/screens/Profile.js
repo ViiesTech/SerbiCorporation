@@ -605,19 +605,26 @@ const Profile = ({ route }) => {
                   <LineBreak val={1} />
                   <DropDownPicker
                     open={open}
+                    setOpen={setOpen}
                     value={state.service}
                     items={items}
+                    setItems={setItems}
                     dropDownDirection="BOTTOM"
                     placeholder="Select Service"
-                    style={{ borderRadius: 100 }}
-                    setOpen={setOpen}
+                    dropDownContainerStyle={{
+                      borderColor: colors.secondary_button,
+                      borderRadius: 15,
+                    }}
+                    style={{
+                      borderRadius: open ? 15 : 30,
+                      borderColor: colors.secondary_button,
+                    }}
                     setValue={val =>
                       setState(prevState => ({
                         ...prevState,
                         service: val(),
                       }))
                     }
-                    setItems={setItems}
                   />
                 </View>
                 <TouchableOpacity onPress={() => showPicker('start')}>
@@ -671,7 +678,7 @@ const Profile = ({ route }) => {
                     inputPlaceHolder={'Enter details'}
                     placeholderTextColor={AppColors.LIGHTGRAY}
                     borderRadius={30}
-                    keyboardType={'numeric'}
+                    keyboardType={'default'}
                     onChangeText={text => onChangeText('ss', null, text)}
                     value={state.ss}
                     borderColor={AppColors.BLACK}

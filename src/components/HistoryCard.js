@@ -134,10 +134,12 @@ const HistoryCard = ({
                     : null
                 }
               >
-                {services || (profiles && isShowBadge) ? (
+                {(services || (profiles && isShowBadge)) &&
+                icons.correct_badge ? (
                   <SVGIcon xml={icons.correct_badge} width={25} height={25} />
                 ) : null}
-                {services || (profiles && isShowBadge) ? (
+                {(services || (profiles && isShowBadge)) &&
+                icons.simple_badge ? (
                   <SVGIcon xml={icons.simple_badge} width={25} height={25} />
                 ) : null}
                 {services || profiles || favItem ? (

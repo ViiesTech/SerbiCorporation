@@ -177,9 +177,10 @@ const JobDiscussionForm = ({ route, navigation }) => {
               placeholder="Select"
               dropDownContainerStyle={{
                 borderColor: colors.secondary_button,
+                borderRadius: 15,
               }}
               style={{
-                borderRadius: 100,
+                borderRadius: pestOpen ? 15 : 30,
                 borderColor: colors.secondary_button,
               }}
               setOpen={setPestOpen}
@@ -218,9 +219,10 @@ const JobDiscussionForm = ({ route, navigation }) => {
               placeholder="Select"
               dropDownContainerStyle={{
                 borderColor: colors.secondary_button,
+                borderRadius: 15,
               }}
               style={{
-                borderRadius: 100,
+                borderRadius: propertyOpen ? 15 : 30,
                 borderColor: colors.secondary_button,
               }}
               setOpen={setPropertyOpen}
@@ -252,9 +254,10 @@ const JobDiscussionForm = ({ route, navigation }) => {
                   placeholder="Select"
                   dropDownContainerStyle={{
                     borderColor: colors.secondary_button,
+                    borderRadius: 15,
                   }}
                   style={{
-                    borderRadius: 100,
+                    borderRadius: residentialOpen ? 15 : 30,
                     borderColor: colors.secondary_button,
                   }}
                   setOpen={setResidentialOpen}
@@ -283,9 +286,10 @@ const JobDiscussionForm = ({ route, navigation }) => {
               placeholder="Select"
               dropDownContainerStyle={{
                 borderColor: colors.secondary_button,
+                borderRadius: 15,
               }}
               style={{
-                borderRadius: 100,
+                borderRadius: severityOpen ? 15 : 30,
                 borderColor: colors.secondary_button,
               }}
               setOpen={setSeverityOpen}

@@ -78,7 +78,7 @@ const Appointments = () => {
     return sourceData.filter(item => item.status === currentStatus);
   }, [sourceData, selectedStatusIndex]);
 
-  console.log('Appointments:-', data);
+  // console.log('Appointments:-', data);
   // console.log('filteredAppointments:-', filteredAppointments);
   return (
     <Container>

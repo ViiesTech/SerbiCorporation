@@ -5,7 +5,7 @@ import {
 import AuthStack from './AuthStack/authStack';
 import { NavigationContainer } from '@react-navigation/native';
 import AppStatusBar from '../components/AppStatusBar';
-import userRoutes from './UserStack/userRoutes';
+import UserRoutes from './UserStack/userRoutes';
 import VendorStack from './VendorStack/vendorRoutes';
 import Profile from './../screens/Profile';
 import AppSettings from '../screens/AppSettings';
@@ -37,7 +37,7 @@ const Routes = () => {
             <Stack.Screen name="AuthStack" component={AuthStack} />
           ) : user?.type === 'User' ? (
             <>
-              <Stack.Screen name="UserRoutes" component={userRoutes} />
+              <Stack.Screen name="UserRoutes" component={UserRoutes} />
               <Stack.Screen name="MainProfile" component={MainProfile} />
               <Stack.Screen name="Profile" component={Profile} />
               <Stack.Screen name="AppSettings" component={AppSettings} />
