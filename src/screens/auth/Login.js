@@ -42,12 +42,12 @@ const Login = () => {
     await login(data)
       .unwrap()
       .then(res => {
-        console.log('login response ===>', res);
+        console.log('res in Login:-', res);
         Toast.show(res.msg, Toast.SHORT);
       })
-      .catch(error => {
-        console.log('error of login ===>', error);
-        Toast.show('Some problem occured', Toast.SHORT);
+      .catch(err => {
+        console.log('err in Login:-', err);
+        Toast.show(err?.data?.msg || 'Some problem occured', Toast.SHORT);
       });
   };
 
@@ -130,13 +130,16 @@ const Login = () => {
       authHeading={'LOGIN TO CONTINUE'}
     >
       <LineBreak val={4} />
+
       <InputField
         value={state.email}
         onChangeText={text => onChangeText('email', text)}
         keyboardType={'email-address'}
         placeholder={'Email Address'}
       />
+
       <LineBreak val={2} />
+
       <InputField
         value={state.password}
         onChangeText={text => onChangeText('password', text)}
@@ -152,7 +155,9 @@ const Login = () => {
           </TouchableOpacity>
         }
       />
+
       <LineBreak val={1.5} />
+
       <View
         style={{ alignItems: 'flex-end', marginRight: responsiveHeight(3) }}
       >
@@ -163,19 +168,25 @@ const Login = () => {
           <AppText fontWeight={'bold'} size={1.8} title={'Forgot Password'} />
         </TouchableOpacity>
       </View>
+
       <LineBreak val={3} />
+
       <Button
         indicator={isLoading}
         onPress={() => onLoginPress()}
         title={'LOGIN'}
       />
+
       <LineBreak val={3} />
+
       <SocialButtons
         onSocialPress={loginType => onSocialAuth(loginType)}
         apiLoader={googleLoading}
         heading={'Or Login With'}
       />
+
       <LineBreak val={3} />
+
       <TouchableOpacity onPress={() => nav.navigate('SelectType')}>
         <AppText align={'center'} title={`Don't have an account? Signup`} />
       </TouchableOpacity>

@@ -91,17 +91,13 @@ const Profile = ({ route }) => {
     typeof state.image === 'string'
       ? { uri: state.image } // URLs or file paths
       : state.image || images.userProfile;
-  //   const [value, setValue] = useState(null);
+
   const [items, setItems] = useState([
     { label: 'Test Service', value: 'Test Service' },
     { label: 'Test Service 2', value: 'Test Service 2' },
     { label: 'Test Service 3', value: 'Test Service 3' },
     { label: 'Test Service 4', value: 'Test Service 4' },
   ]);
-
-  // console.log(user);
-
-  // console.log('services data:-', state.license);
 
   useEffect(() => {
     getAllServices();
@@ -116,8 +112,6 @@ const Profile = ({ route }) => {
       setItems(updatedData);
     }
   }, [servicesData]);
-
-  // console.log('state ===>', user);
 
   const onProfilePress = async () => {
     const data = new FormData();
@@ -212,7 +206,6 @@ const Profile = ({ route }) => {
       }));
     }
   };
-  //   console.log('user type ===>', user?.type);
 
   const onImageSelect = () => {
     ImageCropPicker.openPicker({
@@ -318,7 +311,7 @@ const Profile = ({ route }) => {
     try {
       Toast.show('Fetching current location...', Toast.SHORT);
       const { latitude, longitude } = await getCurrentLocation();
-      // console.log('Lat Long:', latitude, longitude);
+      console.log('latitude & longitude:-', latitude, longitude);
 
       const address = await convertLatLongToAddress(latitude, longitude);
       setState(prevState => ({
@@ -417,10 +410,13 @@ const Profile = ({ route }) => {
     }
   };
 
+  console.log('user in vendor profile:-', user);
+
   return (
     <Container>
       <NormalHeader heading={'Profile'} onBackPress={() => nav.goBack()} />
       <LineBreak val={3} />
+
       <View style={{ alignItems: 'center' }}>
         <ImageBackground
           // source={{ uri: state.image }}
@@ -457,6 +453,7 @@ const Profile = ({ route }) => {
           </TouchableOpacity>
         </ImageBackground>
       </View>
+
       <LineBreak val={3} />
 
       <View style={{ paddingHorizontal: responsiveWidth(5) }}>
@@ -612,12 +609,12 @@ const Profile = ({ route }) => {
                     dropDownDirection="BOTTOM"
                     placeholder="Select Service"
                     dropDownContainerStyle={{
-                      borderColor: colors.secondary_button,
+                      borderColor: colors.black,
                       borderRadius: 15,
                     }}
                     style={{
                       borderRadius: open ? 15 : 30,
-                      borderColor: colors.secondary_button,
+                      borderColor: colors.black,
                     }}
                     setValue={val =>
                       setState(prevState => ({

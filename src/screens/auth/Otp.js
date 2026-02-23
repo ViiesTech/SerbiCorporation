@@ -15,7 +15,7 @@ import { useNavigation } from '@react-navigation/native';
 
 const Otp = ({ route }) => {
   const { otpData } = route?.params;
-  const [value, setValue] = useState(otpData?.OTP.toString() || '');
+  const [value, setValue] = useState(''); // otpData?.OTP.toString() ||
   const [verifyOTP, { isLoading }] = useVerifyOTPMutation();
   const [verifyOTPPassword, { isLoading: resetLoader }] =
     useLazyVerifyOTPPasswordQuery();
@@ -75,6 +75,7 @@ const Otp = ({ route }) => {
           Toast.show(res.msg, Toast.SHORT);
           if (res.success) {
             dispatch(firstTimeVisit(true));
+            nav.navigate('Login');
             // setShowLoginSuccess(true);
           }
         })
@@ -88,14 +89,19 @@ const Otp = ({ route }) => {
   return (
     <Container space={25} authHeading={'ENTER PASS CODE'}>
       <LineBreak val={1} />
+
       <AppText
         size={1.7}
         align="center"
-        title="Number code has been sent to your email"
+        title="OTP has been sent to your email"
       />
+
       <LineBreak val={2} />
+
       <CodeField value={value} setValue={setValue} />
+
       <LineBreak val={1} />
+
       <Button
         indicator={otpData?.type ? resetLoader : isLoading}
         onPress={() => onOTPVerify()}

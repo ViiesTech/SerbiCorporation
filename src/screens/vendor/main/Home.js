@@ -8,7 +8,6 @@ import {
   View,
 } from 'react-native';
 import {
-  AppColors,
   getProfileImage,
   responsiveHeight,
   responsiveWidth,
@@ -33,7 +32,6 @@ import moment from 'moment';
 import { useIsFocused } from '@react-navigation/native';
 import Toast from 'react-native-simple-toast';
 import { IMAGE_URL } from '../../../redux/constant';
-import { status } from 'express/lib/response';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const categoryTabs = [
@@ -145,9 +143,9 @@ const Home = ({ navigation }) => {
     return (
       <View style={styles.loginContainer}>
         <Image
-          resizeMode="cover"
-          style={styles.successImg}
           source={images.success}
+          style={styles.successImg}
+          resizeMode="cover"
         />
         <LineBreak val={2} />
         <AppText title="Action Success" />

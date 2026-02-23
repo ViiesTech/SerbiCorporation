@@ -4,9 +4,20 @@ import { colors } from '../assets/colors';
 import { responsiveHeight, responsiveWidth } from '../utils';
 import Loader from './Loader';
 
-const Button = ({ onPress, title, style, textTransform, titleColour, width, color,icon,indicator }) => {
+const Button = ({
+  onPress,
+  title,
+  style,
+  textTransform,
+  titleColour,
+  width,
+  color,
+  icon,
+  indicator,
+}) => {
   return (
     <TouchableOpacity
+      disabled={indicator}
       style={[
         styles.buttonStyle,
         {
@@ -17,21 +28,21 @@ const Button = ({ onPress, title, style, textTransform, titleColour, width, colo
       ]}
       onPress={onPress}
     >
-      {indicator ?
-        <Loader  />
-      :
-    <View style={{flexDirection: icon && 'row'}}>  
-      {icon}
-      <AppText
-        color={titleColour}
-        size={1.9}
-        fontWeight={'bold'}
-        align={'center'}
-        textTransform={textTransform}
-        title={title}
-      /> 
-      </View>
-      }
+      {indicator ? (
+        <Loader />
+      ) : (
+        <View style={{ flexDirection: icon && 'row' }}>
+          {icon}
+          <AppText
+            color={titleColour}
+            size={1.9}
+            fontWeight={'bold'}
+            align={'center'}
+            textTransform={textTransform || 'capitalize'}
+            title={title}
+          />
+        </View>
+      )}
     </TouchableOpacity>
   );
 };
