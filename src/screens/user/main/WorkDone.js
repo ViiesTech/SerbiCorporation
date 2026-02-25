@@ -27,7 +27,7 @@ const WorkDone = ({ route }) => {
   const nav = useNavigation();
   const { profileData } = route?.params;
 
-  const technicianLocation = {
+  const userLocation = {
     longitude: profileData?.location?.coordinates[0] || -80.4115,
     latitude: profileData?.location?.coordinates[1] || 25.4486,
   };
@@ -40,12 +40,12 @@ const WorkDone = ({ route }) => {
           provider={Platform.OS === 'ios' ? undefined : PROVIDER_GOOGLE}
           style={StyleSheet.absoluteFillObject}
           initialRegion={{
-            ...technicianLocation,
+            ...userLocation,
             latitudeDelta: 0.015,
             longitudeDelta: 0.0121,
           }}
         >
-          <Marker coordinate={technicianLocation} title="Technician">
+          <Marker coordinate={userLocation} title="User">
             <View
               style={{
                 height: 70,

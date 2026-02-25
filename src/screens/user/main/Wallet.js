@@ -228,7 +228,7 @@ const Wallet = () => {
           <CardField
             postalCodeEnabled={false}
             placeholders={{
-              number: '4242 4242 4242 4242',
+              number: 'Account NNumber',
             }}
             cardStyle={styles.cardStyle}
             onCardChange={details => {

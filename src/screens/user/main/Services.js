@@ -81,13 +81,11 @@ const Services = ({ route }) => {
   const [nearbyCoordinates, setNearbyCoordinates] = useState([]);
   const { service, lat, long, requestData } = route?.params;
 
-  // console.log('nearby technicians ===>', service, lat, long);
-
   useEffect(() => {
     getNearbyTechnicians({
       //real lat long goes here coming from params
-      lat: lat || '37.4219983',
-      long: long || '-122.084',
+      lat: lat || '40.712775',
+      long: long || '-74.005974',
       service: service,
     });
   }, [lat, long, service]);
@@ -95,8 +93,8 @@ const Services = ({ route }) => {
   useEffect(() => {
     if (data?.data?.length > 0) {
       const getCoordinates = data.data.map(item => ({
-        longitude: item.location.coordinates[0],
-        latitude: item.location.coordinates[1],
+        longitude: parseFloat(item.location.coordinates[0]),
+        latitude: parseFloat(item.location.coordinates[1]),
       }));
       setNearbyCoordinates(getCoordinates);
     }
@@ -129,7 +127,10 @@ const Services = ({ route }) => {
   };
 
   // console.log('AAAA', lat, long, service);
-
+  // RATS 68d31cacf962675cd0799b7
+  console.log('nearby technicians ===>', service, lat, long);
+  console.log('nearbyCoordinates:----------', nearbyCoordinates);
+  // console.log('data:----------', data);
   return (
     <Container>
       <NormalHeader
@@ -151,29 +152,25 @@ const Services = ({ route }) => {
             region={{
               latitude: lat || 25.4486,
               longitude: long || -80.4115,
-              latitudeDelta: 0.015,
-              longitudeDelta: 0.0121,
+              latitudeDelta: 0.15,
+              longitudeDelta: 0.15,
             }}
           >
             {nearbyCoordinates?.map((coord, index) => {
+              // console.log('coord:----------', coord);
               return (
                 <Marker
                   key={index}
                   title={`Technician ${index + 1}`}
+                  pinColor={AppColors.PRIMARY}
                   coordinate={{
                     latitude: coord.latitude,
                     longitude: coord.longitude,
                   }}
-                >
-                  <Image
-                    source={images.pin_marker}
-                    style={{ height: 70, width: 70, borderRadius: 35 }}
-                  />
-                </Marker>
+                />
               );
             })}
           </MapView>
-          {/* <Image source={images.map} style={{ width: responsiveWidth(100) }} /> */}
 
           <LineBreak val={2} />
 
@@ -191,10 +188,11 @@ const Services = ({ route }) => {
               ItemSeparatorComponent={() => <LineBreak val={2} />}
               renderItem={({ item }) => {
                 const [techLng, techLat] = item.location?.coordinates;
+                console.log('techLng&techLat:---', techLng, techLat);
                 //real lat long coming from params goes here
                 const distanceMiles = getDistanceInMiles(
-                  '25.4486',
-                  '-80.4115',
+                  lat,
+                  long,
                   techLat,
                   techLng,
                 );

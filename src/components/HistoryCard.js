@@ -348,7 +348,7 @@ const HistoryCard = ({
                 )}
               </View>
             ) : (
-              <View style={{ gap: 4 }}>
+              <View style={{ gap: 4, width: '65%' }}>
                 <View
                   style={{
                     flexDirection: 'row',
@@ -388,8 +388,11 @@ const HistoryCard = ({
               <View style={{ flexDirection: 'row', gap: 15 }}>
                 <TouchableOpacity
                   style={{
-                    padding: 7,
-                    borderRadius: 100,
+                    height: 35,
+                    width: 35,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    borderRadius: 35,
                     backgroundColor: colors.primary,
                   }}
                   onPress={() =>
@@ -405,10 +408,14 @@ const HistoryCard = ({
                     }
                   />
                 </TouchableOpacity>
+
                 <TouchableOpacity
                   style={{
-                    padding: 7,
-                    borderRadius: 100,
+                    height: 35,
+                    width: 35,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    borderRadius: 35,
                     backgroundColor: colors.primary,
                   }}
                   onPress={() =>

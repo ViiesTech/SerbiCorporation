@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { View, TouchableOpacity } from 'react-native';
+import { useEffect, useState, useRef } from 'react';
+import { View, TouchableOpacity, Text } from 'react-native';
 import Container from '../../../components/Container';
 import { useNavigation } from '@react-navigation/native';
 import NormalHeader from '../../../components/NormalHeader';
@@ -46,6 +46,20 @@ const ServicesProfile = ({ route }) => {
   //   useUpdateDiscussionMutation();
   const { requestData, profileData, coordinates } = route?.params;
   const selectedTab = route?.params;
+  const googlePlacesRef = useRef();
+
+  const handleSetHomeAddress = () => {
+    if (user?.location?.locationName) {
+      setAddress(user.location.locationName);
+      if (user?.location?.coordinates) {
+        setLongitude(user.location.coordinates[0]);
+        setLatitude(user.location.coordinates[1]);
+      }
+      googlePlacesRef.current?.setAddressText(user.location.locationName);
+    } else {
+      Toast.show('No home address saved in your profile', Toast.SHORT);
+    }
+  };
 
   useEffect(() => {
     if (coordinates) {
@@ -333,6 +347,7 @@ const ServicesProfile = ({ route }) => {
                 <LineBreak val={0.5} />
 
                 <GooglePlacesAutocomplete
+                  ref={googlePlacesRef}
                   placeholder="Address"
                   fetchDetails={true}
                   onPress={(data, details = null) => {
@@ -449,6 +464,29 @@ const ServicesProfile = ({ route }) => {
                     </View>
                   )}
                 />
+                <LineBreak val={1} />
+
+                <TouchableOpacity
+                  style={{
+                    height: 40,
+                    width: '50%',
+                    borderRadius: 30,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    backgroundColor: colors.primary,
+                  }}
+                  onPress={handleSetHomeAddress}
+                >
+                  <Text
+                    style={{
+                      color: AppColors.BLACK,
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                    }}
+                  >
+                    Pick Home Address
+                  </Text>
+                </TouchableOpacity>
               </View>
             </View>
 

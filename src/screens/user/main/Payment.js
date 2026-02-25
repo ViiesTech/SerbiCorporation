@@ -610,7 +610,7 @@ const Payment = ({ route }) => {
           <CardField
             postalCodeEnabled={false}
             placeholders={{
-              number: '4242 4242 4242 4242',
+              number: 'Account Number',
             }}
             cardStyle={styles.cardStyle}
             onCardChange={details => {

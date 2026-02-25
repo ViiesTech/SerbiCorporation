@@ -33,6 +33,7 @@ import { useIsFocused } from '@react-navigation/native';
 import Toast from 'react-native-simple-toast';
 import { IMAGE_URL } from '../../../redux/constant';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { colors } from '../../../assets/colors';
 
 const categoryTabs = [
   { id: 1, title: 'REQUESTED' },
@@ -213,6 +214,7 @@ const Home = ({ navigation }) => {
           inputPlaceHolder="What are you looking for?"
           placeholderTextColor="#777"
           borderRadius={25}
+          borderColor={colors.black}
         />
 
         <LineBreak val={2} />
@@ -300,12 +302,11 @@ const Home = ({ navigation }) => {
                     lng: item?.longitude,
                   },
                 };
-                console.log('item:-', ids);
+                // console.log('ids:-', ids);
 
                 return (
                   <HistoryCard
                     onCardPress={() => {
-                      // console.log('item:-', item);
                       if (item.status === 'Completed') {
                         const review = reviewsData?.data?.find(
                           r => r.userId?._id === item.userId?._id,

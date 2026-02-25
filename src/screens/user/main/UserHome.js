@@ -56,7 +56,7 @@ const iconMap = {
 const UserHome = () => {
   const nav = useNavigation();
   const dispatch = useDispatch();
-  const { firstVisit } = useSelector(state => state.persistedData);
+  const { firstVisit, user } = useSelector(state => state.persistedData);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [coordinates, setCoordinates] = useState(null);
@@ -113,7 +113,7 @@ const UserHome = () => {
 
   useEffect(() => {
     if (services.length > 0 && !selectedServiceId) {
-      setSelectedServiceId(services[0].id);
+      setSelectedServiceId(services?.[0].id);
     }
   }, [services]);
 
@@ -143,23 +143,28 @@ const UserHome = () => {
       }));
       setPropertyItems(types);
     } catch (err) {
-      console.log('Init Error:', err);
+      console.log('err in getServices:-', err);
     }
 
-    const location = await getCurrentLocation();
+    // const location = await getCurrentLocation();
     let region = {
-      latitude: location?.latitude,
-      longitude: location?.longitude,
-      latitudeDelta: 5,
-      longitudeDelta: 5,
+      latitude: user?.location?.coordinates[1],
+      longitude: user?.location?.coordinates[0],
+      latitudeDelta: 0.1,
+      longitudeDelta: 0.1,
     };
     // console.log('Location:-', region);
-    setCoordinates(location);
+    setCoordinates(region);
   };
 
   if (firstVisit) {
     return null;
   }
+
+  // console.log('services:----------', services);
+  // console.log('selectedServiceId:----------', selectedServiceId);
+  // 37.421998 -122.084
+  console.log('user:----------', user);
 
   const validateAndSubmit = () => {
     if (!propertyValue) return Toast.show('Select property type', Toast.SHORT);
@@ -207,7 +212,10 @@ const UserHome = () => {
           >
             {coordinates && (
               <Marker coordinate={coordinates}>
-                <Image source={images.pin_marker} />
+                <Image
+                  source={images.pin_marker}
+                  style={{ height: 40, width: 40 }}
+                />
               </Marker>
             )}
           </MapView>

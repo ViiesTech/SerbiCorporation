@@ -1,171 +1,125 @@
-import { useEffect, useState } from 'react';
-import { FlatList } from 'react-native';
-import Container from '../../../components/Container';
+import React, { useEffect, useState, useCallback } from 'react';
+import { FlatList, View, Text, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import NormalHeader from '../../../components/NormalHeader';
-import LineBreak from '../../../components/LineBreak';
-// import { images } from '../../../assets/images';
-import HistoryCard from '../../../components/HistoryCard';
-import { getProfileImage, responsiveWidth } from '../../../utils';
-import { useLazyGetDiscussionFormsQuery } from '../../../redux/services';
-import Loader from '../../../components/Loader';
 import { useSelector } from 'react-redux';
-import { IMAGE_URL } from '../../../redux/constant';
 import moment from 'moment';
 
-const cardData = [
-  {
-    id: 1,
-    // profImg: images.map,
-    username: 'Roland Hopper',
-    price: '$79.00',
-    status: 'Completed',
-    designation: 'Pest Technician',
-    rating: '3.5',
-    location: 'California, United State',
-    date: 'Tuesday, 11 March 2025 at 10:00 AM',
-  },
-  {
-    id: 2,
-    // profImg: images.map,
-    username: 'Roland Hopper',
-    price: '$79.00',
-    status: 'Completed',
-    designation: 'Pest Technician',
-    rating: '3.5',
-    location: 'California, United State',
-    date: 'Tuesday, 11 March 2025 at 10:00 AM',
-  },
-  {
-    id: 3,
-    // profImg: images.map,
-    username: 'Roland Hopper',
-    price: '$79.00',
-    status: 'Completed',
-    designation: 'Pest Technician',
-    rating: '3.5',
-    location: 'California, United State',
-    date: 'Tuesday, 11 March 2025 at 10:00 AM',
-  },
-  {
-    id: 4,
-    // profImg: images.map,
-    username: 'Roland Hopper',
-    price: '$79.00',
-    status: 'Completed',
-    designation: 'Pest Technician',
-    rating: '3.5',
-    location: 'California, United State',
-    date: 'Tuesday, 11 March 2025 at 10:00 AM',
-  },
-  {
-    id: 5,
-    // profImg: images.map,
-    username: 'Roland Hopper',
-    price: '$79.00',
-    status: 'Completed',
-    designation: 'Pest Technician',
-    rating: '3.5',
-    location: 'California, United State',
-    date: 'Tuesday, 11 March 2025 at 10:00 AM',
-  },
-  {
-    id: 6,
-    // profImg: images.map,
-    username: 'Roland Hopper',
-    price: '$79.00',
-    status: 'Completed',
-    designation: 'Pest Technician',
-    rating: '3.5',
-    location: 'California, United State',
-    date: 'Tuesday, 11 March 2025 at 10:00 AM',
-  },
-  {
-    id: 7,
-    // profImg: images.map,
-    username: 'Roland Hopper',
-    price: '$79.00',
-    status: 'Completed',
-    designation: 'Gardener',
-    rating: '3.5',
-    location: 'California, United State',
-    date: 'Tuesday, 11 March 2025 at 10:00 AM',
-  },
-  {
-    id: 8,
-    // profImg: images.map,
-    username: 'Roland Hopper',
-    price: '$79.00',
-    status: 'Completed',
-    designation: 'Gardener',
-    rating: '3.5',
-    location: 'California, United State',
-    date: 'Tuesday, 11 March 2025 at 10:00 AM',
-  },
-];
+// Components
+import Container from '../../../components/Container';
+import NormalHeader from '../../../components/NormalHeader';
+import LineBreak from '../../../components/LineBreak';
+import HistoryCard from '../../../components/HistoryCard';
+import Loader from '../../../components/Loader';
+
+// Utils & Redux
+import { getProfileImage, responsiveWidth } from '../../../utils';
+import { useLazyGetDiscussionFormsQuery } from '../../../redux/services';
 
 const History = () => {
   const nav = useNavigation();
   const [selectedCard, setSelectedCard] = useState({ id: 1 });
   const { user } = useSelector(state => state.persistedData);
+  const [data, setData] = useState(null);
 
-  const [getAllDiscussionForms, { data, isLoading }] =
+  const [getAllDiscussionForms, { isLoading }] =
     useLazyGetDiscussionFormsQuery();
 
-  console.log('history ===>', data);
-  console.log('id ===>', user?._id);
-
   useEffect(() => {
-    getAllDiscussionForms({
+    _getAllAppointment();
+  }, []);
+
+  const _getAllAppointment = async () => {
+    const payload = {
       id: user?._id,
       type: user?.type,
       status: 'Completed',
-    });
-  }, []);
+    };
+
+    try {
+      const res = await getAllDiscussionForms(payload).unwrap();
+      setData(res);
+    } catch (err) {
+      console.error('Error fetching history:', err);
+    }
+  };
+
+  const listEmptyComponent = () => {
+    if (isLoading) return null;
+    return (
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyText}>No history found.</Text>
+      </View>
+    );
+  };
+
+  const renderItem = useCallback(
+    ({ item }) => {
+      return (
+        <HistoryCard
+          history={true}
+          selectedCard={selectedCard}
+          onCardPress={() => setSelectedCard({ id: item._id })}
+          item={{
+            id: item?._id,
+            profImg: getProfileImage(item?.technicianId?.profileImage),
+            username: item?.technicianId?.fullName || 'N/A',
+            price: `$${item?.amount || 0}`,
+            status: 'Completed',
+            designation: `${item?.serviceId?.name || 'General'} Technician`,
+            rating: item?.technicianId?.avgRating || 0,
+            location:
+              item?.technicianId?.locationName || 'Location not available',
+            date: `${moment(item?.createdAt).format('ddd, MMM D')} at ${
+              item?.time || ''
+            }`,
+          }}
+        />
+      );
+    },
+    [selectedCard],
+  );
 
   return (
-    <Container>
+    <Container extraStyle={styles.container} scrollEnabled={false}>
       <NormalHeader heading={'History'} onBackPress={() => nav.goBack()} />
       <LineBreak val={2} />
+
       {isLoading ? (
         <Loader />
       ) : (
         <FlatList
-          data={data?.data}
-          contentContainerStyle={{
-            paddingHorizontal: responsiveWidth(4),
-            gap: 15,
-          }}
+          data={data?.data || []}
+          keyExtractor={item => item?._id?.toString()}
+          contentContainerStyle={styles.contentContainerStyle}
+          ListEmptyComponent={listEmptyComponent}
           ListFooterComponent={() => <LineBreak val={2} />}
-          renderItem={({ item }) => {
-            return (
-              <HistoryCard
-                item={{
-                  id: item?._id,
-                  profImg: getProfileImage(item.technicianId?.profileImage),
-                  // profImg: item.technicianId?.isGoogleUser
-                  //   ? `${item.technicianId?.profileImage}`
-                  //   : `${IMAGE_URL}${item.technicianId?.profileImage}`,
-                  username: item.technicianId?.fullName,
-                  price: `$${item.amount}`,
-                  status: 'Completed',
-                  designation: `${item.serviceId.name} Technician`,
-                  rating: item?.technicianId?.avgRating || 0,
-                  location: item?.technicianId?.locationName,
-                  date: `${moment(item.createdAt).format('ddd, MMM D')} at ${
-                    item.time
-                  }`,
-                }}
-                selectedCard={selectedCard}
-                history={true}
-                onCardPress={() => setSelectedCard({ id: item._id })}
-              />
-            );
-          }}
+          renderItem={renderItem}
+          showsVerticalScrollIndicator={false}
         />
       )}
     </Container>
   );
 };
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  contentContainerStyle: {
+    flexGrow: 1,
+    paddingHorizontal: responsiveWidth(4),
+    paddingBottom: 20,
+    gap: 15,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 100, // Provides visual centering in the list area
+  },
+  emptyText: {
+    color: 'black',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+});
 
 export default History;
