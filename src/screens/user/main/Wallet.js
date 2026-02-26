@@ -89,11 +89,7 @@ const Wallet = () => {
   const onAddCard = async () => {
     if (!cardFields?.complete) {
       sheetRef?.current.close();
-      return Toast.show(
-        'Please fill in complete card details',
-        2000,
-        Toast.SHORT,
-      );
+      return Toast.show('Please fill in complete card details', Toast.SHORT);
     } else {
       await createSetupIntent()
         .unwrap()
@@ -114,11 +110,7 @@ const Wallet = () => {
             if (error) {
               console.error('Setup Intent Confirmation Failed:', error);
               sheetRef?.current.close();
-              return Toast.show(
-                'Failed to add card. Try again.',
-                2000,
-                Toast.SHORT,
-              );
+              return Toast.show('Failed to add card. Try again.', Toast.SHORT);
             } else if (setupIntent?.status === 'Succeeded') {
               console.log('Card added successfully:', setupIntent);
               const methodId = setupIntent?.paymentMethod.id;
@@ -131,11 +123,7 @@ const Wallet = () => {
                     sheetRef?.current.close();
                     fetchAllCards();
                     // navigation.goBack();
-                    return Toast.show(
-                      'Card added successfully!',
-                      2000,
-                      Toast.SHORT,
-                    );
+                    return Toast.show('Card added successfully!', Toast.SHORT);
                   } else {
                     console.log(
                       'success false condition of attach payment',

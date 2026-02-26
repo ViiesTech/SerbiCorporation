@@ -4,6 +4,7 @@ export const BASE_URL = 'https://serbi.apiforapp.link/api/user/';
 export const IMAGE_URL = 'https://serbi.apiforapp.link/';
 export const ADMIN_URL = 'https://serbi.apiforapp.link/api/admin/';
 export const MAP_API_KEY = 'AIzaSyCq9nyeDdwfJJg5z5se51OxsL19aW4-Vdo';
+export const MAP_API_KEY_IOS = 'AIzaSyCvGycVuu5ijiVfMj6ASBIvJ8oGBrVwmUc';
 export const CLIENT_ID =
   '584277279555-h1kfoqno737uv4fenrlrcb9felcvhuee.apps.googleusercontent.com';
 export const IOS_CLIENT_ID =

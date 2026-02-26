@@ -5,4 +5,5 @@ export const colors = {
   black: '#000',
   input_color: '#F8F9FD',
   social_color1: '#196FBE',
-}
+  placeholder_color: '#999',
+};

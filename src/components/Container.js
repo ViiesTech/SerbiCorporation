@@ -14,6 +14,7 @@ const Container = ({
   authHeading,
   space,
   extraStyle,
+  keyboardShouldPersistTaps = 'always',
 }) => {
   // Logic: If scrollEnabled is false, we use a View instead of a ScrollView
   // to prevent nesting conflicts with FlatLists.
@@ -26,7 +27,7 @@ const Container = ({
         contentContainerStyle={scrollEnabled ? contentStyle : undefined}
         scrollEnabled={scrollEnabled}
         showsVerticalScrollIndicator={showScrollIndicator}
-        keyboardShouldPersistTaps="always"
+        keyboardShouldPersistTaps={keyboardShouldPersistTaps}
         nestedScrollEnabled={true}
       >
         {authHeading && (

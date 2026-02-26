@@ -7,6 +7,7 @@ const InputField = ({
   style,
   innerStyle,
   placeholder,
+  placeholderTextColor = colors.placeholder_color,
   value,
   onChangeText,
   keyboardType,
@@ -32,6 +33,7 @@ const InputField = ({
     >
       <TextInput
         placeholder={placeholder}
+        placeholderTextColor={placeholderTextColor}
         value={value}
         style={[
           styles.input,

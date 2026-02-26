@@ -55,7 +55,7 @@ const MainProfile = () => {
               style={styles.profileImg}
               source={
                 userProfile?.profileImage
-                  ? { uri: getProfileImage(userProfile.profileImage) }
+                  ? { uri: getProfileImage(userProfile.profileImage, true) }
                   : images.userProfile
               }
             />

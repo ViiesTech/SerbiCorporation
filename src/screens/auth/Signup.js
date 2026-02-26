@@ -1,12 +1,12 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { Platform, TouchableOpacity, View, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Toast from 'react-native-simple-toast';
 import moment from 'moment';
 import { pick, types } from '@react-native-documents/picker';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import axios from 'axios';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 
 // Custom Components & Utils
 import Container from '../../components/Container';
@@ -23,17 +23,24 @@ import {
 } from '../../utils';
 import { useRegisterMutation } from '../../redux/services';
 import { MAP_API_KEY } from '../../redux/constant';
+import { colors } from '../../assets/colors';
 
 const Signup = ({ route }) => {
+  const navigation = useNavigation();
+  const googlePlacesRef = useRef();
+  const { type } = route?.params || {};
+
+  const [register, { isLoading }] = useRegisterMutation();
+
   const [state, setState] = useState({
     name: '',
     email: '',
     password: '',
     cPassword: '',
     ss: '',
-    license: [], // Simplified to empty array
+    license: [],
     address: '',
-    dob: moment().format('DD-MM-YYYY'),
+    dob: '', // Empty for placeholder
     lat: '',
     long: '',
   });
@@ -41,202 +48,156 @@ const Signup = ({ route }) => {
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showCPassword, setShowCPassword] = useState(false);
-  const [predictions, setPredictions] = useState([]);
-  const navigation = useNavigation();
-  const [register, { isLoading }] = useRegisterMutation();
-  const { type } = route?.params || {};
 
-  /**
-   * Fetches current coordinates and converts to physical address
-   */
-  const currentLocationAndFetchAddress = async () => {
-    try {
-      Toast.show('Fetching current location...', Toast.SHORT);
-      const { latitude, longitude } = await getCurrentLocation();
-
-      const address = await convertLatLongToAddress(latitude, longitude);
-      setState(prevState => ({
-        ...prevState,
-        lat: latitude,
-        long: longitude,
-        address: address || '',
-      }));
-      Toast.show('Current Location Fetched Successfully!', Toast.SHORT);
-    } catch (error) {
-      Toast.show('Failed to fetch current location', Toast.SHORT);
-    }
+  // Helper to update state
+  const onChangeText = (key, value) => {
+    setState(prevState => ({ ...prevState, [key]: value }));
   };
 
   const convertLatLongToAddress = async (lat, lng) => {
     try {
       const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${MAP_API_KEY}`;
-      const response = await axios.get(url);
-      if (response.data.status === 'OK' && response.data.results.length > 0) {
-        return response.data.results[0].formatted_address;
-      }
-      return null;
+      const response = await fetch(url);
+      const data = await response.json();
+      return data.status === 'OK' ? data.results[0].formatted_address : null;
     } catch (error) {
       return null;
     }
   };
 
-  /**
-   * Google Places Autocomplete
-   */
-  const searchLocation = async key => {
-    if (!key || key.length < 3) {
-      setPredictions([]);
-      return;
-    }
+  const currentLocationAndFetchAddress = async () => {
     try {
-      const response = await axios.get(
-        `https://maps.googleapis.com/maps/api/place/autocomplete/json`,
-        {
-          params: {
-            input: key,
-            key: MAP_API_KEY,
-            components: 'country:us',
-          },
-        },
-      );
-      if (response.data?.predictions) {
-        setPredictions(response.data.predictions);
-      }
+      Toast.show('Fetching location...', Toast.SHORT);
+      const { latitude, longitude } = await getCurrentLocation();
+      const address = await convertLatLongToAddress(latitude, longitude);
+
+      setState(prev => ({
+        ...prev,
+        lat: latitude,
+        long: longitude,
+        address: address || '',
+      }));
+      googlePlacesRef.current?.setAddressText(address || '');
+      Toast.show('Location Fetched!', Toast.SHORT);
     } catch (error) {
-      console.error('Predictions Error', error);
+      Toast.show('Failed to fetch location', Toast.SHORT);
     }
-  };
-
-  const getPlaceDetails = async placeId => {
-    try {
-      const response = await axios.get(
-        `https://maps.googleapis.com/maps/api/place/details/json`,
-        {
-          params: { place_id: placeId, key: MAP_API_KEY },
-        },
-      );
-      const details = response.data?.result;
-      if (details) {
-        setState(prevState => ({
-          ...prevState,
-          address: details.formatted_address || details.name,
-          lat: details.geometry?.location?.lat,
-          long: details.geometry?.location?.lng,
-        }));
-        setPredictions([]);
-      }
-    } catch (error) {
-      console.error('Place Details Error', error);
-    }
-  };
-
-  const onSignupPress = async () => {
-    // Basic Validations
-    if (!state.name || !state.email || !state.password) {
-      Toast.show('Please fill all required fields', Toast.SHORT);
-      return;
-    }
-    if (state.password !== state.cPassword) {
-      Toast.show(`Passwords do not match`, Toast.SHORT);
-      return;
-    }
-
-    // Role Specific Validations
-    if (type === 'Technician') {
-      const ssnDigits = state.ss.replace(/\D/g, '');
-      if (ssnDigits.length !== 9) {
-        Toast.show('Valid 9-digit SSN required', Toast.SHORT);
-        return;
-      }
-      if (state.license.length === 0) {
-        Toast.show('Pest control license required', Toast.SHORT);
-        return;
-      }
-    }
-
-    let payload;
-    if (type === 'Technician') {
-      const data = new FormData();
-      data.append('type', type || '');
-      data.append('fullName', state.name || '');
-      data.append('email', (state.email || '').toLowerCase().trim());
-      data.append('password', state.password || '');
-      data.append('locationName', state.address || '');
-      data.append('latitude', String(state.lat || ''));
-      data.append('longitude', String(state.long || ''));
-      data.append('ss', state.ss || '');
-      data.append('DOB', state.dob || '');
-      if (state.license && state.license.length > 0) {
-        data.append('license', {
-          uri: state.license[0].file,
-          name: state.license[0].name || 'license.pdf',
-          type: 'application/pdf',
-        });
-      }
-      payload = data;
-    } else {
-      payload = {
-        type: type || '',
-        fullName: state.name || '',
-        email: (state.email || '').toLowerCase().trim(),
-        password: state.password || '',
-        locationName: state.address || '',
-        latitude: String(state.lat || ''),
-        longitude: String(state.long || ''),
-      };
-    }
-
-    console.log('Signup type:', type);
-    console.log(
-      'Final payload keys:',
-      type === 'Technician'
-        ? payload._parts.map(p => p[0])
-        : Object.keys(payload),
-    );
-
-    console.log('payload:-', payload);
-
-    await register(payload)
-      .unwrap()
-      .then(res => {
-        console.log('res in signup:-', res);
-        Toast.show(res.msg, Toast.SHORT);
-        if (res.success) {
-          navigation.navigate('Otp', { otpData: res.data });
-        }
-      })
-      .catch(error => {
-        console.log('error in signup:-', error);
-        const errorMessage = error?.data?.message || 'Registration failed';
-        Toast.show(errorMessage, Toast.SHORT);
-      });
-  };
-
-  const onChangeText = (key, value) => {
-    setState(prevState => ({ ...prevState, [key]: value }));
   };
 
   const onSelectFile = async () => {
     try {
       const [pickResult] = await pick({ type: types.pdf });
-      setState(prevState => ({
-        ...prevState,
-        license: [{ name: pickResult.name, file: pickResult.uri }],
-      }));
+      onChangeText('license', [
+        { name: pickResult.name, file: pickResult.uri },
+      ]);
     } catch (err) {
-      console.log('Document picker error', err);
+      console.log('Picker error', err);
     }
   };
 
-  // lat 37.4219983
-  // long -122.084
+  const onSignupPress = async () => {
+    console.log('--- Signup Press Started ---');
+    console.log('User Type:', type);
+    console.log('Current State:', {
+      ...state,
+      password: '***',
+      cPassword: '***',
+    });
+
+    const {
+      name,
+      email,
+      password,
+      cPassword,
+      address,
+      lat,
+      long,
+      ss,
+      dob,
+      license,
+    } = state;
+
+    // Common Validations
+    if (!name || !email || !password || !address) {
+      console.log('Validation Failed: Missing required fields');
+      return Toast.show('Please fill all required fields', Toast.SHORT);
+    }
+    if (password !== cPassword) {
+      console.log('Validation Failed: Password mismatch');
+      return Toast.show('Passwords do not match', Toast.SHORT);
+    }
+
+    let payload;
+
+    if (type === 'Technician') {
+      console.log('Technician Specific Validation...');
+      const ssnDigits = (ss || '').replace(/\D/g, '');
+      if (ssnDigits.length !== 9) {
+        console.log('Validation Failed: SSN invalid', ssnDigits);
+        return Toast.show('Valid 9-digit SSN required', Toast.SHORT);
+      }
+      if (!license || license.length === 0) {
+        console.log('Validation Failed: License missing');
+        return Toast.show('License PDF required', Toast.SHORT);
+      }
+
+      console.log('Creating FormData payload...');
+      const data = new FormData();
+      data.append('type', type);
+      data.append('fullName', name);
+      data.append('email', email.toLowerCase().trim());
+      data.append('password', password);
+      data.append('locationName', address);
+      data.append('latitude', String(lat));
+      data.append('longitude', String(long));
+      data.append('ss', ss);
+      data.append('DOB', dob);
+      if (license?.[0]?.file) {
+        data.append('license', {
+          uri: license[0].file,
+          name: license[0].name || 'license.pdf',
+          type: 'application/pdf',
+        });
+      }
+      payload = data;
+      console.log(
+        'FormData Payload Parts:',
+        data._parts?.map(p => p[0]),
+      );
+    } else {
+      console.log('Creating JSON payload...');
+      payload = {
+        type,
+        fullName: name,
+        email: email.toLowerCase().trim(),
+        password: password,
+        locationName: address,
+        latitude: String(lat),
+        longitude: String(long),
+      };
+      console.log('JSON Payload keys:', Object.keys(payload));
+    }
+
+    try {
+      console.log('Executing register mutation...');
+      const res = await register(payload).unwrap();
+      console.log('Signup Result:', res);
+      Toast.show(res.msg, Toast.SHORT);
+      if (res.success) navigation.navigate('Otp', { otpData: res.data });
+    } catch (error) {
+      console.error('Signup Error Exception:', error);
+      Toast.show(error?.data?.message || 'Registration failed', Toast.SHORT);
+    }
+  };
+
   return (
     <Container
-      contentStyle={{ paddingBottom: responsiveHeight(7) }}
-      space={10}
+      scrollEnabled={true}
+      keyboardShouldPersistTaps="handled"
       authHeading={'SIGN UP'}
+      space={5}
     >
-      <LineBreak val={4} />
+      <LineBreak val={3} />
 
       <InputField
         onChangeText={text => onChangeText('name', text)}
@@ -246,36 +207,36 @@ const Signup = ({ route }) => {
 
       <LineBreak val={2} />
 
-      <InputField
-        onChangeText={text => {
-          onChangeText('address', text);
-          searchLocation(text);
-        }}
-        value={state.address}
-        icon={true}
-        onLocationPress={currentLocationAndFetchAddress}
-        innerStyle={{ width: responsiveWidth(75) }}
-        placeholder={'Home Address'}
-      />
-
-      {/* Autocomplete Predictions */}
-      {predictions.length > 0 && (
-        <View style={styles.predictionBox}>
-          {predictions.map(item => (
+      {/* Address Autocomplete */}
+      <View style={styles.autocompleteWrapper}>
+        <GooglePlacesAutocomplete
+          ref={googlePlacesRef}
+          placeholder="Home Address"
+          fetchDetails={true}
+          keyboardShouldPersistTaps="handled"
+          onPress={(data, details = null) => {
+            setState(prev => ({
+              ...prev,
+              address: data.description || details?.formatted_address,
+              lat: details?.geometry?.location?.lat,
+              long: details?.geometry?.location?.lng,
+            }));
+          }}
+          query={{ key: MAP_API_KEY, language: 'en', components: 'country:us' }}
+          textInputProps={{
+            placeholderTextColor: colors.placeholder_color,
+          }}
+          styles={autoCompleteStyles}
+          renderRightButton={() => (
             <TouchableOpacity
-              key={item.place_id}
-              onPress={() => getPlaceDetails(item.place_id)}
-              style={styles.predictionItem}
+              onPress={currentLocationAndFetchAddress}
+              style={styles.locateBtn}
             >
-              <AppText
-                title={item.description}
-                textColor={AppColors.BLACK}
-                textSize={1.6}
-              />
+              <Ionicons name="locate" size={24} color={AppColors.PRIMARY} />
             </TouchableOpacity>
-          ))}
-        </View>
-      )}
+          )}
+        />
+      </View>
 
       {type === 'Technician' && (
         <>
@@ -288,23 +249,23 @@ const Signup = ({ route }) => {
           />
           <LineBreak val={2} />
           <TouchableOpacity onPress={onSelectFile}>
-            <InputField
-              value={state.license[0]?.name}
-              editable={false}
-              placeholder={'Upload License (PDF)'}
-            />
+            <View pointerEvents="none">
+              <InputField
+                value={state.license[0]?.name}
+                placeholder={'Upload License (PDF)'}
+              />
+            </View>
           </TouchableOpacity>
           <LineBreak val={2} />
           <TouchableOpacity onPress={() => setIsDatePickerVisible(true)}>
-            <InputField
-              value={state.dob}
-              editable={false}
-              placeholder={'Date Of Birth'}
-            />
+            <View pointerEvents="none">
+              <InputField value={state.dob} placeholder={'Date Of Birth'} />
+            </View>
           </TouchableOpacity>
           <DateTimePickerModal
             isVisible={isDatePickerVisible}
             mode="date"
+            maximumDate={new Date()}
             onConfirm={date => {
               onChangeText('dob', moment(date).format('DD-MM-YYYY'));
               setIsDatePickerVisible(false);
@@ -367,33 +328,61 @@ const Signup = ({ route }) => {
   );
 };
 
-const styles = {
-  predictionBox: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    marginTop: 5,
-    marginHorizontal: responsiveHeight(3),
-    elevation: 4,
+const styles = StyleSheet.create({
+  autocompleteWrapper: {
     zIndex: 1000,
+    position: 'relative',
+    marginHorizontal: responsiveWidth(5),
   },
-  predictionItem: {
-    padding: 12,
-    borderBottomWidth: 0.5,
-    borderColor: '#eee',
+  locateBtn: {
+    justifyContent: 'center',
+    position: 'absolute',
+    right: 15,
+    top: 15,
+  },
+});
+
+const autoCompleteStyles = {
+  container: { flex: 0 },
+  textInput: {
+    height: responsiveHeight(6.5),
+    color: AppColors.BLACK,
+    fontSize: 14,
+    borderWidth: 0.2,
+    borderColor: colors.black,
+    borderRadius: 10,
+    paddingLeft: 15,
+    paddingRight: 45,
+    backgroundColor: colors.input_color,
+  },
+  listView: {
+    backgroundColor: '#fff',
+    elevation: 5,
+    zIndex: 2000,
+    position: 'absolute',
+    top: 50,
   },
 };
 
 export default Signup;
 
+// import React, { useEffect, useState, useCallback, useRef } from 'react';
+// import { Platform, TouchableOpacity, View } from 'react-native';
+// import { useNavigation } from '@react-navigation/native';
+// import Toast from 'react-native-simple-toast';
+// import moment from 'moment';
+// import { pick, types } from '@react-native-documents/picker';
+// import DateTimePickerModal from 'react-native-modal-datetime-picker';
+// import axios from 'axios';
+// import Ionicons from 'react-native-vector-icons/Ionicons';
+// import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+
+// // Custom Components & Utils
 // import Container from '../../components/Container';
 // import LineBreak from '../../components/LineBreak';
 // import Button from '../../components/Button';
 // import InputField from '../../components/InputField';
-// import SocialButtons from '../../components/SocialButtons';
 // import AppText from '../../components/AppText';
-// import { TouchableOpacity, View } from 'react-native';
-// import { useNavigation } from '@react-navigation/native';
-// import { useEffect, useState } from 'react';
 // import {
 //   AppColors,
 //   formatSSN,
@@ -401,267 +390,177 @@ export default Signup;
 //   responsiveHeight,
 //   responsiveWidth,
 // } from '../../utils';
-// import Toast from 'react-native-simple-toast';
 // import { useRegisterMutation } from '../../redux/services';
-// import { pick, types } from '@react-native-documents/picker';
-// import moment from 'moment';
-// import DateTimePickerModal from 'react-native-modal-datetime-picker';
-// import { MAP_API_KEY } from '../../redux/constant';
-// import axios from 'axios';
+// import { MAP_API_KEY, MAP_API_KEY_IOS } from '../../redux/constant';
 
 // const Signup = ({ route }) => {
 //   const [state, setState] = useState({
 //     name: '',
-//     number: '',
 //     email: '',
 //     password: '',
 //     cPassword: '',
 //     ss: '',
-//     // license: {
-//     //   name: '',
-//     //   file: '',
-//     // },
-//     license: [{ name: '', file: '' }],
+//     license: [], // Simplified to empty array
 //     address: '',
-//     dob: moment(new Date()).format('DD-MM-YYYY'),
+//     dob: moment().format('DD-MM-YYYY'),
 //     lat: '',
 //     long: '',
 //   });
+
 //   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
-//   const [predictions, setPredictions] = useState([]);
+//   const [showPassword, setShowPassword] = useState(false);
+//   const [showCPassword, setShowCPassword] = useState(false);
 //   const navigation = useNavigation();
 //   const [register, { isLoading }] = useRegisterMutation();
-//   const { type } = route?.params;
+//   const { type } = route?.params || {};
+//   const googlePlacesRef = useRef();
 
-//   // console.log(state.lat,state.long)
+//   let MAP_KEY = MAP_API_KEY;
 
+//   /**
+//    * Fetches current coordinates and converts to physical address
+//    */
 //   const currentLocationAndFetchAddress = async () => {
 //     try {
 //       Toast.show('Fetching current location...', Toast.SHORT);
 //       const { latitude, longitude } = await getCurrentLocation();
-//       // console.log('Lat Long:', latitude, longitude);
 
 //       const address = await convertLatLongToAddress(latitude, longitude);
 //       setState(prevState => ({
 //         ...prevState,
 //         lat: latitude,
 //         long: longitude,
-//         address: address,
+//         address: address || '',
 //       }));
-//       Toast.show('Current Location Fetched Successfuly!', Toast.SHORT);
-//       // console.log('Converted Address:', address);
+//       googlePlacesRef.current?.setAddressText(address || '');
+//       Toast.show('Current Location Fetched Successfully!', Toast.SHORT);
 //     } catch (error) {
-//       console.log('Error getting location or converting:', error);
-//       Toast.show('Failed to fetch current location...', Toast.SHORT);
-//       return null;
+//       Toast.show('Failed to fetch current location', Toast.SHORT);
 //     }
 //   };
 
 //   const convertLatLongToAddress = async (lat, lng) => {
 //     try {
-//       const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${MAP_API_KEY}`;
-//       const response = await axios.get(url);
-
-//       if (
-//         response.data.status === 'OK' &&
-//         response.data.results &&
-//         response.data.results.length > 0
-//       ) {
-//         return response.data.results[0].formatted_address;
-//       } else {
-//         console.log('No address found for given coordinates');
-//         return null;
+//       const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${MAP_KEY}`;
+//       const response = await fetch(url, {
+//         headers: {
+//           [Platform.OS === 'ios'
+//             ? 'X-Ios-Bundle-Identifier'
+//             : 'X-Android-Package']:
+//             Platform.OS === 'ios'
+//               ? 'com.app.serbicorp'
+//               : 'com.serbicorporation',
+//         },
+//       });
+//       const data = await response.json();
+//       if (data.status === 'OK' && data.results.length > 0) {
+//         return data.results[0].formatted_address;
 //       }
+//       return null;
 //     } catch (error) {
-//       console.log('Error in geocoding API:', error);
 //       return null;
 //     }
 //   };
 
+//   /**
+//    * Google Places Autocomplete
+//    */
+
 //   const onSignupPress = async () => {
-//     if (!state.name) {
-//       Toast.show('Please enter your name', Toast.SHORT);
+//     // Basic Validations
+//     if (!state.name || !state.email || !state.password) {
+//       Toast.show('Please fill all required fields', Toast.SHORT);
 //       return;
 //     }
-//     // if (!state.number) {
-//     //   Toast.show('Please enter your number', 2000, Toast.SHORT);
-//     //   return;
-//     // }
-//     if (!state.email) {
-//       Toast.show('Please enter your email', Toast.SHORT);
-//       return;
-//     }
-//     if (!state.password) {
-//       Toast.show('Please enter your password', Toast.SHORT);
-//       return;
-//     }
-//     if (state.password.length < 8) {
-//       Toast.show('Password is too short', Toast.SHORT);
-//       return;
-//     }
-//     if (!state.cPassword) {
-//       Toast.show('Please confirm your password', Toast.SHORT);
-//       return;
-//     }
-//     if (state.cPassword !== state.password) {
-//       Toast.show(`Password doesn't match`, Toast.SHORT);
+//     if (state.password !== state.cPassword) {
+//       Toast.show(`Passwords do not match`, Toast.SHORT);
 //       return;
 //     }
 
+//     // Role Specific Validations
 //     if (type === 'Technician') {
 //       const ssnDigits = state.ss.replace(/\D/g, '');
 //       if (ssnDigits.length !== 9) {
-//         Toast.show('Please enter a valid 9-digit SSN', Toast.SHORT);
+//         Toast.show('Valid 9-digit SSN required', Toast.SHORT);
 //         return;
 //       }
-
-//       if (state.license.length < 1) {
-//         Toast.show('Please upload your pest control license', Toast.SHORT);
+//       if (state.license.length === 0) {
+//         Toast.show('Pest control license required', Toast.SHORT);
 //         return;
 //       }
 //     }
 
-//     let data = new FormData();
-//     data.append('type', type);
-//     data.append('fullName', state.name);
-//     data.append('email', state.email);
-//     data.append('ss', state.ss);
-//     data.append('password', state.password);
-//     data.append('locationName', state.address);
-//     data.append('latitude', state.lat);
-//     data.append('longitude', state.long);
-//     data.append('DOB', state.dob);
+//     let payload;
 //     if (type === 'Technician') {
-//       if (state.license.length > 0) {
-//         // const fileObj = state.license[0];
-//         // if (fileObj.file && fileObj.file.startsWith('file://')) {
-//         //   data.append('license', {
-//         //     uri: fileObj.file,
-//         //     type: 'application/pdf',
-//         //     name: fileObj.name,
-//         //   });
-//         // } else if (typeof fileObj.file === 'string') {
-//         //   data.append('license', fileObj.file);
-//         // }
+//       const data = new FormData();
+//       data.append('type', type || '');
+//       data.append('fullName', state.name || '');
+//       data.append('email', (state.email || '').toLowerCase().trim());
+//       data.append('password', state.password || '');
+//       data.append('locationName', state.address || '');
+//       data.append('latitude', String(state.lat || ''));
+//       data.append('longitude', String(state.long || ''));
+//       data.append('ss', state.ss || '');
+//       data.append('DOB', state.dob || '');
+//       if (state.license && state.license.length > 0) {
 //         data.append('license', {
 //           uri: state.license[0].file,
-//           name: state.license[0].name,
+//           name: state.license[0].name || 'license.pdf',
 //           type: 'application/pdf',
 //         });
 //       }
-//       // data.append('pestControlLicense', {
-//       //   uri: state.license.file,
-//       //   type: 'application/pdf',
-//       //   name: state.license.name,
-//       // });
+//       payload = data;
+//     } else {
+//       payload = {
+//         type: type || '',
+//         fullName: state.name || '',
+//         email: (state.email || '').toLowerCase().trim(),
+//         password: state.password || '',
+//         locationName: state.address || '',
+//         latitude: String(state.lat || ''),
+//         longitude: String(state.long || ''),
+//       };
 //     }
-//     console.log('data:-', data);
-//     // let data = {
-//     //   type: type,
-//     //   fullName: state.name,
-//     //   phone: state.number,
-//     //   email: state.email,
-//     //   password: state.password,
-//     // };
 
-//     await register(data)
+//     console.log('Signup type:', type);
+//     console.log(
+//       'Final payload keys:',
+//       type === 'Technician'
+//         ? payload._parts.map(p => p[0])
+//         : Object.keys(payload),
+//     );
+
+//     console.log('payload:-', payload);
+
+//     await register(payload)
 //       .unwrap()
 //       .then(res => {
-//         console.log('response of register ===>', res);
+//         console.log('res in signup:-', res);
 //         Toast.show(res.msg, Toast.SHORT);
 //         if (res.success) {
 //           navigation.navigate('Otp', { otpData: res.data });
 //         }
 //       })
 //       .catch(error => {
-//         console.log('error while register ====>', error);
-//         const errorMessage =
-//           error?.data?.message || error?.message || 'Some problem occurred';
+//         console.log('error in signup:-', error);
+//         const errorMessage = error?.data?.message || 'Registration failed';
 //         Toast.show(errorMessage, Toast.SHORT);
 //       });
 //   };
 
-//   const onChangeText = (state, value) => {
-//     setState(prevState => ({
-//       ...prevState,
-//       [state]: value,
-//     }));
+//   const onChangeText = (key, value) => {
+//     setState(prevState => ({ ...prevState, [key]: value }));
 //   };
 
 //   const onSelectFile = async () => {
 //     try {
-//       const [pickResult] = await pick({
-//         type: types.pdf,
-//       });
-
-//       // console.log('pick result ===>', pickResult);
+//       const [pickResult] = await pick({ type: types.pdf });
 //       setState(prevState => ({
 //         ...prevState,
-//         license: [
-//           {
-//             name: pickResult.name,
-//             file: pickResult.uri,
-//           },
-//         ],
+//         license: [{ name: pickResult.name, file: pickResult.uri }],
 //       }));
 //     } catch (err) {
-//       console.log('error picking document', err);
-//     }
-//   };
-
-//   const searchLocation = async key => {
-//     if (!key) {
-//       setPredictions([]);
-//       return;
-//     }
-//     try {
-//       const response = await axios.get(
-//         `https://maps.googleapis.com/maps/api/place/autocomplete/json`,
-//         {
-//           params: {
-//             input: key,
-//             key: MAP_API_KEY,
-//             components: 'country:us',
-//           },
-//         },
-//       );
-
-//       if (response.data?.predictions) {
-//         setPredictions(response.data.predictions);
-//       }
-//     } catch (error) {
-//       console.error('Error fetching predictions', error);
-//     }
-//   };
-
-//   const getPlaceDetails = async placeId => {
-//     try {
-//       const response = await axios.get(
-//         `https://maps.googleapis.com/maps/api/place/details/json`,
-//         {
-//           params: {
-//             place_id: placeId,
-//             key: MAP_API_KEY,
-//           },
-//         },
-//       );
-
-//       const details = response.data?.result;
-//       if (details) {
-//         const locationName = details.formatted_address || details.name;
-//         const lat = details.geometry?.location?.lat;
-//         const long = details.geometry?.location?.lng;
-
-//         setState(prevState => ({
-//           ...prevState,
-//           address: locationName,
-//           lat,
-//           long,
-//         }));
-//         setPredictions([]);
-//       }
-//     } catch (error) {
-//       console.error('Error fetching place details', error);
+//       console.log('Document picker error', err);
 //     }
 //   };
 
@@ -672,77 +571,159 @@ export default Signup;
 //       authHeading={'SIGN UP'}
 //     >
 //       <LineBreak val={4} />
+
 //       <InputField
 //         onChangeText={text => onChangeText('name', text)}
 //         value={state.name}
-//         placeholder={'Name'}
+//         placeholder={'Full Name'}
 //       />
-//       {/* <LineBreak val={2} />
-//       <InputField
-//         onChangeText={text => onChangeText('number', text)}
-//         value={state.number}
-//         keyboardType={'numeric'}
-//         placeholder={'Number'}
-//       /> */}
+
 //       <LineBreak val={2} />
-//       <InputField
-//         onChangeText={text => {
-//           onChangeText('address', text);
-//           searchLocation(text);
-//         }}
-//         value={state.address}
-//         icon={true}
-//         onLocationPress={currentLocationAndFetchAddress}
-//         innerStyle={{ width: responsiveWidth(75) }}
-//         placeholder={'Home Address'}
-//       />
-//       {predictions.length > 0 && (
-//         <View
-//           style={{
-//             backgroundColor: '#fff',
-//             borderRadius: 8,
-//             marginTop: 5,
-//             margin: responsiveHeight(3),
-//             elevation: 3,
+
+//       <View style={{ zIndex: 1000, position: 'relative' }}>
+//         <GooglePlacesAutocomplete
+//           ref={googlePlacesRef}
+//           placeholder="Home Address"
+//           fetchDetails={true}
+//           onPress={(data, details = null) => {
+//             setState(prevState => ({
+//               ...prevState,
+//               address: data.description || details?.formatted_address,
+//               lat: details?.geometry?.location?.lat,
+//               long: details?.geometry?.location?.lng,
+//             }));
 //           }}
-//         >
-//           {predictions.map(item => (
+//           query={{
+//             key: MAP_KEY,
+//             language: 'en',
+//             components: 'country:us',
+//           }}
+//           requestHttpHeaders={{
+//             [Platform.OS === 'ios'
+//               ? 'X-Ios-Bundle-Identifier'
+//               : 'X-Android-Package']:
+//               Platform.OS === 'ios'
+//                 ? 'com.app.serbicorp'
+//                 : 'com.serbicorporation',
+//           }}
+//           onFail={error => {
+//             console.error('Signup Google Places Error:', error);
+//             if (
+//               error === 'request could not be completed or has been aborted'
+//             ) {
+//               console.log('Request aborted - checking key/bundle ID...');
+//             }
+//           }}
+//           debounce={400}
+//           textInputProps={{
+//             onChangeText: async text => {
+//               if (text.length >= 3) {
+//                 console.log('Diagnostic fetch for:', text);
+//                 try {
+//                   const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
+//                     text,
+//                   )}&key=${MAP_KEY}&components=country:us`;
+
+//                   console.log('Test 1: Fetch without headers...');
+//                   const resp1 = await fetch(url).catch(e => {
+//                     console.error('Test 1 Failed:', e.message);
+//                     return null;
+//                   });
+//                   if (resp1) {
+//                     const json1 = await resp1.json();
+//                     console.log('Test 1 Result:', json1.status);
+//                   }
+
+//                   console.log('Test 2: Fetch with headers...');
+//                   const resp2 = await fetch(url, {
+//                     headers: {
+//                       'X-Ios-Bundle-Identifier': 'com.app.serbicorp',
+//                     },
+//                   }).catch(e => {
+//                     console.error('Test 2 Failed:', e.message);
+//                     return null;
+//                   });
+//                   if (resp2) {
+//                     const json2 = await resp2.json();
+//                     console.log('Test 2 Result:', json2.status);
+//                   }
+
+//                   console.log('Test 3: Axios with headers...');
+//                   const resp3 = await axios
+//                     .get(url, {
+//                       headers: {
+//                         'X-Ios-Bundle-Identifier': 'com.app.serbicorp',
+//                       },
+//                     })
+//                     .catch(e => {
+//                       console.error('Test 3 Failed:', e.message);
+//                       return null;
+//                     });
+//                   if (resp3) {
+//                     console.log('Test 3 Result:', resp3.data.status);
+//                   }
+//                 } catch (err) {
+//                   console.error('Diagnostic Generic Error:', err);
+//                 }
+//               }
+//             },
+//           }}
+//           styles={{
+//             container: {
+//               flex: 0,
+//               marginHorizontal: responsiveWidth(5),
+//             },
+//             textInputContainer: {
+//               backgroundColor: 'transparent',
+//               borderTopWidth: 0,
+//               borderBottomWidth: 0,
+//             },
+//             textInput: {
+//               height: responsiveHeight(6.5),
+//               color: AppColors.BLACK,
+//               fontSize: 16,
+//               borderWidth: 1,
+//               borderColor: '#ccc',
+//               borderRadius: 8,
+//               paddingLeft: 15,
+//             },
+//             listView: {
+//               backgroundColor: '#fff',
+//               elevation: 5,
+//               zIndex: 1000,
+//             },
+//           }}
+//           renderRightButton={() => (
 //             <TouchableOpacity
-//               key={item.place_id}
-//               onPress={() => getPlaceDetails(item.place_id)}
+//               onPress={currentLocationAndFetchAddress}
 //               style={{
-//                 padding: 12,
-//                 borderBottomWidth: 0.5,
-//                 borderColor: '#eee',
+//                 justifyContent: 'center',
+//                 position: 'absolute',
+//                 right: 15,
+//                 top: 15,
 //               }}
 //             >
-//               <AppText
-//                 title={item.description}
-//                 textColor={AppColors.BLACK}
-//                 textSize={1.6}
-//               />
+//               <Ionicons name="locate" size={24} color={AppColors.PRIMARY} />
 //             </TouchableOpacity>
-//           ))}
-//         </View>
-//       )}
+//           )}
+//         />
+//       </View>
+
 //       {type === 'Technician' && (
 //         <>
 //           <LineBreak val={2} />
 //           <InputField
-//             onChangeText={text => {
-//               const formatted = formatSSN(text);
-//               onChangeText('ss', formatted);
-//             }}
+//             onChangeText={text => onChangeText('ss', formatSSN(text))}
 //             value={state.ss}
 //             keyboardType="numeric"
-//             placeholder="SSN"
+//             placeholder="SSN (XXX-XX-XXXX)"
 //           />
 //           <LineBreak val={2} />
-//           <TouchableOpacity onPress={() => onSelectFile()}>
+//           <TouchableOpacity onPress={onSelectFile}>
 //             <InputField
 //               value={state.license[0]?.name}
 //               editable={false}
-//               placeholder={'Choose file… (Pest Control License)'}
+//               placeholder={'Upload License (PDF)'}
 //             />
 //           </TouchableOpacity>
 //           <LineBreak val={2} />
@@ -757,16 +738,14 @@ export default Signup;
 //             isVisible={isDatePickerVisible}
 //             mode="date"
 //             onConfirm={date => {
-//               setState(prevState => ({
-//                 ...prevState,
-//                 dob: moment(date).format('DD-MM-YYYY'),
-//               }));
+//               onChangeText('dob', moment(date).format('DD-MM-YYYY'));
 //               setIsDatePickerVisible(false);
 //             }}
 //             onCancel={() => setIsDatePickerVisible(false)}
 //           />
 //         </>
 //       )}
+
 //       <LineBreak val={2} />
 //       <InputField
 //         value={state.email}
@@ -774,35 +753,66 @@ export default Signup;
 //         keyboardType={'email-address'}
 //         placeholder={'Email Address'}
 //       />
+
 //       <LineBreak val={2} />
 //       <InputField
 //         onChangeText={text => onChangeText('password', text)}
 //         value={state.password}
+//         secureTextEntry={!showPassword}
 //         placeholder={'Password'}
+//         rightIcon={
+//           <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+//             <Ionicons
+//               name={showPassword ? 'eye-outline' : 'eye-off-outline'}
+//               size={22}
+//               color={AppColors.PRIMARY}
+//             />
+//           </TouchableOpacity>
+//         }
 //       />
-//       <LineBreak val={3} />
+
+//       <LineBreak val={2} />
 //       <InputField
 //         onChangeText={text => onChangeText('cPassword', text)}
 //         value={state.cPassword}
+//         secureTextEntry={!showCPassword}
 //         placeholder={'Confirm Password'}
+//         rightIcon={
+//           <TouchableOpacity onPress={() => setShowCPassword(!showCPassword)}>
+//             <Ionicons
+//               name={showCPassword ? 'eye-outline' : 'eye-off-outline'}
+//               size={22}
+//               color={AppColors.PRIMARY}
+//             />
+//           </TouchableOpacity>
+//         }
 //       />
+
+//       <LineBreak val={4} />
+//       <Button indicator={isLoading} onPress={onSignupPress} title={'SIGN UP'} />
+
 //       <LineBreak val={3} />
-//       <Button
-//         indicator={isLoading}
-//         onPress={() => onSignupPress()}
-//         title={'SIGN UP'}
-//       />
-//       <LineBreak val={3} />
-//       {/* <SocialButtons
-//         onSocialPress={type => console.log('type', type)}
-//         heading={'Continue with'}
-//       /> */}
-//       {/* <LineBreak val={5} /> */}
 //       <TouchableOpacity onPress={() => navigation.navigate('Login')}>
 //         <AppText align={'center'} title={'Already have an account? Login'} />
 //       </TouchableOpacity>
 //     </Container>
 //   );
+// };
+
+// const styles = {
+//   predictionBox: {
+//     backgroundColor: '#fff',
+//     borderRadius: 8,
+//     marginTop: 5,
+//     marginHorizontal: responsiveHeight(3),
+//     elevation: 4,
+//     zIndex: 1000,
+//   },
+//   predictionItem: {
+//     padding: 12,
+//     borderBottomWidth: 0.5,
+//     borderColor: '#eee',
+//   },
 // };
 
 // export default Signup;

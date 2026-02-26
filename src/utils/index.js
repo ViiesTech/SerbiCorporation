@@ -181,16 +181,18 @@ export const formatSSN = value => {
   return formatted;
 };
 
-export const getProfileImage = profileImage => {
+export const getProfileImage = (profileImage, cacheBuster = false) => {
   if (!profileImage || typeof profileImage !== 'string') {
     return null;
   }
 
+  const query = cacheBuster ? `?t=${Date.now()}` : '';
+
   if (profileImage.startsWith('http')) {
-    return profileImage;
+    return `${profileImage}${query}`;
   }
 
-  return `${IMAGE_URL}${profileImage}`;
+  return `${IMAGE_URL}${profileImage}${query}`;
 };
 
 export const getFileNameFromUri = uri => {

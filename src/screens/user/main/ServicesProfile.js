@@ -362,6 +362,14 @@ const ServicesProfile = ({ route }) => {
                     key: MAP_API_KEY,
                     language: 'en',
                   }}
+                  requestHttpHeaders={{
+                    [Platform.OS === 'ios'
+                      ? 'X-Ios-Bundle-Identifier'
+                      : 'X-Android-Package']:
+                      Platform.OS === 'ios'
+                        ? 'com.app.serbicorp'
+                        : 'com.serbicorporation',
+                  }}
                   onFail={error => {
                     console.error('Google Places Library Error: ', error);
                     Toast.show(
@@ -429,7 +437,16 @@ const ServicesProfile = ({ route }) => {
                           const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
                             text,
                           )}&key=${MAP_API_KEY}&language=en`;
-                          const response = await fetch(url);
+                          const response = await fetch(url, {
+                            headers: {
+                              [Platform.OS === 'ios'
+                                ? 'X-Ios-Bundle-Identifier'
+                                : 'X-Android-Package']:
+                                Platform.OS === 'ios'
+                                  ? 'com.app.serbicorp'
+                                  : 'com.serbicorporation',
+                            },
+                          });
                           const json = await response.json();
                           console.log('Manual Fetch Result:', {
                             status: response.status,

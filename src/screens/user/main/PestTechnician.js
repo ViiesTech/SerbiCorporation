@@ -321,7 +321,7 @@ const PestTechnician = ({ route }) => {
 
 const styles = StyleSheet.create({
   map: {
-    height: responsiveHeight(45),
+    height: responsiveHeight(40), //45
     width: responsiveWidth(100),
   },
   mainImage: {
