@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Routes from './routes';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Provider } from 'react-redux';
@@ -8,6 +8,8 @@ import { LogBox } from 'react-native';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { CLIENT_ID, IOS_CLIENT_ID, STRIPE_KEY } from './redux/constant';
 import { StripeProvider } from '@stripe/stripe-react-native';
+import NetInfo from '@react-native-community/netinfo';
+import OfflineModal from './components/OfflineModal';
 
 GoogleSignin.configure({
   webClientId: CLIENT_ID,
@@ -17,8 +19,16 @@ GoogleSignin.configure({
 });
 
 const App = () => {
+  const [isOffline, setIsOffline] = useState(false);
+
   useEffect(() => {
     LogBox.ignoreAllLogs();
+
+    const unsubscribe = NetInfo.addEventListener(state => {
+      setIsOffline(!state.isConnected);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   return (
@@ -27,6 +37,7 @@ const App = () => {
         <SafeAreaView style={{ flex: 1 }}>
           <StripeProvider publishableKey={STRIPE_KEY}>
             <Routes />
+            <OfflineModal visible={isOffline} />
           </StripeProvider>
         </SafeAreaView>
       </PersistGate>
