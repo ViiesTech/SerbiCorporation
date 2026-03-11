@@ -120,18 +120,39 @@ const Profile = ({ route }) => {
       return;
     }
 
+    if (user?.type === 'Technician') {
+      if (!state.service) {
+        Toast.show('Please select a service', Toast.SHORT);
+        return;
+      }
+      if (!state.price) {
+        Toast.show('Please enter pricing', Toast.SHORT);
+        return;
+      }
+      if (!state.ss) {
+        Toast.show('Please enter social security number', Toast.SHORT);
+        return;
+      }
+      if (state.license.length === 0) {
+        Toast.show('Please upload your license', Toast.SHORT);
+        return;
+      }
+    }
+
     const data = new FormData();
     data.append('userId', user?._id || '');
     data.append('fullName', state.fullName);
     data.append('phone', state.phone);
     data.append('DOB', state.dob);
-    data.append('longitude', String(state.location.long));
-    data.append('latitude', String(state.location.lat));
+    data.append('longitude', String(state.location.long || ''));
+    data.append('latitude', String(state.location.lat || ''));
     data.append('locationName', state.location.name);
 
     if (user?.type === 'Technician') {
       data.append('price', state.price || '0');
-      data.append('service', state.service || '');
+      if (state.service) {
+        data.append('service', state.service);
+      }
       data.append('workingHours', JSON.stringify(state.workingHours));
       data.append('ss', state.ss);
 
@@ -175,7 +196,7 @@ const Profile = ({ route }) => {
       nav.goBack();
     } catch (error) {
       console.error('Update Error:', error);
-      Toast.show('Failed to update profile', Toast.SHORT);
+      Toast.show(error?.data?.msg || 'Failed to update profile', Toast.SHORT);
     }
   };
 
@@ -268,7 +289,7 @@ const Profile = ({ route }) => {
           <ImageBackground
             source={profileSrc}
             style={{ width: 100, height: 100 }}
-            imageStyle={{ borderRadius: 50 }}
+            imageStyle={{ borderRadius: 50, backgroundColor: '#fafafa' }}
           >
             <TouchableOpacity
               onPress={onImageSelect}

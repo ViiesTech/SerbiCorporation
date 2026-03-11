@@ -1,4 +1,4 @@
-package com.serbicorporation
+package com.serbi.app
 
 import android.app.Application
 import com.facebook.react.PackageList

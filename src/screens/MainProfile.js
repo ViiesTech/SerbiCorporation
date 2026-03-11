@@ -79,6 +79,7 @@ const MainProfile = () => {
               align={'center'}
               title={userProfile?.locationName || 'No Location Provided'}
               color={colors.gray}
+              textWidth={80}
             />
 
             <LineBreak val={2.5} />
