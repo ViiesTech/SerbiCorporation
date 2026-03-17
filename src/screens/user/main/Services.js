@@ -1,8 +1,23 @@
-import React, { useEffect, useState } from 'react';
-import { View, FlatList, Image, Platform } from 'react-native';
-import Container from '../../../components/Container';
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useMemo,
+  useCallback,
+} from 'react';
+import { View, FlatList, Platform, StyleSheet, Animated } from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
+import Toast from 'react-native-simple-toast';
+
+import Container from '../../../components/Container';
 import NormalHeader from './../../../components/NormalHeader';
+import AppText from '../../../components/AppText';
+import LineBreak from '../../../components/LineBreak';
+import HistoryCard from './../../../components/HistoryCard';
+import Loader from '../../../components/Loader';
+
 import {
   AppColors,
   estimateTimeMinutes,
@@ -12,184 +27,157 @@ import {
   responsiveHeight,
   responsiveWidth,
 } from '../../../utils';
-import AppText from '../../../components/AppText';
-import LineBreak from '../../../components/LineBreak';
-import HistoryCard from './../../../components/HistoryCard';
+
 import {
   useAddToFavouritesMutation,
   useLazyGetNearbyTechniciansQuery,
 } from '../../../redux/services/index';
-import Loader from '../../../components/Loader';
-import { IMAGE_URL } from '../../../redux/constant';
-import { useSelector } from 'react-redux';
-import Toast from 'react-native-simple-toast';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { images } from '../../../assets/images';
-
-// const profiles = [
-//   {
-//     id: 1,
-//     profImg: images.imageProf,
-//     username: 'Roland Hopper',
-//     price: '$79.00',
-//     status: 'Completed',
-//     designation: 'Pest Technician',
-//     rating: '3.5',
-//     time: '30',
-//     ml: '0.5',
-//     min: '5',
-//     isHideClose: false,
-//     isShowBadge: true,
-//   },
-//   {
-//     id: 2,
-//     profImg: images.imageProf,
-//     username: 'Roland Hopper',
-//     price: '$79.00',
-//     status: 'Completed',
-//     designation: 'Pest Technician',
-//     rating: '3.5',
-//     time: '30',
-//     ml: '0.5',
-//     min: '5',
-//     isHideClose: false,
-//     isShowBadge: false,
-//   },
-//   {
-//     id: 3,
-//     profImg: images.imageProf,
-//     username: 'Roland Hopper',
-//     price: '$79.00',
-//     status: 'Completed',
-//     designation: 'Pest Technician',
-//     rating: '3.5',
-//     time: '30',
-//     ml: '0.5',
-//     min: '5',
-//     isHideClose: false,
-//     isShowBadge: false,
-//   },
-// ];
 
 const Services = ({ route }) => {
   const nav = useNavigation();
-  const [selectedCard, setSelectedCard] = useState({ id: 1 });
   const { _id } = useSelector(state => state.persistedData.user);
+  const { service, lat, long, requestData } = route?.params || {};
+
   const [getNearbyTechnicians, { data, isLoading }] =
     useLazyGetNearbyTechniciansQuery();
   const [addToFavourites] = useAddToFavouritesMutation();
-  const [nearbyCoordinates, setNearbyCoordinates] = useState([]);
-  const { service, lat, long, requestData } = route?.params;
 
-  useEffect(() => {
-    getNearbyTechnicians({
-      //real lat long goes here coming from params
-      lat: lat || '40.712775',
-      long: long || '-74.005974',
-      service: service,
-    });
-  }, [lat, long, service]);
+  // Animation values
+  const mapFade = useRef(new Animated.Value(0)).current;
+  const listFade = useRef(new Animated.Value(0)).current;
 
-  useEffect(() => {
-    if (data?.data?.length > 0) {
-      const getCoordinates = data.data.map(item => ({
+  // Memoize coordinates to prevent the map from re-rendering/flashing
+  const nearbyCoordinates = useMemo(() => {
+    return (
+      data?.data?.map(item => ({
+        id: item._id,
         longitude: parseFloat(item.location.coordinates[0]),
         latitude: parseFloat(item.location.coordinates[1]),
-      }));
-      setNearbyCoordinates(getCoordinates);
+        fullName: item.fullName,
+      })) || []
+    );
+  }, [data]);
+
+  useEffect(() => {
+    if (lat && long && service) {
+      getNearbyTechnicians({ lat, long, service });
     }
-  }, [data?.data]);
+  }, [lat, long, service, getNearbyTechnicians]);
+
+  useEffect(() => {
+    if (!isLoading && data?.success) {
+      // Explicit reset
+      mapFade.setValue(0);
+      listFade.setValue(0);
+
+      const animationTimer = setTimeout(() => {
+        Animated.parallel([
+          Animated.timing(mapFade, {
+            toValue: 1,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(listFade, {
+            toValue: 1,
+            duration: 800,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      }, 100);
+
+      return () => clearTimeout(animationTimer);
+    }
+  }, [isLoading, data, mapFade, listFade]);
 
   const onFavouritePress = async technicianId => {
-    // return  console.log('technician id===>',technicianId)
-    let data = {
-      userId: _id,
-      technicianId,
-    };
+    try {
+      const res = await addToFavourites({ userId: _id, technicianId }).unwrap();
+      Toast.show(res.msg || 'Success', Toast.SHORT);
 
-    await addToFavourites(data)
-      .unwrap()
-      .then(res => {
-        console.log('response of adding into wishlist ===>', res.data);
-        Toast.show(res.msg, Toast.SHORT);
-        if (res.success) {
-          getNearbyTechnicians({
-            lat: '25.4486',
-            long: '-80.4115',
-            service: service,
-          });
-        }
-      })
-      .catch(error => {
-        console.log('error adding into wishlist ===>', error);
-        Toast.show('Some problem occured', Toast.SHORT);
-      });
+      if (res.success) {
+        // Use current params instead of hardcoded strings to refresh list
+        getNearbyTechnicians({ lat, long, service });
+      }
+    } catch (error) {
+      console.error('Wishlist Error:', error);
+      Toast.show('Problem updating favorites', Toast.SHORT);
+    }
   };
 
-  // console.log('AAAA', lat, long, service);
-  // RATS 68d31cacf962675cd0799b7
-  console.log('nearby technicians ===>', service, lat, long);
-  console.log('nearbyCoordinates:----------', nearbyCoordinates);
-  // console.log('data:----------', data);
+  const handleNavigateToProfile = useCallback(
+    item => {
+      nav.navigate('ServicesProfile', {
+        requestData: { ...requestData, service },
+        profileData: item,
+        coordinates: { lat, lng: long },
+      });
+    },
+    [nav, requestData, service, lat, long],
+  );
+
   return (
     <Container>
       <NormalHeader
-        heading={'technicians Profiles'}
+        heading={'Technician Profiles'}
         onBackPress={() => nav.goBack()}
       />
+
       {isLoading ? (
-        <Loader style={{ marginVertical: responsiveHeight(2) }} />
-      ) : !data?.success ? (
-        <AppText align={'center'} title={data?.msg} />
+        <Loader style={styles.loader} />
+      ) : !data?.success || data?.data?.length === 0 ? (
+        <View style={styles.centered}>
+          <AppText
+            align={'center'}
+            title={data?.msg || 'No technicians found near this location.'}
+          />
+        </View>
       ) : (
         <>
-          <MapView
-            provider={Platform.OS === 'ios' ? undefined : PROVIDER_GOOGLE}
-            style={{
-              height: responsiveHeight(50),
-              width: responsiveWidth(100),
-            }}
-            region={{
-              latitude: lat || 25.4486,
-              longitude: long || -80.4115,
-              latitudeDelta: 0.15,
-              longitudeDelta: 0.15,
-            }}
-          >
-            {nearbyCoordinates?.map((coord, index) => {
-              // console.log('coord:----------', coord);
-              return (
+          <Animated.View style={[styles.mapContainer, { opacity: mapFade }]}>
+            <MapView
+              provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
+              style={styles.map}
+              region={{
+                latitude: parseFloat(lat) || 40.7128,
+                longitude: parseFloat(long) || -74.006,
+                latitudeDelta: 0.12,
+                longitudeDelta: 0.12,
+              }}
+            >
+              {nearbyCoordinates.map(coord => (
                 <Marker
-                  key={index}
-                  title={`Technician ${index + 1}`}
+                  key={coord.id}
+                  title={coord.fullName}
                   pinColor={AppColors.PRIMARY}
                   coordinate={{
                     latitude: coord.latitude,
                     longitude: coord.longitude,
                   }}
                 />
-              );
-            })}
-          </MapView>
+              ))}
+            </MapView>
+          </Animated.View>
 
-          <LineBreak val={2} />
+          <View style={styles.listSection}>
+            <LineBreak val={2} />
+            <Animated.View style={{ opacity: listFade }}>
+              <AppText
+                title={'Nearby Profiles'}
+                color={AppColors.BLACK}
+                size={2.2}
+                fontWeight={'bold'}
+              />
+            </Animated.View>
 
-          <View style={{ paddingHorizontal: responsiveWidth(4), gap: 20 }}>
-            <AppText
-              title={'Nearby Profiles'}
-              color={AppColors.BLACK}
-              size={2.2}
-              fontWeight={'bold'}
-            />
             <FlatList
               data={data?.data}
+              keyExtractor={item => item._id}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.listContent}
               ListHeaderComponent={() => <LineBreak val={1} />}
-              ListFooterComponent={() => <LineBreak val={2} />}
               ItemSeparatorComponent={() => <LineBreak val={2} />}
-              renderItem={({ item }) => {
-                const [techLng, techLat] = item.location?.coordinates;
-                console.log('techLng&techLat:---', techLng, techLat);
-                //real lat long coming from params goes here
+              renderItem={({ item, index }) => {
+                const [techLng, techLat] = item.location?.coordinates || [0, 0];
                 const distanceMiles = getDistanceInMiles(
                   lat,
                   long,
@@ -197,50 +185,23 @@ const Services = ({ route }) => {
                   techLng,
                 );
                 const minutes = estimateTimeMinutes(distanceMiles);
+
                 return (
-                  <HistoryCard
-                    onCardPress={() =>
-                      nav.navigate('ServicesProfile', {
-                        requestData: { ...requestData, service },
-                        profileData: item,
-                        coordinates: {
-                          lat: lat,
-                          lng: long,
-                        },
-                      })
-                    }
-                    disabled={false}
+                  <AnimatedTechnicianCard
+                    index={index}
+                    onPress={() => handleNavigateToProfile(item)}
                     item={{
                       profImg: getProfileImage(item.profileImage),
-                      // profImg: item.GoogleUser
-                      //   ? `${item.profileImage}`
-                      //   : `${IMAGE_URL}${item.profileImage}`,
                       username: item.fullName,
-                      price: `$${item.price}`,
-                      designation: `${item.service?.name + ' ' + 'Technician'}`,
+                      price: item.price ? `$${item.price}` : 'Quote Only',
+                      designation: `${item.service?.name || ''} Technician`,
                       rating: item.avgRating || 0,
-                      // time: '30',
                       ml: distanceMiles.toFixed(1),
                       min: formatMinutes(minutes),
                     }}
-                    x
                     favourite={item.favouriteBy?.includes(_id)}
                     onHeartPress={() => onFavouritePress(item._id)}
-                    selectedCard={selectedCard}
-                    // onCardPress={() => setSelectedCard({ id: item._id })}
-                    services={'services'}
-                    isHideClose={false}
-                    isShowBadge={true}
-                    viewDetailsHandlePress={() =>
-                      nav.navigate('ServicesProfile', {
-                        requestData: { ...requestData, service },
-                        profileData: item,
-                        coordinates: {
-                          lat: lat,
-                          lng: long,
-                        },
-                      })
-                    }
+                    viewDetailsHandlePress={() => handleNavigateToProfile(item)}
                   />
                 );
               }}
@@ -251,5 +212,79 @@ const Services = ({ route }) => {
     </Container>
   );
 };
+
+const AnimatedTechnicianCard = ({
+  index,
+  item,
+  favourite,
+  onHeartPress,
+  onPress,
+  viewDetailsHandlePress,
+}) => {
+  const animatedValue = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(animatedValue, {
+      toValue: 1,
+      duration: 500,
+      delay: index * 100, // Staggered delay
+      useNativeDriver: true,
+    }).start();
+  }, [animatedValue, index]);
+
+  const translateY = animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [50, 0],
+  });
+
+  return (
+    <Animated.View
+      style={{
+        opacity: animatedValue,
+        transform: [{ translateY }],
+      }}
+    >
+      <HistoryCard
+        onCardPress={onPress}
+        disabled={false}
+        item={item}
+        favourite={favourite}
+        onHeartPress={onHeartPress}
+        services={'services'}
+        isHideClose={false}
+        isShowBadge={true}
+        viewDetailsHandlePress={viewDetailsHandlePress}
+      />
+    </Animated.View>
+  );
+};
+
+const styles = StyleSheet.create({
+  loader: {
+    marginVertical: responsiveHeight(10),
+  },
+  mapContainer: {
+    height: responsiveHeight(40),
+    width: responsiveWidth(100),
+    overflow: 'hidden',
+  },
+  map: {
+    height: '100%',
+    width: '100%',
+  },
+  listSection: {
+    flex: 1,
+    paddingHorizontal: responsiveWidth(4),
+  },
+  listContent: {
+    paddingBottom: responsiveHeight(5),
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+});
 
 export default Services;

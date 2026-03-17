@@ -1,5 +1,10 @@
-/* eslint-disable react-native/no-inline-styles */
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useMemo,
+  useCallback,
+} from 'react';
 import {
   View,
   Image,
@@ -7,35 +12,36 @@ import {
   FlatList,
   StyleSheet,
   Platform,
+  Animated,
 } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import DropDownPicker from 'react-native-dropdown-picker';
+import Toast from 'react-native-simple-toast';
+
 import Container from '../../../components/Container';
 import HomeHeader from '../../../components/HomeHeader';
 import Drawer from '../../../components/Drawer';
+import LineBreak from '../../../components/LineBreak';
+import AppText from '../../../components/AppText';
+import AppTextInput from '../../../components/AppTextInput';
+import Button from '../../../components/Button';
+import Loader from '../../../components/Loader';
+
 import {
   AppColors,
   DEFAULT_REGION,
-  getCurrentLocation,
   responsiveHeight,
   responsiveWidth,
 } from '../../../utils';
-import LineBreak from '../../../components/LineBreak';
-import icons from '../../../assets/icons';
-import AppText from '../../../components/AppText';
-import AppTextInput from '../../../components/AppTextInput';
-import { useNavigation } from '@react-navigation/native';
-import Button from '../../../components/Button';
-import { useDispatch, useSelector } from 'react-redux';
-import { firstTimeVisit } from '../../../redux/slices';
 import { colors } from '../../../assets/colors';
+import { images } from '../../../assets/images';
+import { firstTimeVisit } from '../../../redux/slices';
 import {
   useLazyAllPropertyTypesQuery,
   useLazyAllServicesQuery,
 } from '../../../redux/services/adminApis';
-import { images } from '../../../assets/images';
-import Loader from '../../../components/Loader';
-import DropDownPicker from 'react-native-dropdown-picker';
-import Toast from 'react-native-simple-toast';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
 const iconMap = {
   Rats: images.rat,
@@ -58,121 +64,136 @@ const UserHome = () => {
   const dispatch = useDispatch();
   const { firstVisit, user } = useSelector(state => state.persistedData);
 
+  const mapRef = useRef(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [mapReady, setMapReady] = useState(false);
   const [coordinates, setCoordinates] = useState(null);
+
+  // Data States
   const [servicesData, setServicesData] = useState([]);
   const [selectedServiceId, setSelectedServiceId] = useState(null);
-
   const [propertyItems, setPropertyItems] = useState([]);
+
+  // Form States
   const [propertyValue, setPropertyValue] = useState(null);
   const [openProperty, setOpenProperty] = useState(false);
-
   const [residentialValue, setResidentialValue] = useState(null);
   const [residentialOpen, setResidentialOpen] = useState(false);
-  const [residentialItems, setResidentialItems] = useState([
-    { label: 'Single Family', value: 'Single Family' },
-    { label: 'Multi Units', value: 'Multi Units' },
-  ]);
-
-  const [areaValue, setAreaValue] = useState('');
-
   const [severityValue, setSeverityValue] = useState(null);
   const [severityOpen, setSeverityOpen] = useState(false);
-  const [severityItems, setSeverityItems] = useState([
-    { label: 'Low', value: 'Low' },
-    { label: 'Medium', value: 'Medium' },
-    { label: 'High', value: 'High' },
-  ]);
-
+  const [areaValue, setAreaValue] = useState('');
   const [note, setNote] = useState('');
 
-  const [mapReady, setMapReady] = useState(false);
-  const mapRef = useRef(null);
+  // Animation values
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(50)).current;
+  const scaleAnim = useRef(new Animated.Value(0.95)).current;
 
   const [getServices, { isLoading: serviceLoader }] = useLazyAllServicesQuery();
   const [getPropertyTypes, { isLoading: typeLoader }] =
     useLazyAllPropertyTypesQuery();
 
-  // Memoized services
-  const services = useMemo(() => {
-    return servicesData.map(item => ({
-      id: item._id,
-      title: item.name,
-      icon: iconMap[item.name],
-    }));
-  }, [servicesData]);
+  const services = useMemo(
+    () =>
+      servicesData.map(item => ({
+        id: item._id,
+        title: item.name,
+        icon: iconMap[item.name] || images.ant,
+      })),
+    [servicesData],
+  );
+
+  const fetchInitialData = useCallback(async () => {
+    try {
+      const [serviceRes, propertyRes] = await Promise.all([
+        getServices().unwrap(),
+        getPropertyTypes().unwrap(),
+      ]);
+
+      setServicesData(serviceRes?.data || []);
+      setPropertyItems(
+        propertyRes?.data?.map(item => ({
+          label: item.propertyType,
+          value: item.propertyType,
+        })),
+      );
+
+      if (user?.location?.coordinates) {
+        const region = {
+          latitude: user.location.coordinates[1],
+          longitude: user.location.coordinates[0],
+          latitudeDelta: 0.05,
+          longitudeDelta: 0.05,
+        };
+        setCoordinates(region);
+      }
+    } catch (err) {
+      console.error('Data fetch error:', err);
+    }
+  }, [getServices, getPropertyTypes, user]);
 
   useEffect(() => {
     fetchInitialData();
-    const timer = setTimeout(() => {
-      dispatch(firstTimeVisit(false));
-    }, 5000);
-
+    const timer = setTimeout(() => dispatch(firstTimeVisit(false)), 5000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [fetchInitialData, dispatch]);
 
   useEffect(() => {
-    if (services.length > 0 && !selectedServiceId) {
-      setSelectedServiceId(services?.[0].id);
+    if (!serviceLoader && !typeLoader && !firstVisit) {
+      // Explicit reset before starting
+      fadeAnim.setValue(0);
+      slideAnim.setValue(50);
+      scaleAnim.setValue(0.95);
+
+      const animationTimer = setTimeout(() => {
+        Animated.parallel([
+          Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 800,
+            useNativeDriver: true,
+          }),
+          Animated.timing(slideAnim, {
+            toValue: 0,
+            duration: 800,
+            useNativeDriver: true,
+          }),
+          Animated.timing(scaleAnim, {
+            toValue: 1,
+            duration: 800,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      }, 100); // 100ms delay to ensure layout is ready
+
+      return () => clearTimeout(animationTimer);
     }
-  }, [services]);
+  }, [serviceLoader, typeLoader, firstVisit, fadeAnim, slideAnim, scaleAnim]);
 
   useEffect(() => {
     if (coordinates && mapReady) {
-      mapRef.current?.animateToRegion(
-        {
-          ...coordinates,
-          latitudeDelta: 0.1,
-          longitudeDelta: 0.1,
-        },
-        1000,
-      );
+      mapRef.current?.animateToRegion(coordinates, 1000);
     }
   }, [coordinates, mapReady]);
 
-  const fetchInitialData = async () => {
-    try {
-      const serviceRes = await getServices().unwrap();
-      setServicesData(serviceRes?.data || []);
-
-      const propertyRes = await getPropertyTypes().unwrap();
-      const types = propertyRes?.data?.map(item => ({
-        label: item.propertyType,
-        value: item.propertyType,
-        id: item._id,
-      }));
-      setPropertyItems(types);
-    } catch (err) {
-      console.log('err in getServices:-', err);
+  const validateAndSubmit = () => {
+    if (!selectedServiceId) {
+      Toast.show('Select a service', Toast.SHORT);
+      return;
     }
 
-    // const location = await getCurrentLocation();
-    let region = {
-      latitude: user?.location?.coordinates[1],
-      longitude: user?.location?.coordinates[0],
-      latitudeDelta: 0.1,
-      longitudeDelta: 0.1,
-    };
-    // console.log('Location:-', region);
-    setCoordinates(region);
-  };
+    const fields = [
+      { condition: !propertyValue, msg: 'Select property type' },
+      {
+        condition: propertyValue === 'Residential' && !residentialValue,
+        msg: 'Select residential type',
+      },
+      { condition: !areaValue.trim(), msg: 'Enter area' },
+      { condition: !severityValue, msg: 'Select severity' },
+      { condition: !note.trim(), msg: 'Enter specific instructions' },
+    ];
 
-  if (firstVisit) {
-    return null;
-  }
-
-  // console.log('services:----------', services);
-  // console.log('selectedServiceId:----------', selectedServiceId);
-  // 37.421998 -122.084
-  console.log('user:----------', user);
-
-  const validateAndSubmit = () => {
-    if (!propertyValue) return Toast.show('Select property type', Toast.SHORT);
-    if (propertyValue === 'Residential' && !residentialValue)
-      return Toast.show('Select residential', Toast.SHORT);
-    if (!areaValue) return Toast.show('Enter area', Toast.SHORT);
-    if (!severityValue) return Toast.show('Select severity', Toast.SHORT);
-    if (!note) return Toast.show('Enter note', Toast.SHORT);
+    const error = fields.find(f => f.condition);
+    if (error) return Toast.show(error.msg, Toast.SHORT);
 
     nav.navigate('Services', {
       service: selectedServiceId,
@@ -188,8 +209,23 @@ const UserHome = () => {
     });
   };
 
+  if (firstVisit) return null;
+
+  const FormLabel = ({ title }) => (
+    <>
+      <AppText
+        title={title}
+        color={AppColors.BLACK}
+        size={1.6}
+        fontWeight="bold"
+      />
+      <LineBreak val={0.5} />
+    </>
+  );
+
+  console.log('selectedServiceId:-', selectedServiceId);
   return (
-    <Container contentStyle={{ paddingBottom: responsiveHeight(5) }}>
+    <Container contentStyle={styles.containerPadding}>
       <HomeHeader menuIconOnPress={() => setDrawerOpen(true)} />
 
       {serviceLoader || typeLoader ? (
@@ -201,263 +237,246 @@ const UserHome = () => {
             onBackdropPress={() => setDrawerOpen(false)}
           />
 
-          <LineBreak val={1} />
-
           <MapView
-            provider={Platform.OS === 'ios' ? undefined : PROVIDER_GOOGLE}
+            provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
             ref={mapRef}
             style={styles.map}
-            initialRegion={DEFAULT_REGION} // DEFAULT_REGION
+            initialRegion={DEFAULT_REGION}
             onMapReady={() => setMapReady(true)}
           >
             {coordinates && (
               <Marker coordinate={coordinates}>
-                <Image
-                  source={images.pin_marker}
-                  style={{ height: 40, width: 40 }}
-                />
+                <Image source={images.pin_marker} style={styles.markerIcon} />
               </Marker>
             )}
           </MapView>
 
-          <LineBreak val={2} />
-
-          <View style={styles.section}>
+          <Animated.View
+            style={[
+              styles.section,
+              { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
+            ]}
+          >
+            <LineBreak val={2} />
             <AppText
               title="Which services do you need?"
               fontWeight="bold"
-              size={2.2}
+              size={2}
               textTransform="uppercase"
             />
-
-            <LineBreak val={2} />
-
+            <LineBreak val={1.5} />
             <FlatList
               data={services}
               horizontal
               keyExtractor={item => item.id}
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ gap: 15 }}
               renderItem={({ item }) => {
                 const isSelected = selectedServiceId === item.id;
-
                 return (
-                  <TouchableOpacity
-                    style={[
-                      styles.serviceCard,
-                      isSelected && styles.serviceCardActive,
-                    ]}
+                  <ServiceCard
+                    item={item}
+                    isSelected={isSelected}
                     onPress={() => setSelectedServiceId(item.id)}
-                  >
-                    <Image source={item.icon} style={styles.serviceIcon} />
-                    <AppText
-                      title={item.title}
-                      color={isSelected ? AppColors.PRIMARY : AppColors.BLACK}
-                      size={1.2}
-                      fontWeight="bold"
-                    />
-                  </TouchableOpacity>
+                  />
                 );
               }}
+              contentContainerStyle={styles.flatListGap}
             />
-          </View>
+          </Animated.View>
 
-          <LineBreak val={2} />
-
-          <View style={{ paddingHorizontal: responsiveWidth(4) }}>
+          <Animated.View
+            style={[
+              styles.formSection,
+              { opacity: fadeAnim, transform: [{ scale: scaleAnim }] },
+            ]}
+          >
             <AppText
-              title={'Request Form'}
+              title="Request Form"
               color={AppColors.BLACK}
-              size={2.5}
-              textTransform={'uppercase'}
-              fontWeight={'bold'}
+              size={2.3}
+              textTransform="uppercase"
+              fontWeight="bold"
             />
-
             <LineBreak val={1} />
 
-            <View
-              style={{
-                backgroundColor: AppColors.WHITE,
-                elevation: 5,
-                borderRadius: 20,
-                paddingHorizontal: responsiveWidth(4),
-                paddingVertical: responsiveHeight(2),
-                gap: responsiveHeight(1),
-              }}
-            >
-              <View>
-                <AppText
-                  title={'Property Type'}
-                  color={AppColors.BLACK}
-                  size={1.7}
-                  fontWeight={'bold'}
+            <View style={styles.formContainer}>
+              <FormLabel title="Property Type" />
+              <View style={styles.zIndex3}>
+                <DropDownPicker
+                  open={openProperty}
+                  value={propertyValue}
+                  items={propertyItems}
+                  placeholder="Select"
+                  setOpen={setOpenProperty}
+                  setValue={callback => {
+                    setPropertyValue(callback());
+                    if (callback() === 'Residential') setResidentialOpen(true);
+                  }}
+                  style={styles.dropdown}
+                  dropDownContainerStyle={styles.dropdownContainer}
                 />
-                <LineBreak val={0.5} />
-                <View style={{ zIndex: 3000 }}>
-                  <DropDownPicker
-                    open={openProperty}
-                    value={propertyValue}
-                    items={propertyItems}
-                    dropDownDirection="BOTTOM"
-                    placeholder="Select"
-                    dropDownContainerStyle={{
-                      borderColor: colors.secondary_button,
-                      borderRadius: 15,
-                    }}
-                    style={{
-                      borderRadius: openProperty ? 15 : 30,
-                      borderColor: colors.secondary_button,
-                    }}
-                    setOpen={setOpenProperty}
-                    setValue={val => {
-                      setPropertyValue(val());
-                      setResidentialOpen(true);
-                    }}
-                    setItems={setPropertyItems}
-                  />
-                </View>
               </View>
+
               {propertyValue === 'Residential' && (
-                <View>
-                  <AppText
-                    title={'Residential'}
-                    color={AppColors.BLACK}
-                    size={1.7}
-                    fontWeight={'bold'}
-                  />
-                  <LineBreak val={0.5} />
-                  <View style={{ zIndex: 2000 }}>
+                <>
+                  <FormLabel title="Residential Type" />
+                  <View style={styles.zIndex2}>
                     <DropDownPicker
                       open={residentialOpen}
                       value={residentialValue}
-                      items={residentialItems}
-                      dropDownDirection="BOTTOM"
+                      items={[
+                        { label: 'Single Family', value: 'Single Family' },
+                        { label: 'Multi Units', value: 'Multi Units' },
+                      ]}
                       placeholder="Select"
-                      dropDownContainerStyle={{
-                        borderColor: colors.secondary_button,
-                        borderRadius: 15,
-                      }}
-                      style={{
-                        borderRadius: residentialOpen ? 15 : 30,
-                        borderColor: colors.secondary_button,
-                      }}
                       setOpen={setResidentialOpen}
                       setValue={setResidentialValue}
-                      setItems={setResidentialItems}
+                      style={styles.dropdown}
+                      dropDownContainerStyle={styles.dropdownContainer}
                     />
                   </View>
-                </View>
+                </>
               )}
-              <AppText
-                title={'Area To Be Treated'}
-                color={AppColors.BLACK}
-                size={1.7}
-                fontWeight={'bold'}
+
+              <FormLabel title="Area To Be Treated" />
+              <AppTextInput
+                inputPlaceHolder="Area (e.g. Backyard)"
+                value={areaValue}
+                onChangeText={setAreaValue}
+                borderRadius={100}
+                inputWidth={80}
               />
-              <View style={{ zIndex: 1000 }}>
-                <AppTextInput
-                  inputPlaceHolder={'Area To Be Treated'}
-                  value={areaValue}
-                  keyboardType={'default'}
-                  onChangeText={text => setAreaValue(text)}
-                  borderRadius={100}
-                  inputWidth={70}
+
+              <FormLabel title="Issue Severity" />
+              <View style={styles.zIndex1}>
+                <DropDownPicker
+                  open={severityOpen}
+                  value={severityValue}
+                  items={[
+                    { label: 'Low', value: 'Low' },
+                    { label: 'Medium', value: 'Medium' },
+                    { label: 'High', value: 'High' },
+                  ]}
+                  placeholder="Select"
+                  setOpen={setSeverityOpen}
+                  setValue={setSeverityValue}
+                  style={styles.dropdown}
+                  dropDownContainerStyle={styles.dropdownContainer}
                 />
               </View>
-              <View>
-                <AppText
-                  title={'Issue Severity'}
-                  color={AppColors.BLACK}
-                  size={1.7}
-                  fontWeight={'bold'}
-                />
-                <LineBreak val={0.5} />
-                <View style={{ zIndex: 500 }}>
-                  <DropDownPicker
-                    open={severityOpen}
-                    value={severityValue}
-                    items={severityItems}
-                    dropDownDirection="BOTTOM"
-                    placeholder="Select"
-                    dropDownContainerStyle={{
-                      borderColor: colors.secondary_button,
-                      borderRadius: 15,
-                    }}
-                    style={{
-                      borderRadius: severityOpen ? 15 : 30,
-                      borderColor: colors.secondary_button,
-                    }}
-                    setOpen={setSeverityOpen}
-                    setValue={setSeverityValue}
-                    setItems={setSeverityItems}
-                  />
-                </View>
-              </View>
-              <View>
-                <AppText
-                  title={'Special Instructions or Notes'}
-                  color={AppColors.BLACK}
-                  size={1.7}
-                  fontWeight={'bold'}
-                />
-                <LineBreak val={0.5} />
-                <AppTextInput
-                  inputPlaceHolder={'Lore ipsm...'}
-                  inputHeight={8}
-                  value={note}
-                  onChangeText={text => setNote(text)}
-                  multiline={true}
-                  textAlignVertical={'top'}
-                  borderRadius={10}
-                  inputWidth={70}
-                />
-              </View>
+
+              <FormLabel title="Special Instructions" />
+              <AppTextInput
+                inputPlaceHolder="Provide more details..."
+                inputHeight={10}
+                value={note}
+                onChangeText={setNote}
+                multiline
+                textAlignVertical="top"
+                borderRadius={15}
+                inputWidth={80}
+              />
             </View>
-          </View>
 
-          <LineBreak val={2} />
-
-          <Button
-            title="Submit"
-            onPress={validateAndSubmit}
-            textTransform="uppercase"
-            color={AppColors.PRIMARY}
-            width={90}
-          />
-
-          <LineBreak val={2} />
+            <LineBreak val={3} />
+            <Button
+              title="Submit Request"
+              onPress={validateAndSubmit}
+              textTransform="uppercase"
+              color={AppColors.PRIMARY}
+              width={90}
+            />
+          </Animated.View>
         </>
       )}
     </Container>
   );
 };
 
-export default UserHome;
+const ServiceCard = ({ item, isSelected, onPress }) => {
+  const scale = useRef(new Animated.Value(1)).current;
+
+  const handlePress = () => {
+    Animated.sequence([
+      Animated.timing(scale, {
+        toValue: 0.95,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scale, {
+        toValue: 1,
+        friction: 3,
+        useNativeDriver: true,
+      }),
+    ]).start();
+    onPress();
+  };
+
+  return (
+    <TouchableOpacity activeOpacity={0.8} onPress={handlePress}>
+      <Animated.View
+        style={[
+          styles.serviceCard,
+          isSelected && styles.serviceCardActive,
+          { transform: [{ scale }] },
+        ]}
+      >
+        <Image source={item.icon} style={styles.serviceIcon} />
+        <AppText
+          title={item.title}
+          color={isSelected ? AppColors.PRIMARY : AppColors.BLACK}
+          size={1.1}
+          fontWeight="bold"
+        />
+      </Animated.View>
+    </TouchableOpacity>
+  );
+};
 
 const styles = StyleSheet.create({
-  map: {
-    height: responsiveHeight(50),
-    width: responsiveWidth(100),
-  },
-  section: {
-    paddingHorizontal: responsiveWidth(4),
-  },
+  containerPadding: { paddingBottom: responsiveHeight(5) },
+  map: { height: responsiveHeight(40), width: responsiveWidth(100) },
+  markerIcon: { height: 40, width: 40, resizeMode: 'contain' },
+  section: { paddingHorizontal: responsiveWidth(4) },
+  flatListGap: { gap: 12, paddingRight: 20 },
   serviceCard: {
     borderWidth: 1,
-    borderColor: AppColors.BLACK,
-    paddingVertical: responsiveHeight(1.5),
-    width: responsiveWidth(35),
+    borderColor: '#DDD',
+    padding: 12,
+    width: responsiveWidth(32),
     alignItems: 'center',
-    borderRadius: 8,
+    borderRadius: 12,
     backgroundColor: AppColors.WHITE,
   },
   serviceCardActive: {
     borderWidth: 2,
     borderColor: AppColors.PRIMARY,
+    elevation: 3,
   },
   serviceIcon: {
-    width: 50,
-    height: 50,
-    marginBottom: 6,
+    width: 45,
+    height: 45,
+    marginBottom: 8,
+    resizeMode: 'contain',
   },
+  formSection: { paddingHorizontal: responsiveWidth(4), marginTop: 20 },
+  formContainer: {
+    backgroundColor: AppColors.WHITE,
+    borderRadius: 20,
+    padding: 16,
+    gap: 10,
+    borderWidth: 1,
+    borderColor: '#DDD',
+    // shadowColor: '#000',
+    // shadowOpacity: 0.1,
+    // shadowRadius: 5,
+    // elevation: 3,
+  },
+  dropdown: { borderColor: colors.secondary_button, borderRadius: 30 },
+  dropdownContainer: { borderColor: colors.secondary_button, borderRadius: 15 },
+  zIndex3: { zIndex: 3000 },
+  zIndex2: { zIndex: 2000 },
+  zIndex1: { zIndex: 1000 },
 });
+
+export default UserHome;
