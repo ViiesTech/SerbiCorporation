@@ -32,6 +32,7 @@ import { colors } from '../../../assets/colors';
 import { images } from '../../../assets/images';
 import { MAP_API_KEY } from '../../../redux/constant';
 import { useLazyGetAppointmentDetailQuery } from '../../../redux/services';
+import LottieView from 'lottie-react-native';
 
 const PestTechnician = ({ route }) => {
   const nav = useNavigation();
@@ -309,11 +310,22 @@ const PestTechnician = ({ route }) => {
       </MapView>
 
       <LineBreak val={3} />
-      <Image
+      {/* <Image
         source={images.pest_controller}
         style={styles.mainImage}
         resizeMode="contain"
-      />
+      /> */}
+      <View style={{ alignItems: 'center' }}>
+        <LottieView
+          source={require('../../../assets/animations/delivery.json')}
+          autoPlay={true}
+          loop={true}
+          style={{
+            width: responsiveWidth(50),
+            height: responsiveWidth(50),
+          }}
+        />
+      </View>
       {renderContent()}
     </Container>
   );

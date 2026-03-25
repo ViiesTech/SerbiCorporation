@@ -318,7 +318,7 @@ const JobDiscussionForm = ({ route, navigation }) => {
           />
           <LineBreak val={1} />
           <AppTextInput
-            inputPlaceHolder={'Lore ipsm...'}
+            inputPlaceHolder={'Type here...'}
             inputHeight={8}
             multiline={true}
             value={note}
@@ -353,7 +353,11 @@ const JobDiscussionForm = ({ route, navigation }) => {
             />
           </TouchableOpacity>
           {isShowCalendar && (
-            <AppCalendar changeDate={day => setDate(day)} date={date} />
+            <AppCalendar
+              changeDate={day => setDate(day)}
+              date={date}
+              setHideCalender={() => setIsShowCalendar(false)}
+            />
           )}
         </View>
         <LineBreak val={1.5} />
@@ -369,7 +373,7 @@ const JobDiscussionForm = ({ route, navigation }) => {
             onPress={() => setDatePickerVisibility(!isDatePickerVisible)}
           >
             <AppTextInput
-              inputPlaceHolder={'10:00 AM'}
+              inputPlaceHolder={'Select Time'}
               borderRadius={30}
               inputWidth={77}
               editable={false}
@@ -402,7 +406,7 @@ const JobDiscussionForm = ({ route, navigation }) => {
             keyboardType={'numeric'}
             value={amount}
             onChangeText={text => setAmount(text)}
-            inputPlaceHolder={'$150.00'}
+            inputPlaceHolder={'Amount'}
             borderRadius={40}
           />
         </View>

@@ -29,6 +29,7 @@ import {
 import Toast from 'react-native-simple-toast';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import { MAP_API_KEY } from '../../../redux/constant';
+import LottieView from 'lottie-react-native';
 
 const ServicesProfile = ({ route }) => {
   const nav = useNavigation();
@@ -140,7 +141,9 @@ const ServicesProfile = ({ route }) => {
     // }
   };
 
-  console.log('profileData:-', profileData);
+  console.log('Status:-', profileData?.appointmentData?.status);
+
+  // console.log('profileData:-', profileData);
   // console.log('Latitude and Longitude:- ', latitude, longitude);
   return (
     <Container>
@@ -228,6 +231,43 @@ const ServicesProfile = ({ route }) => {
               color={AppColors.BLACK}
               fontWeight="bold"
             />
+
+            {profileData?.appointmentData?.type === 'REQUESTED' &&
+              profileData?.appointmentData?.status === 'Accepted' && (
+                <View style={{ alignItems: 'center' }}>
+                  <LottieView
+                    source={require('../../../assets/animations/waiting.json')}
+                    autoPlay={true}
+                    loop={true}
+                    style={{
+                      width: responsiveWidth(50),
+                      height: responsiveWidth(50),
+                    }}
+                  />
+
+                  <AppText
+                    title={`Technician will be there soon`}
+                    size={1.8}
+                    color={AppColors.BLACK}
+                    fontWeight="bold"
+                  />
+                </View>
+              )}
+
+            {profileData?.appointmentData?.type === 'DISCUSSION' &&
+              profileData?.appointmentData?.status === 'Start' && (
+                <View style={{ alignItems: 'center' }}>
+                  <LottieView
+                    source={require('../../../assets/animations/map.json')}
+                    autoPlay={true}
+                    loop={true}
+                    style={{
+                      width: responsiveWidth(70),
+                      height: responsiveWidth(70),
+                    }}
+                  />
+                </View>
+              )}
 
             <LineBreak val={2} />
             {profileData?.appointmentData?.type === 'DISCUSSION' &&

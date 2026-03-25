@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { AppColors, responsiveHeight } from '../utils';
 
-const AppCalendar = ({ date, changeDate }) => {
+const AppCalendar = ({ date, changeDate, setHideCalender = () => {} }) => {
   return (
     <View style={{ paddingVertical: responsiveHeight(1) }}>
       <Calendar
@@ -30,6 +30,7 @@ const AppCalendar = ({ date, changeDate }) => {
         }}
         onDayPress={day => {
           changeDate(day.dateString);
+          setHideCalender();
         }}
       />
     </View>

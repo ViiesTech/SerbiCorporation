@@ -32,11 +32,14 @@ const History = () => {
     const payload = {
       id: user?._id,
       type: user?.type,
-      status: 'Completed',
+      status: 'Paid', //'Completed',
     };
+
+    console.log('History payload ===>', payload);
 
     try {
       const res = await getAllDiscussionForms(payload).unwrap();
+      console.log('History response ===>', res);
       setData(res);
     } catch (err) {
       console.error('Error fetching history:', err);
@@ -57,6 +60,7 @@ const History = () => {
       return (
         <HistoryCard
           history={true}
+          activeOpacity={1}
           selectedCard={selectedCard}
           onCardPress={() => setSelectedCard({ id: item._id })}
           item={{

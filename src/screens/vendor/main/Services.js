@@ -43,6 +43,7 @@ import {
 } from '../../../redux/services/index';
 import { MAP_API_KEY } from '../../../redux/constant';
 import { colors } from '../../../assets/colors';
+import LottieView from 'lottie-react-native';
 
 const Services = ({ route, navigation }) => {
   const { ids } = route?.params || {};
@@ -297,8 +298,9 @@ const Services = ({ route, navigation }) => {
     );
   }
 
-  // console.log('ids:---', ids);
+  console.log('ids:---', ids);
   // console.log('technicianUser:---', user);
+  console.log('currentStatus:---', currentStatus);
   return (
     <Fragment>
       {ids?.user?.location?.coordinates || user?.location?.coordinates ? (
@@ -379,7 +381,7 @@ const Services = ({ route, navigation }) => {
       )}
 
       {/* Info Card */}
-      <View style={styles.bottomCard}>
+      <View style={styles.bottomCard(currentStatus)}>
         <View style={styles.cardHeader}>
           <View style={styles.userInfo}>
             <Image
@@ -406,7 +408,22 @@ const Services = ({ route, navigation }) => {
         <View style={styles.divider} />
         <LineBreak val={3} />
 
+        {currentStatus === 'Start' && (
+          <View style={{ alignItems: 'center' }}>
+            <LottieView
+              source={require('../../../assets/animations/map.json')}
+              autoPlay={true}
+              loop={true}
+              style={{
+                width: responsiveWidth(20),
+                height: responsiveWidth(20),
+              }}
+            />
+          </View>
+        )}
+
         <AppText size={2} align="center" title={getStatusMessage()} />
+
         <LineBreak val={3} />
 
         {nextStatus && (
@@ -455,16 +472,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
   },
-  bottomCard: {
+  bottomCard: status => ({
+    height: responsiveHeight(status === 'Start' ? 35 : 28), // 28
+    width: '100%',
     backgroundColor: AppColors.WHITE,
     position: 'absolute',
     bottom: 0,
-    width: '100%',
     borderRadius: responsiveHeight(2),
     paddingHorizontal: responsiveHeight(2),
-    height: responsiveHeight(28),
     paddingVertical: responsiveHeight(2),
-  },
+  }),
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -32,6 +32,7 @@ import {
   useAddToFavouritesMutation,
   useLazyGetNearbyTechniciansQuery,
 } from '../../../redux/services/index';
+import LottieView from 'lottie-react-native';
 
 const Services = ({ route }) => {
   const nav = useNavigation();
@@ -41,6 +42,7 @@ const Services = ({ route }) => {
   const [getNearbyTechnicians, { data, isLoading }] =
     useLazyGetNearbyTechniciansQuery();
   const [addToFavourites] = useAddToFavouritesMutation();
+  const [minLoading, setMinLoading] = useState(true);
 
   // Animation values
   const mapFade = useRef(new Animated.Value(0)).current;
@@ -57,6 +59,13 @@ const Services = ({ route }) => {
       })) || []
     );
   }, [data]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setMinLoading(false);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (lat && long && service) {
@@ -122,9 +131,7 @@ const Services = ({ route }) => {
         onBackPress={() => nav.goBack()}
       />
 
-      {isLoading ? (
-        <Loader style={styles.loader} />
-      ) : !data?.success || data?.data?.length === 0 ? (
+      {(!isLoading && !data?.success) || data?.data?.length === 0 ? (
         <View style={styles.centered}>
           <AppText
             align={'center'}
@@ -169,43 +176,61 @@ const Services = ({ route }) => {
               />
             </Animated.View>
 
-            <FlatList
-              data={data?.data}
-              keyExtractor={item => item._id}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.listContent}
-              ListHeaderComponent={() => <LineBreak val={1} />}
-              ItemSeparatorComponent={() => <LineBreak val={2} />}
-              renderItem={({ item, index }) => {
-                const [techLng, techLat] = item.location?.coordinates || [0, 0];
-                const distanceMiles = getDistanceInMiles(
-                  lat,
-                  long,
-                  techLat,
-                  techLng,
-                );
-                const minutes = estimateTimeMinutes(distanceMiles);
+            {isLoading || minLoading ? (
+              <View style={{ alignItems: 'center' }}>
+                <LottieView
+                  source={require('../../../assets/animations/searching.json')}
+                  autoPlay={true}
+                  loop={true}
+                  style={{
+                    width: responsiveWidth(50),
+                    height: responsiveWidth(50),
+                  }}
+                />
+              </View>
+            ) : (
+              <FlatList
+                data={data?.data}
+                keyExtractor={item => item._id}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.listContent}
+                ListHeaderComponent={() => <LineBreak val={1} />}
+                ItemSeparatorComponent={() => <LineBreak val={2} />}
+                renderItem={({ item, index }) => {
+                  const [techLng, techLat] = item.location?.coordinates || [
+                    0, 0,
+                  ];
+                  const distanceMiles = getDistanceInMiles(
+                    lat,
+                    long,
+                    techLat,
+                    techLng,
+                  );
+                  const minutes = estimateTimeMinutes(distanceMiles);
 
-                return (
-                  <AnimatedTechnicianCard
-                    index={index}
-                    onPress={() => handleNavigateToProfile(item)}
-                    item={{
-                      profImg: getProfileImage(item.profileImage),
-                      username: item.fullName,
-                      price: item.price ? `$${item.price}` : 'Quote Only',
-                      designation: `${item.service?.name || ''} Technician`,
-                      rating: item.avgRating || 0,
-                      ml: distanceMiles.toFixed(1),
-                      min: formatMinutes(minutes),
-                    }}
-                    favourite={item.favouriteBy?.includes(_id)}
-                    onHeartPress={() => onFavouritePress(item._id)}
-                    viewDetailsHandlePress={() => handleNavigateToProfile(item)}
-                  />
-                );
-              }}
-            />
+                  return (
+                    <AnimatedTechnicianCard
+                      index={index}
+                      onPress={() => handleNavigateToProfile(item)}
+                      item={{
+                        profImg: getProfileImage(item.profileImage),
+                        username: item.fullName,
+                        price: item.price ? `$${item.price}` : 'Quote Only',
+                        designation: `${item.service?.name || ''} Technician`,
+                        rating: item.avgRating || 0,
+                        ml: distanceMiles.toFixed(1),
+                        min: formatMinutes(minutes),
+                      }}
+                      favourite={item.favouriteBy?.includes(_id)}
+                      onHeartPress={() => onFavouritePress(item._id)}
+                      viewDetailsHandlePress={() =>
+                        handleNavigateToProfile(item)
+                      }
+                    />
+                  );
+                }}
+              />
+            )}
           </View>
         </>
       )}

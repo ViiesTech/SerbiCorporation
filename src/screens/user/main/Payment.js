@@ -45,6 +45,7 @@ import {
 import RBSheet from 'react-native-raw-bottom-sheet';
 import { CardField, confirmSetupIntent } from '@stripe/stripe-react-native';
 import Toast from 'react-native-simple-toast';
+import LottieView from 'lottie-react-native';
 
 const slides = [
   {
@@ -97,14 +98,16 @@ const Payment = ({ route }) => {
   const [updateDiscussion, { isLoading: discussionLoading }] =
     useUpdateDiscussionMutation();
   const sheetRef = useRef(null);
+  const [showSuccess, setShowSuccess] = useState(false);
   // const pest_tech = route?.params?.pest_tech;
   const { pest_tech, request } = route?.params;
 
-  console.log('discussion', pest_tech);
+  console.log('pest_tech:-', pest_tech);
 
   useEffect(() => {
     if (customer_id) {
       fetchAllCards();
+      setShowSuccess(false);
     }
   }, []);
 
@@ -160,7 +163,12 @@ const Payment = ({ route }) => {
                     sheetRef?.current.close();
                     fetchAllCards();
                     // navigation.goBack();
-                    return Toast.show('Card added successfully!', Toast.SHORT);
+                    setShowSuccess(true);
+                    setTimeout(() => {
+                      setShowSuccess(false);
+                    }, 2500);
+                    return;
+                    // return Toast.show('Card added successfully!', Toast.SHORT);
                   } else {
                     console.log(
                       'success false condition of attach payment',
@@ -616,6 +624,45 @@ const Payment = ({ route }) => {
           />
         </ScrollView>
       </RBSheet>
+
+      {showSuccess && (
+        <View
+          style={{
+            ...StyleSheet.absoluteFillObject,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 9999,
+            height: responsiveHeight(100),
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: colors.white,
+              padding: 20,
+              borderRadius: 20,
+              alignItems: 'center',
+            }}
+          >
+            <LottieView
+              source={require('../../../assets/animations/cardAdded.json')}
+              autoPlay={true}
+              loop={true}
+              style={{
+                width: responsiveWidth(50),
+                height: responsiveWidth(50),
+                borderRadius: 10,
+              }}
+            />
+            <AppText
+              title={'Card Added Successfully!'}
+              color={AppColors.BLACK}
+              fontWeight={'bold'}
+              size={2}
+            />
+          </View>
+        </View>
+      )}
     </Container>
   );
 };

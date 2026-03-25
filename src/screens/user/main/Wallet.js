@@ -30,10 +30,12 @@ import {
 import Card from '../../../components/Card';
 import Loader from '../../../components/Loader';
 import AppText from '../../../components/AppText';
+import LottieView from 'lottie-react-native';
 
 const Wallet = () => {
   const [cardDetails, setCardDetails] = useState([]);
   const [cardFields, setCardFields] = useState(null);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   // const [createCustomer] = useCreateCustomerMutation()
   const [createSetupIntent, { isLoading }] = useCreateSetupIntentMutation();
@@ -123,7 +125,12 @@ const Wallet = () => {
                     sheetRef?.current.close();
                     fetchAllCards();
                     // navigation.goBack();
-                    return Toast.show('Card added successfully!', Toast.SHORT);
+                    setShowSuccess(true);
+                    setTimeout(() => {
+                      setShowSuccess(false);
+                    }, 2500);
+                    return;
+                    // return Toast.show('Card added successfully!', Toast.SHORT);
                   } else {
                     console.log(
                       'success false condition of attach payment',
@@ -234,6 +241,43 @@ const Wallet = () => {
           />
         </ScrollView>
       </RBSheet>
+
+      {showSuccess && (
+        <View
+          style={{
+            ...StyleSheet.absoluteFillObject,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 9999,
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: colors.white,
+              padding: 20,
+              borderRadius: 20,
+              alignItems: 'center',
+            }}
+          >
+            <LottieView
+              source={require('../../../assets/animations/success.json')}
+              autoPlay
+              loop={false}
+              style={{
+                width: responsiveWidth(50),
+                height: responsiveWidth(50),
+              }}
+            />
+            <AppText
+              title={'Card Added Successfully!'}
+              color={AppColors.BLACK}
+              fontWeight={'bold'}
+              size={2}
+            />
+          </View>
+        </View>
+      )}
     </Container>
   );
 };
