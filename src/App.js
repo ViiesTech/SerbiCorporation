@@ -10,6 +10,7 @@ import { CLIENT_ID, IOS_CLIENT_ID, STRIPE_KEY } from './redux/constant';
 import { StripeProvider } from '@stripe/stripe-react-native';
 import NetInfo from '@react-native-community/netinfo';
 import OfflineModal from './components/OfflineModal';
+import { AppColors } from './utils';
 
 GoogleSignin.configure({
   webClientId: CLIENT_ID,
@@ -34,7 +35,7 @@ const App = () => {
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <SafeAreaView style={{ flex: 1 }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: AppColors.WHITE }}>
           <StripeProvider publishableKey={STRIPE_KEY}>
             <Routes />
             <OfflineModal visible={isOffline} />

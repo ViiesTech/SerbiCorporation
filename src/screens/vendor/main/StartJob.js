@@ -62,7 +62,7 @@ const StartJob = ({ route, navigation }) => {
       .unwrap()
       .then(res => {
         console.log('response of changing the job status ===>', res);
-        // Toast.show(res.msg, 2000, Toast.SHORT);
+        // Toast.show(res.msg, Toast.SHORT);
         if (res.success) {
           setJobStatus(nextStatus);
           // if (status === 'Start') {

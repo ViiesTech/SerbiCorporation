@@ -261,7 +261,7 @@ const Wallet = () => {
             }}
           >
             <LottieView
-              source={require('../../../assets/animations/success.json')}
+              source={require('../../../assets/animations/saveCard.json')}
               autoPlay
               loop={false}
               style={{

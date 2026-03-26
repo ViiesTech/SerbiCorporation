@@ -254,6 +254,28 @@ const ServicesProfile = ({ route }) => {
                 </View>
               )}
 
+            {profileData?.appointmentData?.type === 'REQUESTED' &&
+              profileData?.appointmentData?.status === 'Arrived' && (
+                <View style={{ alignItems: 'center' }}>
+                  <LottieView
+                    source={require('../../../assets/animations/working.json')}
+                    autoPlay={true}
+                    loop={true}
+                    style={{
+                      width: responsiveWidth(50),
+                      height: responsiveWidth(50),
+                    }}
+                  />
+
+                  <AppText
+                    title={`Technician is working`}
+                    size={1.8}
+                    color={AppColors.BLACK}
+                    fontWeight="bold"
+                  />
+                </View>
+              )}
+
             {profileData?.appointmentData?.type === 'DISCUSSION' &&
               profileData?.appointmentData?.status === 'Start' && (
                 <View style={{ alignItems: 'center' }}>

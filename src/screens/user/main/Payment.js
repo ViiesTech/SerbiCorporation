@@ -259,11 +259,7 @@ const Payment = ({ route }) => {
       }
 
       if (!selectedCard?.methodId) {
-        Toast.show(
-          'Please select your card first to proceed',
-          2000,
-          Toast.SHORT,
-        );
+        Toast.show('Please select your card first to proceed', Toast.SHORT);
         return;
       }
 
@@ -317,7 +313,7 @@ const Payment = ({ route }) => {
       });
     } catch (error) {
       console.log('payment error ===>', error);
-      Toast.show('Some problem occurred', Toast.SHORT);
+      Toast.show('Payment failed, Use another card', Toast.SHORT);
     }
   };
 
@@ -645,7 +641,7 @@ const Payment = ({ route }) => {
             }}
           >
             <LottieView
-              source={require('../../../assets/animations/cardAdded.json')}
+              source={require('../../../assets/animations/saveCard.json')}
               autoPlay={true}
               loop={true}
               style={{
