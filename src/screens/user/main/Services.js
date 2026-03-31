@@ -33,6 +33,7 @@ import {
   useLazyGetNearbyTechniciansQuery,
 } from '../../../redux/services/index';
 import LottieView from 'lottie-react-native';
+import NearByCard from '../../../components/NearByCard';
 
 const Services = ({ route }) => {
   const nav = useNavigation();
@@ -124,6 +125,7 @@ const Services = ({ route }) => {
     [nav, requestData, service, lat, long],
   );
 
+  console.log('PRICE_DATA:-', data?.data);
   return (
     <Container>
       <NormalHeader
@@ -269,14 +271,12 @@ const AnimatedTechnicianCard = ({
         transform: [{ translateY }],
       }}
     >
-      <HistoryCard
+      <NearByCard
         onCardPress={onPress}
         disabled={false}
         item={item}
         favourite={favourite}
         onHeartPress={onHeartPress}
-        services={'services'}
-        isHideClose={false}
         isShowBadge={true}
         viewDetailsHandlePress={viewDetailsHandlePress}
       />

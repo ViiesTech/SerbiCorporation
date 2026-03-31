@@ -50,6 +50,7 @@ const Container = ({
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+    backgroundColor: colors.white,
   },
   baseStyle: {
     flex: 1,

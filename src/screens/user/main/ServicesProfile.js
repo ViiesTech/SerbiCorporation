@@ -143,7 +143,7 @@ const ServicesProfile = ({ route }) => {
 
   console.log('Status:-', profileData?.appointmentData?.status);
 
-  // console.log('profileData:-', profileData);
+  console.log('profileData:-', profileData);
   // console.log('Latitude and Longitude:- ', latitude, longitude);
   return (
     <Container>
@@ -180,11 +180,14 @@ const ServicesProfile = ({ route }) => {
           fontWeight={'bold'}
         />
         <LineBreak val={0.5} />
-        <AppText
-          title={'No Detail Found'}
-          color={AppColors.DARKGRAY}
-          size={1.5}
-        />
+
+        <View>
+          <AppText
+            title={`Platform Fee: $${profileData?.price}`}
+            color={AppColors.DARKGRAY}
+            size={1.5}
+          />
+        </View>
 
         <LineBreak val={2} />
         {profileData?.previousScreen === 'Appointments' ? (
