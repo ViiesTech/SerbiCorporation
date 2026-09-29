@@ -18,6 +18,7 @@ import {
   AppColors,
   formatSSN,
   getCurrentLocation,
+  getAddressFromCoordinates,
   responsiveHeight,
   responsiveWidth,
 } from '../../utils';
@@ -54,32 +55,38 @@ const Signup = ({ route }) => {
     setState(prevState => ({ ...prevState, [key]: value }));
   };
 
-  const convertLatLongToAddress = async (lat, lng) => {
-    try {
-      const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${MAP_API_KEY}`;
-      const response = await fetch(url);
-      const data = await response.json();
-      return data.status === 'OK' ? data.results[0].formatted_address : null;
-    } catch (error) {
-      return null;
-    }
-  };
-
   const currentLocationAndFetchAddress = async () => {
     try {
       Toast.show('Fetching location...', Toast.SHORT);
-      const { latitude, longitude } = await getCurrentLocation();
-      const address = await convertLatLongToAddress(latitude, longitude);
+      const coords = await getCurrentLocation();
+      if (!coords?.latitude || !coords?.longitude) {
+        return;
+      }
+      const { latitude, longitude } = coords;
+      const address = await getAddressFromCoordinates(latitude, longitude);
 
-      setState(prev => ({
-        ...prev,
-        lat: latitude,
-        long: longitude,
-        address: address || '',
-      }));
-      googlePlacesRef.current?.setAddressText(address || '');
-      Toast.show('Location Fetched!', Toast.SHORT);
+      if (address) {
+        setState(prev => ({
+          ...prev,
+          lat: latitude,
+          long: longitude,
+          address: address,
+        }));
+        googlePlacesRef.current?.setAddressText(address);
+        Toast.show('Location Fetched!', Toast.SHORT);
+      } else {
+        setState(prev => ({
+          ...prev,
+          lat: latitude,
+          long: longitude,
+        }));
+        Toast.show(
+          'Location coordinates fetched, please enter address',
+          Toast.LONG,
+        );
+      }
     } catch (error) {
+      console.log('Signup location fetch error:', error);
       Toast.show('Failed to fetch location', Toast.SHORT);
     }
   };
@@ -225,6 +232,9 @@ const Signup = ({ route }) => {
           query={{ key: MAP_API_KEY, language: 'en', components: 'country:us' }}
           textInputProps={{
             placeholderTextColor: colors.placeholder_color,
+            onChangeText: text => {
+              onChangeText('address', text);
+            },
           }}
           styles={autoCompleteStyles}
           renderRightButton={() => (

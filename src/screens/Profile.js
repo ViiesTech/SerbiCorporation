@@ -32,6 +32,7 @@ import { colors } from '../assets/colors';
 import {
   AppColors,
   getCurrentLocation,
+  getAddressFromCoordinates,
   getProfileImage,
   getShortFileName,
   responsiveFontSize,
@@ -241,30 +242,27 @@ const Profile = ({ route }) => {
   const fetchCurrentLocation = async () => {
     try {
       Toast.show('Fetching location...', Toast.SHORT);
-      const { latitude, longitude } = await getCurrentLocation();
+      const coords = await getCurrentLocation();
+      if (!coords?.latitude || !coords?.longitude) return;
+      const { latitude, longitude } = coords;
       console.log('latitude & longitude:-', latitude, longitude);
-      const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${MAP_KEY}`;
-      const res = await fetch(url, {
-        headers: {
-          [Platform.OS === 'ios'
-            ? 'X-Ios-Bundle-Identifier'
-            : 'X-Android-Package']:
-            Platform.OS === 'ios'
-              ? 'com.app.serbicorp'
-              : 'com.serbicorporation',
-        },
-      });
-      const data = await res.json();
-      console.log('res in fetchCurrentLocation:-', data);
-      if (data.status === 'OK') {
-        const address = data.results[0].formatted_address;
+      const address = await getAddressFromCoordinates(latitude, longitude);
+      if (address) {
         setState(prev => ({
           ...prev,
           location: { name: address, lat: latitude, long: longitude },
         }));
         googlePlacesRef.current?.setAddressText(address);
+        Toast.show('Location Fetched!', Toast.SHORT);
+      } else {
+        setState(prev => ({
+          ...prev,
+          location: { ...prev.location, lat: latitude, long: longitude },
+        }));
+        Toast.show('Location coordinates fetched', Toast.SHORT);
       }
     } catch (error) {
+      console.log('Profile location error:', error);
       Toast.show('Location Error', Toast.SHORT);
     }
   };

@@ -2,7 +2,7 @@ import { Dimensions, Platform, PermissionsAndroid } from 'react-native';
 import { images } from '../assets/images';
 import Geolocation from 'react-native-geolocation-service';
 import Toast from 'react-native-simple-toast';
-import { IMAGE_URL } from '../redux/constant';
+import { IMAGE_URL, MAP_API_KEY, MAP_API_KEY_IOS } from '../redux/constant';
 
 const percentageCalculation = (max, val) => max * (val / 100);
 
@@ -89,7 +89,8 @@ export const getCurrentLocation = async () => {
       );
 
       if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-        return Toast.show('Location permission denied');
+        Toast.show('Location permission denied', Toast.SHORT);
+        throw new Error('Location permission denied');
       }
     } else if (Platform.OS === 'ios') {
       await Geolocation.requestAuthorization('whenInUse');
@@ -101,7 +102,7 @@ export const getCurrentLocation = async () => {
           resolve(position.coords);
         },
         error => {
-          reject(error.message);
+          reject(new Error(error.message || 'Failed to get current position'));
         },
         {
           enableHighAccuracy: true,
@@ -111,8 +112,72 @@ export const getCurrentLocation = async () => {
       );
     });
   } catch (err) {
-    throw new Error(err);
+    throw err;
   }
+};
+
+export const getAddressFromCoordinates = async (latitude, longitude) => {
+  if (!latitude || !longitude) return null;
+
+  // 1. Try Google Maps Geocoding API
+  try {
+    const key = Platform.OS === 'ios' ? MAP_API_KEY_IOS : MAP_API_KEY;
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${key}`;
+    const response = await fetch(url, {
+      headers: {
+        [Platform.OS === 'ios'
+          ? 'X-Ios-Bundle-Identifier'
+          : 'X-Android-Package']:
+          Platform.OS === 'ios'
+            ? 'com.app.serbicorp'
+            : 'com.serbicorporation',
+      },
+    });
+    const data = await response.json();
+    if (data.status === 'OK' && data.results?.[0]?.formatted_address) {
+      return data.results[0].formatted_address;
+    }
+  } catch (error) {
+    console.log('Google Geocode error:', error);
+  }
+
+  // 2. Fallback to OpenStreetMap Nominatim
+  try {
+    const osmUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`;
+    const osmRes = await fetch(osmUrl, {
+      headers: {
+        'User-Agent': 'SerbiCorporationApp/1.0',
+      },
+    });
+    const osmData = await osmRes.json();
+    if (osmData?.display_name) {
+      return osmData.display_name;
+    }
+  } catch (error) {
+    console.log('OSM Geocode error:', error);
+  }
+
+  // 3. Fallback to BigDataCloud
+  try {
+    const bdcUrl = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`;
+    const bdcRes = await fetch(bdcUrl);
+    const bdcData = await bdcRes.json();
+    if (bdcData) {
+      const parts = [
+        bdcData.locality || bdcData.city,
+        bdcData.principalSubdivision,
+        bdcData.postcode,
+        bdcData.countryName,
+      ].filter(Boolean);
+      if (parts.length > 0) {
+        return parts.join(', ');
+      }
+    }
+  } catch (error) {
+    console.log('BigDataCloud Geocode error:', error);
+  }
+
+  return null;
 };
 
 export const getShortFileName = (name = '', maxLength = 25) => {
