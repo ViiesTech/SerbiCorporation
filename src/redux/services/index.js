@@ -297,6 +297,25 @@ export const Apis = createApi({
         body: data,
       }),
     }),
+    createStripeOnboardingLink: builder.mutation({
+      query: (data = {}) => ({
+        url: endpoints.STRIPE_CONNECT_ONBOARDING,
+        method: 'POST',
+        body: data,
+      }),
+    }),
+    getStripeConnectStatus: builder.query({
+      query: () => ({
+        url: endpoints.STRIPE_CONNECT_STATUS,
+        method: 'GET',
+      }),
+    }),
+    getStripeDashboardLink: builder.query({
+      query: () => ({
+        url: endpoints.STRIPE_CONNECT_DASHBOARD,
+        method: 'GET',
+      }),
+    }),
   }),
 });
 
@@ -338,4 +357,9 @@ export const {
   useGetNotificationsQuery,
   useLazyGetNotificationsQuery,
   useReadNotificationMutation,
+  useCreateStripeOnboardingLinkMutation,
+  useGetStripeConnectStatusQuery,
+  useLazyGetStripeConnectStatusQuery,
+  useGetStripeDashboardLinkQuery,
+  useLazyGetStripeDashboardLinkQuery,
 } = Apis;

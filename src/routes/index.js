@@ -25,6 +25,8 @@ import Help from '../screens/Help';
 import VendorProfile from '../screens/VendorProfile';
 import Wallet from '../screens/user/main/Wallet';
 import Notifications from '../screens/Notifications';
+import StripeConnectScreen from '../screens/vendor/StripeConnectScreen';
+import StripeOnboardingScreen from '../screens/StripeOnboardingScreen';
 import { connectSocket, disconnectSocket } from '../services/socket';
 import { syncDeviceToken } from '../config/Firebase';
 
@@ -98,6 +100,14 @@ const Routes = () => {
                 <Stack.Screen
                   name="RequestDetailsScreen"
                   component={VendorStack}
+                />
+                <Stack.Screen
+                  name="StripeConnectScreen"
+                  component={StripeConnectScreen}
+                />
+                <Stack.Screen
+                  name="StripeOnboardingScreen"
+                  component={StripeOnboardingScreen}
                 />
               </>
             )

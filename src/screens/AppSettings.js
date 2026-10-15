@@ -72,7 +72,17 @@ const AppSettings = () => {
             navTo: 'Wallet',
           },
         ]
-      : []),
+      : [
+          {
+            id: 'stripeConnect',
+            title: 'Payouts & Bank Account',
+            subtitle: 'Stripe Connect & direct payouts',
+            iconName: 'credit-card',
+            iconBg: '#D1FAE5',
+            iconColor: '#059669',
+            navTo: 'StripeConnectScreen',
+          },
+        ]),
   ];
 
   const supportItems = [

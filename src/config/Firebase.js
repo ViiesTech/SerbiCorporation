@@ -262,7 +262,8 @@ export async function syncDeviceToken(fcmToken) {
   try {
     const persisted = store.getState()?.persistedData;
     const userToken = persisted?.token;
-    if (!userToken) {
+    const userId = persisted?.user?._id || persisted?.user?.id;
+    if (!userToken || !userId) {
       return null;
     }
 
@@ -274,7 +275,7 @@ export async function syncDeviceToken(fcmToken) {
     const url = `${BASE_URL}${endpoints.REGISTER_DEVICE_TOKEN}`;
     await axios.post(
       url,
-      { fcmToken: token },
+      { userId, fcmToken: token },
       {
         headers: {
           'Content-Type': 'application/json',
@@ -286,7 +287,10 @@ export async function syncDeviceToken(fcmToken) {
     console.log('[DeviceToken] Synced FCM token successfully:', token);
     return token;
   } catch (error) {
-    console.log('[DeviceToken] Sync notice:', error?.message || error);
+    console.log(
+      '[DeviceToken] Sync notice:',
+      error?.response?.data?.msg || error?.message || error,
+    );
     return null;
   }
 }
@@ -295,13 +299,14 @@ export async function removeDeviceTokenFromBackend(fcmToken) {
   try {
     const persisted = store.getState()?.persistedData;
     const userToken = persisted?.token;
+    const userId = persisted?.user?._id || persisted?.user?.id;
     const token = fcmToken || (await getFcmToken());
 
     if (userToken && token) {
       const url = `${BASE_URL}${endpoints.LOGOUT}`;
       await axios.post(
         url,
-        { fcmToken: token },
+        { ...(userId ? { userId } : {}), fcmToken: token },
         {
           headers: {
             'Content-Type': 'application/json',
@@ -316,7 +321,7 @@ export async function removeDeviceTokenFromBackend(fcmToken) {
   } catch (error) {
     console.log(
       '[DeviceToken] Remove on logout notice:',
-      error?.message || error,
+      error?.response?.data?.msg || error?.message || error,
     );
     return null;
   }

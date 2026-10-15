@@ -31,7 +31,6 @@ import {
   openDialer,
 } from '../../../utils';
 import { images } from '../../../assets/images';
-import { colors } from '../../../assets/colors';
 import { MAP_API_KEY } from '../../../redux/constant';
 import {
   useCreateRequestFormMutation,
@@ -42,7 +41,6 @@ const ServicesProfile = ({ route }) => {
   const nav = useNavigation();
   const { user } = useSelector(state => state.persistedData);
   const { requestData, profileData, coordinates } = route?.params || {};
-  const selectedTab = route?.params;
 
   const [isShowCalendar, setIsShowCalendar] = useState(false);
   const [date, setDate] = useState(null);

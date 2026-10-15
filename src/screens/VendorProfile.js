@@ -258,6 +258,77 @@ const VendorProfile = () => {
 
           {isTechnician && <LineBreak val={2} />}
 
+          {/* 3.5 Payouts & Bank Account (Stripe Connect) */}
+          {isTechnician && (
+            <View style={styles.infoCard}>
+              <View style={styles.cardHeader}>
+                <View style={styles.cardHeaderLeft}>
+                  <Ionicons
+                    name="card-outline"
+                    size={18}
+                    color={AppColors.BLACK}
+                  />
+                  <Text style={styles.cardTitle}>Payouts & Bank Account</Text>
+                </View>
+                <TouchableOpacity
+                  onPress={() => nav.navigate('StripeConnectScreen')}
+                  style={styles.manageBtn}
+                >
+                  <Text style={styles.manageBtnText}>Manage</Text>
+                  <Feather name="chevron-right" size={14} color="#2563EB" />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.cardItemDivider} />
+
+              <View style={styles.infoRow}>
+                <View style={styles.infoRowLeft}>
+                  <Ionicons
+                    name="shield-checkmark-outline"
+                    size={16}
+                    color="#64748B"
+                  />
+                  <Text style={styles.infoLabel}>Stripe Connect</Text>
+                </View>
+                <View
+                  style={[
+                    styles.statusPillBadge,
+                    userProfile?.stripeConnect?.isConnected
+                      ? styles.statusBadgeConnected
+                      : styles.statusBadgePending,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.statusPillText,
+                      userProfile?.stripeConnect?.isConnected
+                        ? styles.statusTextConnected
+                        : styles.statusTextPending,
+                    ]}
+                  >
+                    {userProfile?.stripeConnect?.isConnected
+                      ? 'Connected'
+                      : 'Setup Required'}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.infoRow}>
+                <View style={styles.infoRowLeft}>
+                  <Ionicons
+                    name="pie-chart-outline"
+                    size={16}
+                    color="#64748B"
+                  />
+                  <Text style={styles.infoLabel}>Payout Split</Text>
+                </View>
+                <Text style={styles.infoValueHighlight}>90% Direct Payout</Text>
+              </View>
+            </View>
+          )}
+
+          {isTechnician && <LineBreak val={2} />}
+
           {/* 4. Personal Information Card */}
           <View style={styles.infoCard}>
             <View style={styles.cardHeader}>
@@ -583,5 +654,40 @@ const styles = StyleSheet.create({
     fontSize: responsiveFontSize(1.4),
     color: '#64748B',
     fontWeight: '500',
+  },
+  manageBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#EFF6FF',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+  },
+  manageBtnText: {
+    fontSize: responsiveFontSize(1.3),
+    fontWeight: '700',
+    color: '#2563EB',
+  },
+  statusPillBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+  },
+  statusBadgeConnected: {
+    backgroundColor: '#DCFCE7',
+  },
+  statusBadgePending: {
+    backgroundColor: '#FEF3C7',
+  },
+  statusPillText: {
+    fontSize: responsiveFontSize(1.2),
+    fontWeight: '700',
+  },
+  statusTextConnected: {
+    color: '#166534',
+  },
+  statusTextPending: {
+    color: '#B45309',
   },
 });

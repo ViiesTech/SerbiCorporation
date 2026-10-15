@@ -67,5 +67,10 @@ export const endpoints = {
   GET_NOTIFICATIONS: ({ page = 1, limit = 20 } = {}) =>
     `getNotifications?page=${page}&limit=${limit}`,
   READ_NOTIFICATION: 'readNotification',
+  STRIPE_CONNECT_ONBOARDING: 'stripeConnect/createOnboardingLink',
+  STRIPE_CONNECT_STATUS: 'stripeConnect/status',
+  STRIPE_CONNECT_DASHBOARD: 'stripeConnect/dashboardLink',
+  GET_COMMISSION: 'getCommission',
+  UPDATE_COMMISSION: 'updateCommission',
 };
 

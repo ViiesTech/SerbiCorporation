@@ -3,15 +3,17 @@ import Home from '../../screens/vendor/main/Home'
 import Services from '../../screens/vendor/main/Services'
 import JobDiscussionForm from '../../screens/vendor/main/JobDiscussionForm'
 import StartJob from '../../screens/vendor/main/StartJob'
-import ClientReview from '../../screens/vendor/main/ClientReview'
-import Notifications from '../../screens/Notifications'
+import ClientReview from '../../screens/vendor/main/ClientReview';
+import Notifications from '../../screens/Notifications';
+import StripeConnectScreen from '../../screens/vendor/StripeConnectScreen';
+import StripeOnboardingScreen from '../../screens/StripeOnboardingScreen';
 
-const Stack = createStackNavigator()
+const Stack = createStackNavigator();
 
 const VendorStack = () => {
   return (
     <Stack.Navigator screenOptions={{
-      headerShown: false
+      headerShown: false,
     }}>
       <Stack.Screen name={'Home'} component={Home} />
       <Stack.Screen name={'Services'} component={Services} />
@@ -19,8 +21,10 @@ const VendorStack = () => {
       <Stack.Screen name={'StartJob'} component={StartJob} />
       <Stack.Screen name={'ClientReview'} component={ClientReview} />
       <Stack.Screen name={'Notifications'} component={Notifications} />
+      <Stack.Screen name={'StripeConnectScreen'} component={StripeConnectScreen} />
+      <Stack.Screen name={'StripeOnboardingScreen'} component={StripeOnboardingScreen} />
     </Stack.Navigator>
-  )
-}
+  );
+};
 
 export default VendorStack;

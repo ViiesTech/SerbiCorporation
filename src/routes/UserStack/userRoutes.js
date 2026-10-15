@@ -16,7 +16,7 @@ import Notifications from '../../screens/Notifications';
 
 const Stack = createStackNavigator();
 
-const userRoutes = () => {
+const UserRoutes = () => {
   return (
     <Stack.Navigator
       screenOptions={{headerShown: false}}
@@ -38,4 +38,4 @@ const userRoutes = () => {
   );
 };
 
-export default userRoutes
+export default UserRoutes;

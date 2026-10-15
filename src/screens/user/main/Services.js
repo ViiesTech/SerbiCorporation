@@ -131,7 +131,11 @@ const Services = ({ route }) => {
   const technicianList = data?.data || [];
 
   return (
-    <Container extraStyle={styles.safeAreaBg} style={styles.screenBg}>
+    <Container
+      extraStyle={styles.safeAreaBg}
+      style={styles.screenBg}
+      scrollEnabled={false}
+    >
       <NormalHeader
         heading={'Technician Profiles'}
         onBackPress={() => nav.goBack()}

@@ -91,7 +91,7 @@ const Appointments = () => {
   }, [sourceData, selectedStatusIndex, statusList]);
 
   return (
-    <Container>
+    <Container scrollEnabled={false}>
       <NormalHeader heading="Appointments" onBackPress={() => nav.goBack()} />
       <LineBreak val={1.5} />
 

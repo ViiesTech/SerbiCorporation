@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
   View,
   TouchableOpacity,
@@ -77,12 +77,7 @@ const Payment = ({ route }) => {
   console.log('customer_id:-', customer_id);
   console.log('pest_tech:-', pest_tech);
   console.log('request:-', request);
-  useEffect(() => {
-    fetchAllCards();
-    setShowSuccess(false);
-  }, []);
-
-  const fetchAllCards = async () => {
+  const fetchAllCards = useCallback(async () => {
     try {
       const res = await getAllCards().unwrap();
       if (res?.cards?.length > 0) {
@@ -95,7 +90,12 @@ const Payment = ({ route }) => {
     } catch (error) {
       console.log('Failed to fetch cards:', error);
     }
-  };
+  }, [getAllCards]);
+
+  useEffect(() => {
+    fetchAllCards();
+    setShowSuccess(false);
+  }, [fetchAllCards]);
 
   const onAddCard = async () => {
     if (!cardFields?.complete) {
@@ -213,11 +213,25 @@ const Payment = ({ route }) => {
       Toast.show(res.msg, Toast.SHORT);
       if (!res.success) return;
 
+      const rawAmount =
+        res?.commission?.totalAmount ||
+        res?.form?.amount ||
+        (res?.paymentIntent?.amount ? res.paymentIntent.amount / 100 : null) ||
+        payload.amount;
+
       const paymentInfo = {
-        amount: res.paymentIntent.amount,
-        created: res.paymentIntent.created,
+        amount: Number(rawAmount) || 0,
+        amountInDollars: Number(rawAmount) || 0,
+        created:
+          res?.paymentIntent?.created ||
+          (res?.form?.paymentDetails?.paidAt
+            ? Math.floor(
+                new Date(res.form.paymentDetails.paidAt).getTime() / 1000,
+              )
+            : Math.floor(Date.now() / 1000)),
         methodType: 'Card',
         refNumber: Math.random(),
+        commission: res?.commission || res?.form?.commission,
       };
 
       if (!request) {

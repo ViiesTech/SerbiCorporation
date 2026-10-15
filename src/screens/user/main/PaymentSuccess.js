@@ -1,7 +1,5 @@
-/* eslint-disable react-native/no-inline-styles */
 import React, { useEffect, useState } from 'react';
 import {
-  FlatList,
   View,
   StyleSheet,
   Text,
@@ -17,7 +15,6 @@ import {
 import { colors } from '../../../assets/colors';
 import LineBreak from '../../../components/LineBreak';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import AppButton from '../../../components/AppButton';
 import AppTextInput from '../../../components/AppTextInput';
@@ -37,41 +34,70 @@ const PaymentSuccess = ({ route }) => {
   const [addReview, { isLoading }] = useAddReviewMutation();
   const { fullName, _id } = useSelector(state => state.persistedData.user);
 
-  const amountStr = pest_tech?.requestPayInfo?.amount
-    ? `$${(pest_tech.requestPayInfo.amount / 100).toFixed(2)}`
-    : '$49.00';
+  const payInfo = pest_tech?.requestPayInfo;
+  const comm = payInfo?.commission;
+
+  const rawAmt =
+    payInfo?.amountInDollars ??
+    (payInfo?.amount != null
+      ? comm
+        ? payInfo.amount
+        : payInfo.amount / 100
+      : 49.0);
+  const amountStr = `$${Number(rawAmt || 0).toFixed(2)}`;
+
+  const adminShareAmount = comm?.adminShare?.amount ?? comm?.adminAmount;
+  const adminSharePct = comm?.adminShare?.percentage ?? comm?.adminPercentage;
+  const techShareAmount =
+    comm?.technicianShare?.amount ?? comm?.technicianAmount;
+  const techSharePct =
+    comm?.technicianShare?.percentage ?? comm?.technicianPercentage;
 
   const data = [
     {
       id: 1,
       title: 'Ref Number',
       subTitle:
-        pest_tech?.requestPayInfo?.refNumber?.toFixed
-          ? pest_tech.requestPayInfo.refNumber.toFixed(8)
+        payInfo?.refNumber?.toFixed
+          ? payInfo.refNumber.toFixed(8)
           : '000085752257',
     },
     {
       id: 2,
       title: 'Payment Time',
-      subTitle: pest_tech?.requestPayInfo?.created
-        ? moment(pest_tech.requestPayInfo.created * 1000).format(
-            'YYYY-MM-DD HH:mm:ss',
-          )
+      subTitle: payInfo?.created
+        ? moment(payInfo.created * 1000).format('YYYY-MM-DD HH:mm:ss')
         : moment().format('YYYY-MM-DD HH:mm:ss'),
     },
     {
       id: 3,
       title: 'Payment Method',
-      subTitle: pest_tech?.requestPayInfo?.methodType || 'Card Payment',
+      subTitle: payInfo?.methodType || 'Card Payment',
     },
     {
       id: 4,
       title: 'Sender Name',
       subTitle: fullName || 'Valued Customer',
     },
+    ...(adminShareAmount != null && techShareAmount != null
+      ? [
+          {
+            id: 5,
+            title: `Technician Payout (${techSharePct || 90}%)`,
+            subTitle: `$${Number(techShareAmount).toFixed(2)}`,
+            isSubItem: true,
+          },
+          {
+            id: 6,
+            title: `Platform Fee (${adminSharePct || 10}%)`,
+            subTitle: `$${Number(adminShareAmount).toFixed(2)}`,
+            isSubItem: true,
+          },
+        ]
+      : []),
     {
-      id: 5,
-      title: 'Amount Paid',
+      id: 7,
+      title: 'Total Paid',
       subTitle: amountStr,
       isTotal: true,
     },
@@ -141,6 +167,7 @@ const PaymentSuccess = ({ route }) => {
                   <Text
                     style={[
                       styles.detailTitle,
+                      item.isSubItem && styles.subItemTitle,
                       item.isTotal && styles.totalLabel,
                     ]}
                   >
@@ -149,6 +176,7 @@ const PaymentSuccess = ({ route }) => {
                   <Text
                     style={[
                       styles.detailValue,
+                      item.isSubItem && styles.subItemValue,
                       item.isTotal && styles.totalValue,
                     ]}
                     numberOfLines={1}
@@ -313,12 +341,22 @@ const styles = StyleSheet.create({
     color: '#64748B',
     fontWeight: '500',
   },
+  subItemTitle: {
+    fontSize: 12,
+    color: '#64748B',
+    paddingLeft: 8,
+  },
   detailValue: {
     fontSize: 14,
     color: '#0F172A',
     fontWeight: '600',
     maxWidth: '55%',
     textAlign: 'right',
+  },
+  subItemValue: {
+    fontSize: 13,
+    color: '#334155',
+    fontWeight: '500',
   },
   totalDivider: {
     width: '100%',
