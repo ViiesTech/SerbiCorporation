@@ -10,6 +10,9 @@ import PestTechnician from '../../screens/user/main/PestTechnician';
 import History from '../../screens/user/main/History';
 import Appointments from '../../screens/user/main/Appointments';
 import Wishlist from '../../screens/user/main/Wishlist';
+import Inbox from '../../screens/Inbox';
+import Chat from '../../screens/Chat';
+import Notifications from '../../screens/Notifications';
 
 const Stack = createStackNavigator();
 
@@ -28,6 +31,9 @@ const userRoutes = () => {
       <Stack.Screen name="History" component={History} />
       <Stack.Screen name="Appointments" component={Appointments} />
       <Stack.Screen name="Wishlist" component={Wishlist} />
+      <Stack.Screen name="Inbox" component={Inbox} />
+      <Stack.Screen name="Chat" component={Chat} />
+      <Stack.Screen name="Notifications" component={Notifications} />
     </Stack.Navigator>
   );
 };

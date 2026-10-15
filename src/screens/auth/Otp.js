@@ -12,6 +12,7 @@ import Toast from 'react-native-simple-toast';
 import { useDispatch } from 'react-redux';
 import { firstTimeVisit } from '../../redux/slices';
 import { useNavigation } from '@react-navigation/native';
+import { getFcmToken } from '../../config/Firebase';
 
 const Otp = ({ route }) => {
   const { otpData } = route?.params;
@@ -47,10 +48,14 @@ const Otp = ({ route }) => {
       Toast.show('Please enter your 4 digit code', Toast.SHORT);
       return;
     }
+
+    const fcmToken = await getFcmToken();
+
     let data = {
       email: otpData?.email,
       OTP: value,
       signupToken: otpData?.signupToken && otpData?.signupToken,
+      ...(fcmToken ? { fcmToken } : {}),
     };
 
     if (otpData?.type === 'reset') {

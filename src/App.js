@@ -11,6 +11,7 @@ import { StripeProvider } from '@stripe/stripe-react-native';
 import NetInfo from '@react-native-community/netinfo';
 import OfflineModal from './components/OfflineModal';
 import { AppColors } from './utils';
+import { initNotifications } from './config/Firebase';
 
 GoogleSignin.configure({
   webClientId: CLIENT_ID,
@@ -29,7 +30,14 @@ const App = () => {
       setIsOffline(!state.isConnected);
     });
 
-    return () => unsubscribe();
+    const unsubscribeNotifications = initNotifications();
+
+    return () => {
+      unsubscribe();
+      if (typeof unsubscribeNotifications === 'function') {
+        unsubscribeNotifications();
+      }
+    };
   }, []);
 
   return (

@@ -2,10 +2,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   TouchableOpacity,
-  FlatList,
   StyleSheet,
   ScrollView,
   Text,
+  Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AppIntroSlider from 'react-native-app-intro-slider';
@@ -30,6 +30,7 @@ import Loader from '../../../components/Loader';
 // Utils & Assets
 import {
   AppColors,
+  getProfileImage,
   responsiveFontSize,
   responsiveHeight,
   responsiveWidth,
@@ -42,6 +43,7 @@ import {
   useLazyGetAllCardsQuery,
   useSaveCardMutation,
   useUpdateDiscussionMutation,
+  useCreateUpdateProfileMutation,
 } from '../../../redux/services';
 
 const options = [{ id: 1, icon: icons.apple_pay, title: 'Pay With Card' }];
@@ -52,7 +54,7 @@ const Payment = ({ route }) => {
   const sheetRef = useRef(null);
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedPayMethod] = useState({ id: 1 });
+  const [selectedPayMethod, setSelectedPayMethod] = useState({ id: 1 });
   const [selectedCard, setSelectedCard] = useState({
     methodId: null,
     id: null,
@@ -60,6 +62,7 @@ const Payment = ({ route }) => {
   const [cardDetails, setCardDetails] = useState([]);
   const [cardFields, setCardFields] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [addingCard, setAddingCard] = useState(false);
 
   const { user, customer_id } = useSelector(state => state.persistedData);
   const { pest_tech, request } = route?.params || {};
@@ -67,20 +70,21 @@ const Payment = ({ route }) => {
   const [getAllCards, { isLoading: cardLoading }] = useLazyGetAllCardsQuery();
   const [createSetupIntent, { isLoading }] = useCreateSetupIntentMutation();
   const [saveCard] = useSaveCardMutation();
+  const [createUpdateProfile] = useCreateUpdateProfileMutation();
   const [createPayment, { isLoading: paymentLoader }] =
     useCreatePaymentMutation();
   const [updateDiscussion] = useUpdateDiscussionMutation();
-
+  console.log('customer_id:-', customer_id);
+  console.log('pest_tech:-', pest_tech);
+  console.log('request:-', request);
   useEffect(() => {
-    if (customer_id) {
-      fetchAllCards();
-      setShowSuccess(false);
-    }
-  }, [customer_id]);
+    fetchAllCards();
+    setShowSuccess(false);
+  }, []);
 
   const fetchAllCards = async () => {
     try {
-      const res = await getAllCards({ customer_id }).unwrap();
+      const res = await getAllCards().unwrap();
       if (res?.cards?.length > 0) {
         setCardDetails(res.cards);
         setSelectedCard({
@@ -95,30 +99,67 @@ const Payment = ({ route }) => {
 
   const onAddCard = async () => {
     if (!cardFields?.complete) {
-      sheetRef?.current.close();
       return Toast.show('Please fill in complete card details', Toast.SHORT);
     }
 
+    setAddingCard(true);
     try {
-      const res = await createSetupIntent().unwrap();
+      let res;
+      try {
+        res = await createSetupIntent().unwrap();
+      } catch (intentErr) {
+        console.log('createSetupIntent error:', intentErr);
+        const errString = JSON.stringify(intentErr || '');
+        if (
+          errString.includes('No such customer') ||
+          intentErr?.data?.error?.includes('No such customer') ||
+          intentErr?.data?.msg?.includes('No such customer')
+        ) {
+          const formData = new FormData();
+          formData.append('userId', user?._id || '');
+          formData.append('stripeCustomerId', '');
+          await createUpdateProfile(formData).unwrap();
+          res = await createSetupIntent().unwrap();
+        } else {
+          throw intentErr;
+        }
+      }
+
+      console.log('SetupIntent response:-', res);
       if (res?.customerId && res?.clientSecret) {
         const { error, setupIntent } = await confirmSetupIntent(
           res.clientSecret,
           {
             paymentMethodType: 'Card',
-            paymentMethodData: { billingDetails: { name: user?.fullName } },
+            paymentMethodData: {
+              billingDetails: { name: user?.fullName || 'User' },
+            },
           },
         );
 
         if (error) {
-          sheetRef?.current.close();
-          return Toast.show('Failed to add card.', Toast.SHORT);
+          console.log('confirmSetupIntent error:', error);
+          return Toast.show(
+            error?.message || 'Failed to add card.',
+            Toast.SHORT,
+          );
         }
 
-        if (setupIntent?.status === 'Succeeded') {
+        const isSuccess =
+          setupIntent?.status?.toLowerCase() === 'succeeded' ||
+          setupIntent?.status === 'Succeeded';
+
+        if (isSuccess) {
+          const paymentMethodId =
+            setupIntent?.paymentMethod?.id || setupIntent?.paymentMethodId;
+
+          if (!paymentMethodId) {
+            throw new Error('Payment method ID not found');
+          }
+
           const saveRes = await saveCard({
             customerId: res.customerId,
-            paymentMethodId: setupIntent.paymentMethod.id,
+            paymentMethodId: paymentMethodId,
           }).unwrap();
 
           if (saveRes?.success) {
@@ -126,12 +167,30 @@ const Payment = ({ route }) => {
             fetchAllCards();
             setShowSuccess(true);
             setTimeout(() => setShowSuccess(false), 2500);
+          } else {
+            Toast.show(
+              saveRes?.msg || saveRes?.message || 'Failed to save card.',
+              Toast.SHORT,
+            );
           }
+        } else {
+          Toast.show(`Setup status: ${setupIntent?.status}`, Toast.SHORT);
         }
+      } else {
+        throw new Error('Invalid setup intent response from server');
       }
     } catch (error) {
+      console.log('onAddCard error:', error);
       sheetRef?.current.close();
-      Toast.show('Some problem occurred', Toast.SHORT);
+      const msg =
+        error?.data?.msg ||
+        error?.data?.error ||
+        error?.data?.message ||
+        error?.message ||
+        'Some problem occurred';
+      Toast.show(msg, Toast.SHORT);
+    } finally {
+      setAddingCard(false);
     }
   };
 
@@ -188,22 +247,26 @@ const Payment = ({ route }) => {
     </View>
   );
 
-  const renderCardItem = ({ item, index }) => (
-    <View style={styles.cardSlideWrapper}>
-      <Card
-        type={item.card.brand}
-        onCardPress={() => setSelectedCard({ methodId: item.id, id: index })}
-        borderColor={
-          selectedCard.id === index ? colors.primary : colors.secondary_button
-        }
-        cardNumber={item.card.last4}
-        cardHolder={item.billing_details.name}
-        expiry={`0${item.card.exp_month}/${item.card.exp_year
-          .toString()
-          .slice(-2)}`}
-      />
-    </View>
-  );
+  const renderCardItem = ({ item, index }) => {
+    const expMonth = String(item.card.exp_month).padStart(2, '0');
+    const expYear = String(item.card.exp_year).slice(-2);
+    return (
+      <View style={styles.cardSlideWrapper}>
+        <Card
+          type={item.card.brand?.toLowerCase()}
+          onCardPress={() => setSelectedCard({ methodId: item.id, id: index })}
+          borderColor={
+            selectedCard.id === index ? colors.primary : colors.secondary_button
+          }
+          cardNumber={`••••  ${item.card.last4}`}
+          cardHolder={
+            item.billing_details?.name || user?.fullName || 'Card Holder'
+          }
+          expiry={`${expMonth}/${expYear}`}
+        />
+      </View>
+    );
+  };
 
   const handleSlideChange = index => {
     setCurrentIndex(index);
@@ -214,11 +277,150 @@ const Payment = ({ route }) => {
       });
     }
   };
+
+  const formattedPrice = pest_tech?.price
+    ? Number(pest_tech.price).toFixed(2)
+    : null;
+
   return (
-    <Container>
+    <Container scrollEnabled={true} contentStyle={styles.containerContent}>
       <NormalHeader heading="Payment" onBackPress={() => nav.goBack()} />
       <LineBreak val={2} />
 
+      {/* Payment / Booking Details Card */}
+      {pest_tech && (
+        <View style={styles.paymentDetailsCard}>
+          <View style={styles.detailsHeader}>
+            <View style={styles.techInfoRow}>
+              {pest_tech?.profileImage ? (
+                <Image
+                  source={{
+                    uri: getProfileImage(pest_tech.profileImage, true),
+                  }}
+                  style={styles.techAvatar}
+                />
+              ) : (
+                <View style={styles.avatarPlaceholder}>
+                  <Ionicons name="person" size={24} color={AppColors.BLACK} />
+                </View>
+              )}
+              <View style={styles.techTextContainer}>
+                <AppText
+                  title={pest_tech?.fullName || 'Technician'}
+                  fontWeight="bold"
+                  size={1.9}
+                  color={AppColors.BLACK}
+                />
+                {pest_tech?.service?.name && (
+                  <View style={styles.serviceBadge}>
+                    <AppText
+                      title={pest_tech.service.name}
+                      size={1.3}
+                      fontWeight="600"
+                      color={AppColors.BLACK}
+                    />
+                  </View>
+                )}
+              </View>
+            </View>
+
+            <View style={styles.priceContainer}>
+              <AppText
+                title="Total"
+                color={AppColors.DARKGRAY}
+                size={1.3}
+                align="right"
+              />
+              <AppText
+                title={`$${formattedPrice || '0.00'}`}
+                size={2.3}
+                fontWeight="bold"
+                color={AppColors.BLACK}
+              />
+            </View>
+          </View>
+
+          <View style={styles.cardDivider} />
+
+          {/* Breakdown Items */}
+          <View style={styles.detailRow}>
+            <View style={styles.detailLabel}>
+              <Ionicons
+                name="briefcase-outline"
+                size={16}
+                color={AppColors.DARKGRAY}
+              />
+              <AppText title="Service Type" color={AppColors.GRAY} size={1.5} />
+            </View>
+            <AppText
+              title={request ? 'Service Request' : 'Discussion Form'}
+              fontWeight="600"
+              size={1.5}
+              color={AppColors.BLACK}
+            />
+          </View>
+
+          {pest_tech?.locationName ? (
+            <View style={styles.detailRow}>
+              <View style={styles.detailLabel}>
+                <Ionicons
+                  name="location-outline"
+                  size={16}
+                  color={AppColors.DARKGRAY}
+                />
+                <AppText title="Location" color={AppColors.GRAY} size={1.5} />
+              </View>
+              <View style={styles.locationWrapper}>
+                <Text numberOfLines={1} style={styles.locationText}>
+                  {pest_tech.locationName}
+                </Text>
+              </View>
+            </View>
+          ) : null}
+
+          {pest_tech?.workingHours?.startTime ? (
+            <View style={styles.detailRow}>
+              <View style={styles.detailLabel}>
+                <Ionicons
+                  name="time-outline"
+                  size={16}
+                  color={AppColors.DARKGRAY}
+                />
+                <AppText
+                  title="Working Hours"
+                  color={AppColors.GRAY}
+                  size={1.5}
+                />
+              </View>
+              <AppText
+                title={`${pest_tech.workingHours.startTime} - ${pest_tech.workingHours.endTime}`}
+                size={1.5}
+                color={AppColors.BLACK}
+                fontWeight="500"
+              />
+            </View>
+          ) : null}
+
+          <View style={styles.detailRow}>
+            <View style={styles.detailLabel}>
+              <Ionicons
+                name="receipt-outline"
+                size={16}
+                color={AppColors.DARKGRAY}
+              />
+              <AppText title="Service Fee" color={AppColors.GRAY} size={1.5} />
+            </View>
+            <AppText
+              title={`$${formattedPrice || '0.00'}`}
+              size={1.5}
+              color={AppColors.BLACK}
+              fontWeight="500"
+            />
+          </View>
+        </View>
+      )}
+
+      {/* Saved Cards Section */}
       <View style={styles.sectionHeader}>
         <AppText
           title="Saved Cards"
@@ -262,8 +464,9 @@ const Payment = ({ route }) => {
         </View>
       )}
 
-      <LineBreak val={2} />
+      <LineBreak val={1.5} />
 
+      {/* Other Payment Options */}
       <View style={styles.otherOptionsWrapper}>
         <AppText
           title="Other Payment Options"
@@ -271,36 +474,34 @@ const Payment = ({ route }) => {
           size={2}
           fontWeight="bold"
         />
-        <FlatList
-          data={options}
-          ListHeaderComponent={<LineBreak val={2} />}
-          ItemSeparatorComponent={<LineBreak val={2} />}
-          renderItem={({ item }) => (
-            <TouchableOpacity style={styles.optionItem} onPress={() => {}}>
-              <View style={styles.optionLabel}>
-                <SVGIcon xml={item.icon} width={28} height={28} />
-                <AppText
-                  title={item.title}
-                  color={AppColors.BLACK}
-                  size={1.8}
-                />
-              </View>
-              <Ionicons
-                name={
-                  selectedPayMethod.id === item.id
-                    ? 'radio-button-on-sharp'
-                    : 'radio-button-off-sharp'
-                }
-                size={responsiveFontSize(3)}
-                color={AppColors.BLACK}
-              />
-            </TouchableOpacity>
-          )}
-        />
+        <LineBreak val={1} />
+        {options.map(item => (
+          <TouchableOpacity
+            key={item.id}
+            style={styles.optionItem}
+            onPress={() => setSelectedPayMethod(item)}
+          >
+            <View style={styles.optionLabel}>
+              <SVGIcon xml={item.icon} width={28} height={28} />
+              <AppText title={item.title} color={AppColors.BLACK} size={1.8} />
+            </View>
+            <Ionicons
+              name={
+                selectedPayMethod.id === item.id
+                  ? 'radio-button-on-sharp'
+                  : 'radio-button-off-sharp'
+              }
+              size={responsiveFontSize(3)}
+              color={AppColors.BLACK}
+            />
+          </TouchableOpacity>
+        ))}
+      </View>
 
-        <LineBreak val={8} />
+      {/* Pay Now Button */}
+      <View style={styles.buttonWrapper}>
         <AppButton
-          title="pay now"
+          title={formattedPrice ? `PAY $${formattedPrice} NOW` : 'PAY NOW'}
           bgColor={colors.secondary_button}
           textColor={AppColors.BLACK}
           textFontWeight="bold"
@@ -310,7 +511,6 @@ const Payment = ({ route }) => {
           textTransform="uppercase"
           handlePress={onPayNow}
         />
-        <LineBreak val={2} />
       </View>
 
       <RBSheet
@@ -333,7 +533,7 @@ const Payment = ({ route }) => {
           />
           <AppButton
             bgColor={colors.primary}
-            isLoading={isLoading}
+            isLoading={isLoading || addingCard}
             loaderColor={colors.white}
             title="ADD CARD"
             handlePress={onAddCard}
@@ -365,12 +565,94 @@ const Payment = ({ route }) => {
 export default Payment;
 
 const styles = StyleSheet.create({
+  containerContent: {
+    paddingBottom: responsiveHeight(5),
+  },
+  paymentDetailsCard: {
+    marginHorizontal: responsiveWidth(4),
+    marginBottom: responsiveHeight(2.5),
+    backgroundColor: AppColors.WHITE,
+    borderRadius: 16,
+    padding: responsiveWidth(4),
+    borderWidth: 1,
+    borderColor: '#E8ECF2',
+    shadowColor: AppColors.BLACK,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  detailsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  techInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  techAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#F0F0F0',
+  },
+  avatarPlaceholder: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.secondary_button,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  techTextContainer: {
+    flex: 1,
+    gap: 4,
+  },
+  serviceBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.primary,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  priceContainer: {
+    alignItems: 'flex-end',
+  },
+  cardDivider: {
+    height: 1,
+    backgroundColor: '#EAEAEA',
+    marginVertical: responsiveHeight(1.5),
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: responsiveHeight(0.6),
+  },
+  detailLabel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  locationWrapper: {
+    flex: 1,
+    alignItems: 'flex-end',
+    marginLeft: 12,
+  },
+  locationText: {
+    fontSize: responsiveFontSize(1.5),
+    color: AppColors.BLACK,
+    fontWeight: '500',
+  },
   sectionHeader: {
     marginHorizontal: responsiveWidth(4),
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: responsiveHeight(2),
+    marginBottom: responsiveHeight(1.5),
   },
   addCardBtn: {
     flexDirection: 'row',
@@ -378,10 +660,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyWallet: {
-    paddingTop: responsiveHeight(2),
+    paddingVertical: responsiveHeight(3),
+    alignItems: 'center',
   },
   sliderContainer: {
-    flex: 0.7,
+    height: responsiveHeight(23),
   },
   cardSlideWrapper: {
     flex: 1,
@@ -391,7 +674,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: responsiveHeight(1),
+    marginTop: responsiveHeight(0.8),
   },
   dot: {
     width: 8,
@@ -401,21 +684,27 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   activeDot: {
-    backgroundColor: AppColors.DARKGRAY,
+    backgroundColor: colors.primary,
   },
   otherOptionsWrapper: {
-    flex: 1,
     marginHorizontal: responsiveWidth(4),
+    marginTop: responsiveHeight(1),
   },
   optionItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingVertical: responsiveHeight(1),
   },
   optionLabel: {
     flexDirection: 'row',
     gap: 15,
     alignItems: 'center',
+  },
+  buttonWrapper: {
+    alignItems: 'center',
+    marginTop: responsiveHeight(3),
+    marginBottom: responsiveHeight(2),
   },
   sheetContainer: {
     backgroundColor: AppColors.PRIMARY,

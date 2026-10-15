@@ -244,6 +244,59 @@ export const Apis = createApi({
         };
       },
     }),
+    sendMessage: builder.mutation({
+      query: data => ({
+        url: endpoints.SEND_MESSAGE,
+        method: 'POST',
+        body: data,
+      }),
+    }),
+    getMessages: builder.query({
+      query: ({ otherUserId, limit = 20, cursor }) => ({
+        url: endpoints.GET_MESSAGES({ otherUserId, limit, cursor }),
+        method: 'GET',
+      }),
+    }),
+    getInbox: builder.query({
+      query: ({ page = 1, limit = 20 } = {}) => ({
+        url: endpoints.GET_INBOX({ page, limit }),
+        method: 'GET',
+      }),
+    }),
+    markMessagesAsRead: builder.mutation({
+      query: data => ({
+        url: endpoints.MARK_MESSAGES_READ,
+        method: 'POST',
+        body: data,
+      }),
+    }),
+    registerDeviceToken: builder.mutation({
+      query: data => ({
+        url: endpoints.REGISTER_DEVICE_TOKEN,
+        method: 'POST',
+        body: data,
+      }),
+    }),
+    logout: builder.mutation({
+      query: (data = {}) => ({
+        url: endpoints.LOGOUT,
+        method: 'POST',
+        body: data,
+      }),
+    }),
+    getNotifications: builder.query({
+      query: ({ page = 1, limit = 20 } = {}) => ({
+        url: endpoints.GET_NOTIFICATIONS({ page, limit }),
+        method: 'GET',
+      }),
+    }),
+    readNotification: builder.mutation({
+      query: (data = {}) => ({
+        url: endpoints.READ_NOTIFICATION,
+        method: 'POST',
+        body: data,
+      }),
+    }),
   }),
 });
 
@@ -274,4 +327,15 @@ export const {
   useSaveCardMutation,
   useLazyGetAllCardsQuery,
   useCreatePaymentMutation,
+  useSendMessageMutation,
+  useGetMessagesQuery,
+  useLazyGetMessagesQuery,
+  useGetInboxQuery,
+  useLazyGetInboxQuery,
+  useMarkMessagesAsReadMutation,
+  useRegisterDeviceTokenMutation,
+  useLogoutMutation,
+  useGetNotificationsQuery,
+  useLazyGetNotificationsQuery,
+  useReadNotificationMutation,
 } = Apis;

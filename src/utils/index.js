@@ -1,4 +1,9 @@
-import { Dimensions, Platform, PermissionsAndroid } from 'react-native';
+import {
+  Dimensions,
+  Platform,
+  PermissionsAndroid,
+  Linking,
+} from 'react-native';
 import { images } from '../assets/images';
 import Geolocation from 'react-native-geolocation-service';
 import Toast from 'react-native-simple-toast';
@@ -128,9 +133,7 @@ export const getAddressFromCoordinates = async (latitude, longitude) => {
         [Platform.OS === 'ios'
           ? 'X-Ios-Bundle-Identifier'
           : 'X-Android-Package']:
-          Platform.OS === 'ios'
-            ? 'com.app.serbicorp'
-            : 'com.serbicorporation',
+          Platform.OS === 'ios' ? 'com.app.serbicorp' : 'com.serbicorporation',
       },
     });
     const data = await response.json();
@@ -261,8 +264,24 @@ export const getProfileImage = (profileImage, cacheBuster = false) => {
 };
 
 export const getFileNameFromUri = uri => {
-  return console.log(uri);
   if (!uri || uri?.length < 1) return '';
   const parts = uri?.split('/');
   return decodeURIComponent(parts[parts.length - 1]);
+};
+
+export const openDialer = phoneNumber => {
+  if (!phoneNumber) {
+    Toast.show('Customer phone number not available', Toast.SHORT);
+    return;
+  }
+  const cleanNumber = String(phoneNumber).replace(/[^0-9+*#]/g, '');
+  if (!cleanNumber) {
+    Toast.show('Customer phone number not available', Toast.SHORT);
+    return;
+  }
+  const url = `tel:${cleanNumber}`;
+  Linking.openURL(url).catch(err => {
+    console.log('Error opening dialer with number:', err);
+    Toast.show('Unable to open phone dialer', Toast.SHORT);
+  });
 };

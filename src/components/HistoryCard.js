@@ -9,6 +9,7 @@ import {
   responsiveFontSize,
   responsiveHeight,
   responsiveWidth,
+  openDialer,
 } from '../utils';
 import AppText from './AppText';
 import SVGIcon from './SVGIcon';
@@ -395,10 +396,20 @@ const HistoryCard = ({
                     borderRadius: 35,
                     backgroundColor: colors.primary,
                   }}
-                  onPress={() =>
-                    // nav.navigate('CallAndChatHistory', { screen: 'cALL hISTORY' })
-                    nav.navigate('IncomingCall')
-                  }
+                  onPress={() => {
+                    if (callOnPress) {
+                      callOnPress();
+                    } else {
+                      const number =
+                        item?.phoneNumber ||
+                        item?.phone ||
+                        item?.technicianId?.phoneNumber ||
+                        item?.technicianId?.phone ||
+                        item?.userId?.phoneNumber ||
+                        item?.userId?.phone;
+                      openDialer(number);
+                    }
+                  }}
                 >
                   <Ionicons
                     name="call"
@@ -418,10 +429,30 @@ const HistoryCard = ({
                     borderRadius: 35,
                     backgroundColor: colors.primary,
                   }}
-                  onPress={() =>
-                    // nav.navigate('CallAndChatHistory', { screen: 'cHAT hISTORY' })
-                    nav.navigate('Chat')
-                  }
+                  onPress={() => {
+                    if (chatOnPress) {
+                      chatOnPress();
+                    } else {
+                      const otherUserId =
+                        item?.userId?._id ||
+                        item?.technicianId?._id ||
+                        item?.userId ||
+                        item?.technicianId ||
+                        item?.id ||
+                        item?._id;
+                      const userName =
+                        item?.username ||
+                        item?.name ||
+                        item?.userId?.fullName ||
+                        item?.technicianId?.fullName ||
+                        'Chat';
+                      nav.navigate('Chat', {
+                        otherUserId,
+                        userName,
+                        item,
+                      });
+                    }
+                  }}
                 >
                   <AntDesign
                     name="wechat"

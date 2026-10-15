@@ -28,6 +28,7 @@ import {
   getProfileImage,
   responsiveHeight,
   responsiveWidth,
+  openDialer,
 } from '../../../utils';
 import { colors } from '../../../assets/colors';
 import { images } from '../../../assets/images';
@@ -261,7 +262,17 @@ const PestTechnician = ({ route }) => {
                   size={1.8}
                 />
               </View>
-              <TouchableOpacity style={styles.iconBtn}>
+              <TouchableOpacity
+                style={styles.iconBtn}
+                onPress={() =>
+                  openDialer(
+                    technicianData?.phoneNumber ||
+                      technicianData?.phone ||
+                      technicianData?.appointmentData?.phoneNumber ||
+                      technicianData?.appointmentData?.phone,
+                  )
+                }
+              >
                 <Icon name="phone" size={20} color={AppColors.BLACK} />
               </TouchableOpacity>
               <TouchableOpacity style={styles.iconBtn}>

@@ -1,555 +1,445 @@
-/* eslint-disable react-native/no-inline-styles */
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
-  FlatList,
+  Text,
+  ScrollView,
   TouchableOpacity,
-  Switch,
   StyleSheet,
+  Image,
 } from 'react-native';
-import Container from '../components/Container';
-import LineBreak from '../components/LineBreak';
-import NormalHeader from '../components/NormalHeader';
 import { useNavigation } from '@react-navigation/native';
+import { useDispatch, useSelector } from 'react-redux';
+import Feather from 'react-native-vector-icons/Feather';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import Toast from 'react-native-simple-toast';
+
+import NormalHeader from '../components/NormalHeader';
 import {
-  AppColors,
+  getProfileImage,
   responsiveFontSize,
   responsiveHeight,
   responsiveWidth,
 } from '../utils';
-import AppText from '../components/AppText';
-import { colors } from '../assets/colors';
-import { useDispatch, useSelector } from 'react-redux';
+import { images } from '../assets/images';
 import { resetUser } from '../redux/slices';
-import Toast from 'react-native-simple-toast';
-
-// Icons
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import Entypo from 'react-native-vector-icons/Entypo';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import Feather from 'react-native-vector-icons/Feather';
-import Octicons from 'react-native-vector-icons/Octicons';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import AntDesign from 'react-native-vector-icons/AntDesign';
+import { removeDeviceTokenFromBackend } from '../config/Firebase';
 
 const AppSettings = () => {
   const nav = useNavigation();
   const dispatch = useDispatch();
   const { user } = useSelector(state => state.persistedData);
 
-  const [notificationEnabled, setNotificationEnabled] = useState(false);
-  const [darkModeEnabled, setDarkModeEnabled] = useState(false);
+  const isTechnician = user?.type === 'Technician';
 
-  const menuOne = [
+  const handleLogout = async () => {
+    try {
+      await removeDeviceTokenFromBackend();
+    } catch (e) {
+      console.log('Error removing device token:', e);
+    }
+    dispatch(resetUser());
+    Toast.show('Logged out successfully', Toast.SHORT);
+  };
+
+  const accountItems = [
     {
-      id: 'account',
-      title: 'Account',
-      icon: <FontAwesome name="user-o" size={responsiveFontSize(2.2)} />,
-      navTo: 'MainProfile',
+      id: 'profile',
+      title: 'My Profile',
+      subtitle: 'Account details & location',
+      iconName: 'user',
+      iconBg: 'rgba(160, 204, 217, 0.25)',
+      iconColor: '#2C6E80',
+      navTo: 'VendorProfile',
     },
     {
-      id: 'notifications',
-      title: 'Notifications',
-      icon: (
-        <Ionicons name="notifications-outline" size={responsiveFontSize(2.2)} />
-      ),
-      isSwitch: true,
-      value: notificationEnabled,
-      onToggle: setNotificationEnabled,
+      id: 'messages',
+      title: 'Messages',
+      subtitle: 'Chats & conversations',
+      iconName: 'message-square',
+      iconBg: '#EBF3FE',
+      iconColor: '#2563EB',
+      navTo: 'Inbox',
     },
-    {
-      id: 'darkmode',
-      title: 'Dark Mode',
-      icon: <Octicons name="moon" size={responsiveFontSize(2.2)} />,
-      isSwitch: true,
-      value: darkModeEnabled,
-      onToggle: setDarkModeEnabled,
-    },
-    {
-      id: 'language',
-      title: 'Language',
-      icon: <Ionicons name="language-outline" size={responsiveFontSize(2.2)} />,
-    },
+    ...(!isTechnician
+      ? [
+          {
+            id: 'wallet',
+            title: 'Wallet & Payments',
+            subtitle: 'Saved cards & billing',
+            iconName: 'credit-card',
+            iconBg: '#D1FAE5',
+            iconColor: '#059669',
+            navTo: 'Wallet',
+          },
+        ]
+      : []),
   ];
 
-  const menuTwo = [
+  const supportItems = [
     {
-      id: 'security',
-      title: 'Security',
-      icon: (
-        <Ionicons
-          name="shield-checkmark-outline"
-          size={responsiveFontSize(2.2)}
-        />
-      ),
+      id: 'help',
+      title: 'Help & Support',
+      subtitle: 'FAQs & 24/7 client care',
+      iconName: 'help-circle',
+      iconBg: '#CCFBF1',
+      iconColor: '#0D9488',
+      navTo: 'Help',
     },
     {
       id: 'terms',
       title: 'Terms & Conditions',
+      subtitle: 'Service rules & guidelines',
+      iconName: 'file-text',
+      iconBg: '#EFF6FF',
+      iconColor: '#2563EB',
       navTo: 'TermsAndCondition',
-      icon: <Feather name="file" size={responsiveFontSize(2.2)} />,
     },
     {
       id: 'privacy',
       title: 'Privacy Policy',
+      subtitle: 'Data protection & security',
+      iconName: 'shield',
+      iconBg: '#EDE9FE',
+      iconColor: '#7C3AED',
       navTo: 'PrivacyPolicy',
-      icon: <Octicons name="lock" size={responsiveFontSize(2.2)} />,
-    },
-    {
-      id: 'help',
-      title: 'Help',
-      navTo: 'Help',
-      icon: <Feather name="alert-circle" size={responsiveFontSize(2.2)} />,
-    },
-    ...(user?.type !== 'Technician'
-      ? [
-          {
-            id: 'wallet',
-            title: 'Wallet',
-            navTo: 'Wallet',
-            icon: <AntDesign name="wallet" size={responsiveFontSize(2.2)} />,
-          },
-        ]
-      : []),
-    {
-      id: 'logout',
-      title: 'Logout',
-      logoutAction: true,
-      icon: <MaterialIcons name="logout" size={responsiveFontSize(2.2)} />,
     },
   ];
 
-  const renderMenuItem = ({ item, index, dataLength }) => {
-    const isLast = index === dataLength - 1;
+  return (
+    <View style={styles.container}>
+      <NormalHeader heading="Settings" onBackPress={() => nav.goBack()} />
 
-    return (
-      <TouchableOpacity
-        activeOpacity={item.isSwitch ? 1 : 0.7}
-        style={[styles.itemContainer, !isLast && styles.borderBottom]}
-        onPress={() => {
-          if (item.navTo) {
-            nav.navigate(item.navTo);
-          }
-          if (item.logoutAction) {
-            dispatch(resetUser());
-            Toast.show('Logout successfully', Toast.SHORT);
-          }
-        }}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
       >
-        <View style={styles.leftSection}>
-          {item.icon}
-          <AppText title={item.title} color={AppColors.BLACK} size={1.8} />
+        {/* Profile Hero Card */}
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={() => nav.navigate('VendorProfile')}
+          style={styles.profileCard}
+        >
+          <View style={styles.avatarWrapper}>
+            <Image
+              source={
+                user?.profileImage
+                  ? { uri: getProfileImage(user.profileImage, true) }
+                  : images.userProfile
+              }
+              style={styles.avatar}
+            />
+            <View style={styles.onlineDot} />
+          </View>
+
+          <View style={styles.profileInfo}>
+            <Text style={styles.userName} numberOfLines={1}>
+              {user?.fullName ||
+                (isTechnician ? 'Technician' : 'Valued Client')}
+            </Text>
+            <Text style={styles.userEmail} numberOfLines={1}>
+              {user?.email || user?.phone || 'Personal Account'}
+            </Text>
+            <View style={styles.roleBadge}>
+              <Ionicons
+                name={isTechnician ? 'hammer' : 'shield-checkmark'}
+                size={11}
+                color="#2C6E80"
+              />
+              <Text style={styles.roleBadgeText}>
+                {isTechnician ? 'Technician Account' : 'Client Account'}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.chevronWrapper}>
+            <Feather name="chevron-right" size={20} color="#94A3B8" />
+          </View>
+        </TouchableOpacity>
+
+        {/* Section 1: Account */}
+        <Text style={styles.sectionTitle}>PREFERENCES & ACCOUNT</Text>
+        <View style={styles.cardGroup}>
+          {accountItems.map((item, index) => {
+            const isLast = index === accountItems.length - 1;
+            return (
+              <TouchableOpacity
+                key={item.id}
+                activeOpacity={0.7}
+                style={[styles.menuRow, !isLast && styles.menuRowDivider]}
+                onPress={() => nav.navigate(item.navTo)}
+              >
+                <View
+                  style={[
+                    styles.iconContainer,
+                    { backgroundColor: item.iconBg },
+                  ]}
+                >
+                  <Feather
+                    name={item.iconName}
+                    size={18}
+                    color={item.iconColor}
+                  />
+                </View>
+
+                <View style={styles.menuTextContainer}>
+                  <Text style={styles.menuTitle}>{item.title}</Text>
+                  <Text style={styles.menuSubtitle}>{item.subtitle}</Text>
+                </View>
+
+                <Feather name="chevron-right" size={18} color="#CBD5E1" />
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
-        {item.isSwitch ? (
-          <Switch
-            value={item.value}
-            onValueChange={item.onToggle}
-            thumbColor={item.value ? '#fff' : '#f4f3f4'}
-            trackColor={{ false: '#727272', true: colors.primary }}
-          />
-        ) : (
-          item.navTo && (
-            <Entypo
-              name="chevron-small-right"
-              size={responsiveFontSize(4)}
-              color={AppColors.BLACK}
-            />
-          )
-        )}
-      </TouchableOpacity>
-    );
-  };
+        {/* Section 2: Support & Legal */}
+        <Text style={styles.sectionTitle}>SUPPORT & LEGAL</Text>
+        <View style={styles.cardGroup}>
+          {supportItems.map((item, index) => {
+            const isLast = index === supportItems.length - 1;
+            return (
+              <TouchableOpacity
+                key={item.id}
+                activeOpacity={0.7}
+                style={[styles.menuRow, !isLast && styles.menuRowDivider]}
+                onPress={() => nav.navigate(item.navTo)}
+              >
+                <View
+                  style={[
+                    styles.iconContainer,
+                    { backgroundColor: item.iconBg },
+                  ]}
+                >
+                  <Feather
+                    name={item.iconName}
+                    size={18}
+                    color={item.iconColor}
+                  />
+                </View>
 
-  return (
-    <Container>
-      <NormalHeader heading="Settings" onBackPress={() => nav.goBack()} />
-      <LineBreak val={2} />
+                <View style={styles.menuTextContainer}>
+                  <Text style={styles.menuTitle}>{item.title}</Text>
+                  <Text style={styles.menuSubtitle}>{item.subtitle}</Text>
+                </View>
 
-      <FlatList
-        data={menuOne}
-        keyExtractor={item => item.id}
-        scrollEnabled={false}
-        contentContainerStyle={styles.listContainer}
-        renderItem={({ item, index }) =>
-          renderMenuItem({ item, index, dataLength: menuOne.length })
-        }
-      />
+                <Feather name="chevron-right" size={18} color="#CBD5E1" />
+              </TouchableOpacity>
+            );
+          })}
+        </View>
 
-      <LineBreak val={2} />
+        {/* Section 3: Logout Action */}
+        <Text style={styles.sectionTitle}>SESSION</Text>
+        <View style={styles.cardGroup}>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            style={styles.logoutRow}
+            onPress={handleLogout}
+          >
+            <View style={styles.logoutIconContainer}>
+              <Feather name="log-out" size={18} color="#EF4444" />
+            </View>
 
-      <FlatList
-        data={menuTwo}
-        keyExtractor={item => item.id}
-        scrollEnabled={false}
-        contentContainerStyle={styles.listContainer}
-        renderItem={({ item, index }) =>
-          renderMenuItem({ item, index, dataLength: menuTwo.length })
-        }
-      />
-    </Container>
+            <View style={styles.menuTextContainer}>
+              <Text style={styles.logoutTitle}>Log Out</Text>
+              <Text style={styles.logoutSubtitle}>
+                Sign out of your account on this device
+              </Text>
+            </View>
+
+            <Feather name="chevron-right" size={18} color="#FCA5A5" />
+          </TouchableOpacity>
+        </View>
+
+        {/* App Footer */}
+        <View style={styles.footer}>
+          <Text style={styles.footerBrand}>Serbi Corporation</Text>
+          <Text style={styles.footerVersion}>Version 1.0.0 (Build 2026)</Text>
+        </View>
+      </ScrollView>
+    </View>
   );
 };
 
 export default AppSettings;
 
 const styles = StyleSheet.create({
-  listContainer: {
+  container: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+  },
+  scrollContent: {
+    paddingHorizontal: responsiveWidth(4.5),
+    paddingTop: 16,
+    paddingBottom: responsiveHeight(5),
+  },
+  profileCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 24,
     borderWidth: 1,
-    borderColor: AppColors.DARKGRAY,
-    borderRadius: 10,
-    marginHorizontal: responsiveWidth(5),
+    borderColor: '#E2E8F0',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
   },
-  itemContainer: {
+  avatarWrapper: {
+    position: 'relative',
+  },
+  avatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#E2E8F0',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+  onlineDot: {
+    position: 'absolute',
+    bottom: 2,
+    right: 2,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#10B981',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+  profileInfo: {
+    flex: 1,
+    marginLeft: 14,
+    marginRight: 8,
+  },
+  userName: {
+    fontSize: responsiveFontSize(1.85),
+    fontWeight: '800',
+    color: '#0F172A',
+    letterSpacing: -0.2,
+  },
+  userEmail: {
+    fontSize: responsiveFontSize(1.3),
+    color: '#64748B',
+    marginTop: 2,
+  },
+  roleBadge: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginHorizontal: responsiveWidth(5),
-    paddingVertical: responsiveHeight(1.2),
+    gap: 4,
+    backgroundColor: 'rgba(160, 204, 217, 0.25)',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 2.5,
+    borderRadius: 8,
+    marginTop: 6,
   },
-  borderBottom: {
+  roleBadgeText: {
+    fontSize: responsiveFontSize(1.1),
+    fontWeight: '700',
+    color: '#2C6E80',
+  },
+  chevronWrapper: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F8FAFC',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sectionTitle: {
+    fontSize: responsiveFontSize(1.2),
+    fontWeight: '800',
+    color: '#94A3B8',
+    letterSpacing: 1,
+    marginBottom: 8,
+    marginLeft: 4,
+  },
+  cardGroup: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginBottom: 20,
+    overflow: 'hidden',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  menuRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+  },
+  menuRowDivider: {
     borderBottomWidth: 1,
-    borderBottomColor: AppColors.DARKGRAY,
+    borderBottomColor: '#F1F5F9',
   },
-  leftSection: {
+  iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  menuTextContainer: {
+    flex: 1,
+    marginLeft: 14,
+  },
+  menuTitle: {
+    fontSize: responsiveFontSize(1.6),
+    fontWeight: '700',
+    color: '#1E293B',
+  },
+  menuSubtitle: {
+    fontSize: responsiveFontSize(1.2),
+    color: '#94A3B8',
+    marginTop: 2,
+  },
+  logoutRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    backgroundColor: '#FFFBFB',
+  },
+  logoutIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: '#FEE2E2',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoutTitle: {
+    fontSize: responsiveFontSize(1.6),
+    fontWeight: '700',
+    color: '#EF4444',
+  },
+  logoutSubtitle: {
+    fontSize: responsiveFontSize(1.2),
+    color: '#F87171',
+    marginTop: 2,
+  },
+  footer: {
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 16,
+  },
+  footerBrand: {
+    fontSize: responsiveFontSize(1.3),
+    fontWeight: '700',
+    color: '#94A3B8',
+  },
+  footerVersion: {
+    fontSize: responsiveFontSize(1.1),
+    color: '#CBD5E1',
+    marginTop: 3,
   },
 });
-
-// /* eslint-disable react-native/no-inline-styles */
-// import React, { useState } from 'react';
-// import { View, Text, FlatList, TouchableOpacity, Switch } from 'react-native';
-// import Container from '../components/Container';
-// import LineBreak from '../components/LineBreak';
-// import NormalHeader from '../components/NormalHeader';
-// import { useNavigation } from '@react-navigation/native';
-// import FontAwesome from 'react-native-vector-icons/FontAwesome';
-// import Entypo from 'react-native-vector-icons/Entypo';
-// import Ionicons from 'react-native-vector-icons/Ionicons';
-// import Feather from 'react-native-vector-icons/Feather';
-// import Octicons from 'react-native-vector-icons/Octicons';
-// import {
-//   AppColors,
-//   responsiveFontSize,
-//   responsiveHeight,
-//   responsiveWidth,
-// } from '../utils';
-// import AppText from '../components/AppText';
-// import { colors } from '../assets/colors';
-// import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-// import { useDispatch, useSelector } from 'react-redux';
-// import { resetUser } from '../redux/slices';
-// import Toast from 'react-native-simple-toast';
-// import AntDesign from 'react-native-vector-icons/AntDesign';
-
-// const menuOne = [
-//   {
-//     id: 1,
-//     title: 'Account',
-//     leftIcon: (
-//       <FontAwesome
-//         name="user-o"
-//         size={responsiveFontSize(2.2)}
-//         color={AppColors.BLACK}
-//       />
-//     ),
-//     rightIcon: (
-//       <Entypo
-//         name="chevron-small-right"
-//         size={responsiveFontSize(4)}
-//         color={AppColors.BLACK}
-//       />
-//     ),
-//     navTo: 'MainProfile',
-//   },
-//   {
-//     id: 2,
-//     title: 'Notifications',
-//     leftIcon: (
-//       <Ionicons
-//         name="notifications-outline"
-//         size={responsiveFontSize(2.2)}
-//         color={AppColors.BLACK}
-//       />
-//     ),
-//   },
-//   {
-//     id: 3,
-//     title: 'Dark Mode',
-//     leftIcon: (
-//       <Octicons
-//         name="moon"
-//         size={responsiveFontSize(2.2)}
-//         color={AppColors.BLACK}
-//       />
-//     ),
-//   },
-//   {
-//     id: 4,
-//     title: 'Language',
-//     leftIcon: (
-//       <Ionicons
-//         name="language-outline"
-//         size={responsiveFontSize(2.2)}
-//         color={AppColors.BLACK}
-//       />
-//     ),
-//     rightIcon: (
-//       <Entypo
-//         name="chevron-small-right"
-//         size={responsiveFontSize(4)}
-//         color={AppColors.BLACK}
-//       />
-//     ),
-//   },
-// ];
-
-// const menuTwo = [
-//   {
-//     id: 1,
-//     title: 'Security',
-//     leftIcon: (
-//       <Ionicons
-//         name="shield-checkmark-outline"
-//         size={responsiveFontSize(2.2)}
-//         color={AppColors.BLACK}
-//       />
-//     ),
-//     rightIcon: (
-//       <Entypo
-//         name="chevron-small-right"
-//         size={responsiveFontSize(4)}
-//         color={AppColors.BLACK}
-//       />
-//     ),
-//   },
-//   {
-//     id: 2,
-//     title: 'Terms & Conditions',
-//     navTo: 'TermsAndCondition',
-//     leftIcon: (
-//       <Feather
-//         name="file"
-//         size={responsiveFontSize(2.2)}
-//         color={AppColors.BLACK}
-//       />
-//     ),
-//     rightIcon: (
-//       <Entypo
-//         name="chevron-small-right"
-//         size={responsiveFontSize(4)}
-//         color={AppColors.BLACK}
-//       />
-//     ),
-//   },
-//   {
-//     id: 3,
-//     title: 'Privacy Policy',
-//     navTo: 'PrivacyPolicy',
-//     leftIcon: (
-//       <Octicons
-//         name="lock"
-//         size={responsiveFontSize(2.2)}
-//         color={AppColors.BLACK}
-//       />
-//     ),
-//     rightIcon: (
-//       <Entypo
-//         name="chevron-small-right"
-//         size={responsiveFontSize(4)}
-//         color={AppColors.BLACK}
-//       />
-//     ),
-//   },
-//   {
-//     id: 4,
-//     title: 'Help',
-//     navTo: 'Help',
-//     leftIcon: (
-//       <Feather
-//         name="alert-circle"
-//         size={responsiveFontSize(2.2)}
-//         color={AppColors.BLACK}
-//       />
-//     ),
-//     rightIcon: (
-//       <Entypo
-//         name="chevron-small-right"
-//         size={responsiveFontSize(4)}
-//         color={AppColors.BLACK}
-//       />
-//     ),
-//   },
-//   {
-//     id: 5,
-//     title: 'Wallet',
-//     navTo: 'Wallet',
-//     leftIcon: (
-//       <AntDesign
-//         name="wallet"
-//         size={responsiveFontSize(2.2)}
-//         color={AppColors.BLACK}
-//       />
-//     ),
-//   },
-//   {
-//     id: 6,
-//     title: 'Logout',
-//     logoutAction: true,
-//     // navTo: 'AuthStack',
-//     leftIcon: (
-//       <MaterialIcons
-//         name="logout"
-//         size={responsiveFontSize(2.2)}
-//         color={AppColors.BLACK}
-//       />
-//     ),
-//   },
-// ];
-
-// const technicianMenu = menuTwo.filter(item => item.title !== 'Wallet');
-
-// const AppSettings = () => {
-//   const nav = useNavigation();
-//   const [isEnabled, setIsEnabled] = useState(false);
-//   const [isEnabledDarkMode, setIsEnabledDarkMode] = useState(false);
-//   const { user } = useSelector(state => state.persistedData);
-
-//   const dispatch = useDispatch();
-
-//   return (
-//     <Container>
-//       <NormalHeader heading={'Settings'} onBackPress={() => nav.goBack()} />
-//       <LineBreak val={2} />
-//       <View>
-//         <FlatList
-//           data={menuOne}
-//           contentContainerStyle={{
-//             borderWidth: 1,
-//             borderColor: AppColors.DARKGRAY,
-//             borderRadius: 10,
-//             marginHorizontal: responsiveWidth(5),
-//           }}
-//           renderItem={({ item, index }) => {
-//             const id = Number(item.id);
-//             const isSecond = id === 2;
-//             const value = isSecond ? isEnabled : isEnabledDarkMode;
-//             return (
-//               <TouchableOpacity
-//                 style={{
-//                   flexDirection: 'row',
-//                   justifyContent: 'space-between',
-//                   alignItems: 'center',
-//                   marginHorizontal: responsiveWidth(5),
-//                   marginVertical: responsiveHeight(0.5),
-//                   paddingVertical: responsiveHeight(1),
-//                   borderBottomWidth: index == 3 ? 0 : 1,
-//                   borderBottomColor: AppColors.DARKGRAY,
-//                 }}
-//                 activeOpacity={item.id == 2 || item.id == 3 ? 1 : 0}
-//                 onPress={() => {
-//                   if (item.navTo) {
-//                     nav.navigate(item.navTo);
-//                   }
-//                 }}
-//               >
-//                 <View
-//                   style={{
-//                     flexDirection: 'row',
-//                     gap: 10,
-//                     alignItems: 'center',
-//                   }}
-//                 >
-//                   {item.leftIcon}
-//                   <AppText
-//                     title={item.title}
-//                     color={AppColors.BLACK}
-//                     size={1.8}
-//                   />
-//                 </View>
-//                 {id === 2 || id === 3 ? (
-//                   <Switch
-//                     value={value}
-//                     onValueChange={val => {
-//                       if (isSecond) setIsEnabled(val);
-//                       else setIsEnabledDarkMode(val);
-//                     }}
-//                     thumbColor={value ? '#fff' : '#f4f3f4'}
-//                     trackColor={{ false: '#727272ff', true: colors.primary }}
-//                   />
-//                 ) : (
-//                   item.rightIcon
-//                 )}
-//               </TouchableOpacity>
-//             );
-//           }}
-//         />
-//       </View>
-//       <LineBreak val={2} />
-
-//       <View>
-//         <FlatList
-//           data={user?.type === 'Technician' ? technicianMenu : menuTwo}
-//           contentContainerStyle={{
-//             borderWidth: 1,
-//             borderColor: AppColors.DARKGRAY,
-//             borderRadius: 10,
-//             marginHorizontal: responsiveWidth(5),
-//           }}
-//           renderItem={({ item, index }) => {
-//             return (
-//               <TouchableOpacity
-//                 onPress={() => {
-//                   if (item.navTo) {
-//                     nav.navigate(item.navTo);
-//                   } else if (item.logoutAction) {
-//                     dispatch(resetUser());
-//                     Toast.show('Logout successfully', Toast.SHORT);
-//                   }
-//                 }}
-//                 style={{
-//                   flexDirection: 'row',
-//                   justifyContent: 'space-between',
-//                   alignItems: 'center',
-//                   marginHorizontal: responsiveWidth(5),
-//                   marginVertical: responsiveHeight(0.5),
-//                   paddingVertical: responsiveHeight(1),
-//                   borderBottomWidth:
-//                     user?.type === 'Technician'
-//                       ? index == 4
-//                         ? 0
-//                         : 1
-//                       : index == 5
-//                       ? 0
-//                       : 1,
-//                   borderBottomColor: AppColors.DARKGRAY,
-//                 }}
-//               >
-//                 <View
-//                   style={{
-//                     flexDirection: 'row',
-//                     gap: 10,
-//                     alignItems: 'center',
-//                     marginBottom: 10,
-//                   }}
-//                 >
-//                   {item.leftIcon}
-//                   <AppText
-//                     title={item.title}
-//                     color={AppColors.BLACK}
-//                     size={1.8}
-//                   />
-//                 </View>
-//                 {item.rightIcon}
-//               </TouchableOpacity>
-//             );
-//           }}
-//         />
-//       </View>
-//     </Container>
-//   );
-// };
-
-// export default AppSettings;

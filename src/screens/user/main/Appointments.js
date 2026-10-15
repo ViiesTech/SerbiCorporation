@@ -1,5 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { FlatList, TouchableOpacity, View, StyleSheet } from 'react-native';
+import {
+  FlatList,
+  TouchableOpacity,
+  View,
+  StyleSheet,
+  Text,
+} from 'react-native';
 import Container from '../../../components/Container';
 import NormalHeader from '../../../components/NormalHeader';
 import LineBreak from '../../../components/LineBreak';
@@ -7,7 +13,7 @@ import { useIsFocused, useNavigation } from '@react-navigation/native';
 import {
   AppColors,
   getProfileImage,
-  responsiveHeight,
+  responsiveFontSize,
   responsiveWidth,
 } from '../../../utils';
 import AppText from '../../../components/AppText';
@@ -23,13 +29,7 @@ const TAB_DATA = [
   { id: 2, title: 'DISCUSSION' },
 ];
 
-const REQUESTED_STATUS = [
-  'Paid',
-  'On The Way',
-  'Arrived',
-  'Completed',
-  // 'Pending',
-];
+const REQUESTED_STATUS = ['Paid', 'On The Way', 'Arrived'];
 const DISCUSSION_STATUS = ['Upcoming', 'Start', 'Stop', 'Completed'];
 
 const Appointments = () => {
@@ -48,7 +48,16 @@ const Appointments = () => {
     if (user?._id && user?.type) {
       getAllAppointments({ id: user._id, type: user.type });
     }
-  }, [user, isFocused]);
+  }, [user, isFocused, getAllAppointments]);
+
+  // Counts for top segmented tabs
+  const requestedCount = useMemo(() => {
+    return data?.data?.requestForms?.length || 0;
+  }, [data]);
+
+  const discussionCount = useMemo(() => {
+    return data?.data?.discussionForms?.length || 0;
+  }, [data]);
 
   // Get source list
   const sourceData = useMemo(() => {
@@ -71,73 +80,107 @@ const Appointments = () => {
       return sourceData.filter(
         item =>
           item.status === 'Paid' ||
+          item.status === 'Accepted' ||
           (item.status === 'Accepted' && item.paymentStatus === 'Paid'),
       );
     }
 
-    return sourceData.filter(item => item.status === currentStatus);
-  }, [sourceData, selectedStatusIndex]);
+    return sourceData.filter(
+      item => (item.status || '').toLowerCase() === currentStatus.toLowerCase(),
+    );
+  }, [sourceData, selectedStatusIndex, statusList]);
 
-  // console.log('Appointments:-', data);
-  // console.log('filteredAppointments:-', filteredAppointments);
   return (
     <Container>
       <NormalHeader heading="Appointments" onBackPress={() => nav.goBack()} />
-      <LineBreak val={2} />
+      <LineBreak val={1.5} />
 
       {isLoading ? (
         <Loader />
       ) : (
         <>
-          {/* Top Tabs */}
-          <FlatList
-            data={TAB_DATA}
-            horizontal
-            keyExtractor={item => item.id.toString()}
-            contentContainerStyle={styles.topTabsContainer}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[
-                  styles.topTabButton,
-                  selectedTab === item.title && styles.activeTopTab,
-                ]}
-                onPress={() => {
-                  setSelectedTab(item.title);
-                  setSelectedStatusIndex(0);
-                }}
-              >
-                <AppText title={item.title} fontWeight="bold" size={1.8} />
-              </TouchableOpacity>
-            )}
-          />
+          {/* Category Segmented Control */}
+          <View style={styles.segmentWrapper}>
+            <View style={styles.segmentContainer}>
+              {TAB_DATA.map(item => {
+                const isActive = item.title === selectedTab;
+                const count =
+                  item.title === 'REQUESTED' ? requestedCount : discussionCount;
+                return (
+                  <TouchableOpacity
+                    key={item.id}
+                    onPress={() => {
+                      setSelectedTab(item.title);
+                      setSelectedStatusIndex(0);
+                    }}
+                    style={[
+                      styles.segmentBtn,
+                      isActive && styles.activeSegmentBtn,
+                    ]}
+                    activeOpacity={0.8}
+                  >
+                    <Text
+                      style={[
+                        styles.segmentText,
+                        isActive && styles.activeSegmentText,
+                      ]}
+                    >
+                      {item.title}
+                    </Text>
+                    {count > 0 && (
+                      <View
+                        style={[
+                          styles.countBadge,
+                          isActive && styles.activeCountBadge,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.countBadgeText,
+                            isActive && styles.activeCountBadgeText,
+                          ]}
+                        >
+                          {count}
+                        </Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
 
-          <LineBreak val={2} />
+          <LineBreak val={1.5} />
 
-          {/* Status Tabs */}
+          {/* Status Horizontal Tabs */}
           <FlatList
             horizontal
             keyExtractor={(item, index) => index.toString()}
             data={statusList}
             contentContainerStyle={styles.statusTabsContainer}
             showsHorizontalScrollIndicator={false}
-            renderItem={({ item, index }) => (
-              <TouchableOpacity
-                style={[
-                  styles.statusButton,
-                  index === selectedStatusIndex && styles.activeStatusButton,
-                ]}
-                onPress={() => setSelectedStatusIndex(index)}
-              >
-                <AppText
-                  title={item}
-                  color={
-                    index === selectedStatusIndex
-                      ? AppColors.WHITE
-                      : AppColors.BLACK
-                  }
-                />
-              </TouchableOpacity>
-            )}
+            renderItem={({ item, index }) => {
+              const isActive = index === selectedStatusIndex;
+              return (
+                <TouchableOpacity
+                  style={[
+                    styles.statusPill,
+                    isActive && styles.activeStatusPill,
+                  ]}
+                  onPress={() => setSelectedStatusIndex(index)}
+                  activeOpacity={0.8}
+                >
+                  <Text
+                    style={[
+                      styles.statusPillText,
+                      isActive && styles.activeStatusPillText,
+                    ]}
+                  >
+                    {item}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }}
           />
 
           <LineBreak val={2} />
@@ -147,10 +190,10 @@ const Appointments = () => {
             data={filteredAppointments}
             keyExtractor={item => item._id}
             contentContainerStyle={styles.listContainer}
-            ListEmptyComponent={() => (
+            ListEmptyComponent={
               <AppText title="No Appointments Found" align="center" />
-            )}
-            ListFooterComponent={() => <LineBreak val={2} />}
+            }
+            ListFooterComponent={<LineBreak val={2} />}
             renderItem={({ item }) => {
               const price = item?.technicianId?.price ?? item?.amount ?? 0;
 
@@ -200,390 +243,92 @@ const Appointments = () => {
 export default Appointments;
 
 const styles = StyleSheet.create({
-  topTabsContainer: {
-    justifyContent: 'center',
-    gap: 10,
+  segmentWrapper: {
     paddingHorizontal: responsiveWidth(4),
   },
-  topTabButton: {
-    backgroundColor: AppColors.WHITE,
-    paddingHorizontal: responsiveWidth(10),
-    paddingVertical: responsiveHeight(1.2),
-    borderRadius: 20,
+  segmentContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 30,
+    padding: 4,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    gap: 4,
   },
-  activeTopTab: {
+  segmentBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderRadius: 26,
+    gap: 6,
+  },
+  activeSegmentBtn: {
+    backgroundColor: '#000000',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  segmentText: {
+    fontSize: responsiveFontSize(1.6),
+    fontWeight: '700',
+    color: '#555555',
+  },
+  activeSegmentText: {
+    color: '#FFFFFF',
+  },
+  countBadge: {
+    backgroundColor: '#F1F5F9',
+    minWidth: 20,
+    height: 20,
+    paddingHorizontal: 6,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  activeCountBadge: {
     backgroundColor: colors.primary,
   },
+  countBadgeText: {
+    fontSize: responsiveFontSize(1.3),
+    fontWeight: 'bold',
+    color: '#333333',
+  },
+  activeCountBadgeText: {
+    color: '#000000',
+  },
   statusTabsContainer: {
-    gap: responsiveHeight(1),
+    gap: 8,
     paddingHorizontal: responsiveWidth(4),
+    paddingVertical: 2,
   },
-  statusButton: {
-    backgroundColor: AppColors.WHITE,
-    borderWidth: 1,
-    borderColor: AppColors.BLACK,
-    paddingHorizontal: responsiveWidth(8),
-    paddingVertical: responsiveHeight(1.2),
-    borderRadius: 20,
+  statusPill: {
+    paddingHorizontal: 20,
+    paddingVertical: 9,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#000000',
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  activeStatusButton: {
-    backgroundColor: colors.black,
+  activeStatusPill: {
+    backgroundColor: '#000000',
+    borderColor: '#000000',
+  },
+  statusPillText: {
+    fontSize: responsiveFontSize(1.5),
+    fontWeight: 'bold',
+    color: '#000000',
+  },
+  activeStatusPillText: {
+    color: '#FFFFFF',
   },
   listContainer: {
     paddingHorizontal: responsiveWidth(4),
     gap: 15,
   },
 });
-
-// import React, { useEffect, useState } from 'react';
-// import { FlatList, TouchableOpacity, View } from 'react-native';
-// import Container from '../../../components/Container';
-// import NormalHeader from '../../../components/NormalHeader';
-// import LineBreak from '../../../components/LineBreak';
-// import {
-//   TabRouter,
-//   useIsFocused,
-//   useNavigation,
-// } from '@react-navigation/native';
-// import {
-//   AppColors,
-//   getProfileImage,
-//   responsiveHeight,
-//   responsiveWidth,
-// } from '../../../utils';
-// import AppText from '../../../components/AppText';
-// import HistoryCard from '../../../components/HistoryCard';
-// import { colors } from '../../../assets/colors';
-// import { useLazyGetAllAppointmentsQuery } from '../../../redux/services';
-// import { useSelector } from 'react-redux';
-// import Loader from '../../../components/Loader';
-// import { IMAGE_URL } from '../../../redux/constant';
-// import moment from 'moment';
-// import AppTextInput from '../../../components/AppTextInput';
-
-// // const appointmentTypes = [
-// //     { id: 1, title: 'REQUESTED' },
-// //     { id: 2, title: 'DISCUSSION' },
-// // ];
-
-// const tabData = [
-//   // { id: 1, title: 'TODAY' },
-//   // { id: 2, title: 'YESTERDAY' },
-//   { id: 1, title: 'REQUESTED' },
-//   { id: 2, title: 'DISCUSSION' },
-// ];
-
-// const data2 = [
-//   {
-//     id: 1,
-//     sub_title: 'Pending',
-//   },
-//   {
-//     id: 2,
-//     sub_title: 'On The Way',
-//   },
-//   {
-//     id: 3,
-//     sub_title: 'Arrived',
-//   },
-//   {
-//     id: 4,
-//     sub_title: 'Accepted',
-//   },
-// ];
-
-// const data3 = [
-//   {
-//     id: 1,
-//     sub_title: 'Upcoming',
-//   },
-//   {
-//     id: 2,
-//     sub_title: 'Start',
-//   },
-//   {
-//     id: 3,
-//     sub_title: 'Stop',
-//   },
-//   {
-//     id: 4,
-//     sub_title: 'Completed',
-//   },
-// ];
-
-// const Appointments = () => {
-//   const nav = useNavigation();
-//   const { user } = useSelector(state => state.persistedData);
-//   const [selectedTab, setSelectedTab] = useState('REQUESTED');
-//   const [filterData, setFilterData] = useState([]);
-//   const [selectedCard, setSelectedCard] = useState({ id: 1 });
-//   const [subCategory, setSubCategory] = useState(0);
-//   const [getAllAppointments, { data, isLoading }] =
-//     useLazyGetAllAppointmentsQuery();
-//   const isFocused = useIsFocused();
-
-//   console.log('appointment data >', filterData);
-
-//   useEffect(() => {
-//     if (user?._id && user?.type) {
-//       getAllAppointments({ id: user._id, type: user.type });
-//     }
-//   }, [user, isFocused]);
-
-//   useEffect(() => {
-//     setSubCategory(0);
-
-//     let sourceData = [];
-//     if (selectedTab === 'REQUESTED') {
-//       sourceData = data?.data?.requestForms || [];
-//     } else if (selectedTab === 'DISCUSSION') {
-//       sourceData = data?.data?.discussionForms || [];
-//     }
-
-//     const firstTab =
-//       selectedTab === 'REQUESTED' ? data2[0].sub_title : data3[0].sub_title;
-
-//     const filtered = sourceData.filter(item => item.status === firstTab);
-//     setFilterData(filtered);
-//   }, [selectedTab, data]);
-
-//   // ✅ Split logic to handle tab change
-//   // const splitAppointmentsByStatus = (statusTitle, id) => {
-//   //   setSelectedTab({ id, initial: false });
-
-//   //   let filtered = [];
-//   //   if (statusTitle === 'Pending Appointments') {
-//   //     filtered = data?.data?.requestForms?.filter(
-//   //       item => item.status === statusTitle.substring(0, 7),
-//   //     );
-//   //   } else {
-//   //     filtered = data?.data?.discussionForms?.filter(
-//   //       item => item.status === statusTitle.substring(0, 8),
-//   //     );
-//   //   }
-
-//   //   setFilterData(filtered || []);
-//   // };
-
-//   const splitAppointmentsByStatus = (statusTitle, index) => {
-//     setSubCategory(index);
-
-//     let sourceData = [];
-//     if (selectedTab === 'REQUESTED') {
-//       sourceData = data?.data?.requestForms || [];
-//     } else if (selectedTab === 'DISCUSSION') {
-//       sourceData = data?.data?.discussionForms || [];
-//     }
-
-//     const filtered = sourceData.filter(item => item.status == statusTitle);
-
-//     setFilterData(filtered);
-//   };
-
-//   const getDisplayData = () => {
-//     if (subCategory !== null) return filterData;
-
-//     if (selectedTab === 'REQUESTED') {
-//       return data?.data?.requestForms || [];
-//     }
-//     return data?.data?.discussionForms || [];
-//   };
-
-//   return (
-//     <Container>
-//       <NormalHeader heading={'Appointments'} onBackPress={() => nav.goBack()} />
-//       <LineBreak val={2} />
-//       {isLoading ? (
-//         <Loader />
-//       ) : (
-//         <>
-//           <View>
-//             {/* <FlatList
-//                     data={appointmentTypes}
-//                     horizontal
-//                     contentContainerStyle={{ flex: 1, gap: 0 }}
-//                     renderItem={({ item }) => {
-//                         return (
-//                             <TouchableOpacity
-//                                 style={{
-//                                     backgroundColor:
-//                                         selectedAppointment.id == item.id
-//                                             ? colors.primary
-//                                             : AppColors.WHITE,
-//                                     paddingHorizontal: responsiveWidth(5),
-//                                     paddingVertical: responsiveHeight(1.2),
-//                                     borderRadius: 20,
-//                                     width: '60%',
-//                                 }}
-//                                 onPress={() => setSelectedAppointment({ id: item.id })}>
-//                                 <AppText
-//                                     title={item.title}
-//                                     color={AppColors.BLACK}
-//                                     size={1.6}
-//                                     fontWeight={'bold'}
-//                                 />
-//                             </TouchableOpacity>
-//                         );
-//                     }}
-//                 /> */}
-//             <FlatList
-//               data={tabData}
-//               horizontal
-//               contentContainerStyle={{
-//                 flex: 1,
-//                 justifyContent: 'center',
-//                 gap: 10,
-//               }}
-//               renderItem={({ item }) => {
-//                 return (
-//                   <TouchableOpacity
-//                     style={{
-//                       backgroundColor:
-//                         selectedTab == item.title
-//                           ? colors.primary
-//                           : AppColors.WHITE,
-//                       paddingHorizontal: responsiveWidth(11),
-//                       paddingVertical: responsiveHeight(1.2),
-//                       borderRadius: 20,
-//                       alignItems: 'center',
-//                     }}
-//                     onPress={
-//                       () => setSelectedTab(item.title)
-//                       // splitAppointmentsByStatus(item.title, item.id)
-//                     }
-//                   >
-//                     <AppText
-//                       title={item.title}
-//                       color={AppColors.BLACK}
-//                       size={1.8}
-//                       fontWeight={'bold'}
-//                     />
-//                   </TouchableOpacity>
-//                 );
-//               }}
-//             />
-
-//             <LineBreak val={2} />
-//             <View>
-//               <FlatList
-//                 showsHorizontalScrollIndicator={false}
-//                 // style={{ marginHorizontal: responsiveHeight(-3) }}
-//                 contentContainerStyle={{
-//                   gap: responsiveHeight(1),
-//                   marginTop: responsiveHeight(1),
-//                   paddingHorizontal: responsiveHeight(3),
-//                 }}
-//                 data={selectedTab === 'REQUESTED' ? data2 : data3}
-//                 horizontal
-//                 renderItem={({ item, index }) => {
-//                   return (
-//                     <TouchableOpacity
-//                       onPress={() =>
-//                         splitAppointmentsByStatus(item.sub_title, index)
-//                       }
-//                       style={{
-//                         backgroundColor:
-//                           index == subCategory ? colors.black : AppColors.WHITE,
-//                         borderWidth: 1,
-//                         borderColor: '#000',
-//                         paddingHorizontal: responsiveWidth(11),
-//                         paddingVertical: responsiveHeight(1.2),
-//                         borderRadius: 20,
-//                         alignItems: 'center',
-//                       }}
-//                     >
-//                       <AppText
-//                         color={index === subCategory ? '#fff' : '#000'}
-//                         title={item.sub_title}
-//                       />
-//                     </TouchableOpacity>
-//                   );
-//                 }}
-//               />
-//             </View>
-//             <LineBreak val={2} />
-//             <FlatList
-//               data={getDisplayData()}
-//               ListEmptyComponent={() => (
-//                 <AppText title={'No Appointments Found'} align={'center'} />
-//               )}
-//               contentContainerStyle={{
-//                 paddingHorizontal: responsiveWidth(4),
-//                 gap: 15,
-//               }}
-//               ListFooterComponent={() => <LineBreak val={2} />}
-//               renderItem={({ item }) => {
-//                 return (
-//                   <HistoryCard
-//                     item={{
-//                       id: item._id,
-//                       profImg: getProfileImage(item.technicianId?.profileImage),
-//                       // profImg: item.technicianId?.isGoogleUser ? `${item.technicianId?.profileImage}` : `${IMAGE_URL}${item.technicianId?.profileImage}`,
-//                       username: item.technicianId?.fullName,
-//                       price:
-//                         `$${item?.technicianId?.price || item?.amount}` ||
-//                         '$0.00',
-//                       status: item.status,
-//                       designation: 'Pest Technician',
-//                       rating: item.technicianId?.avgRating || 0,
-//                       location: item.address,
-//                       date: `${moment(item.date, 'DD-MM-YYYY').format(
-//                         'dddd DD MMMM YYYY',
-//                       )} at ${item.time}`,
-//                     }}
-//                     myAppointments={true}
-//                     selectedCard={selectedCard}
-//                     onCardPress={() => {
-//                       // return console.log('api appointments',item)
-//                       // if (item.status === 'Pending') {
-//                       nav.navigate('ServicesProfile', {
-//                         profileData: {
-//                           ...item.technicianId,
-//                           appointmentData: {
-//                             status: item.status,
-//                             id: item._id,
-//                             date: item.date,
-//                             time: item.time,
-//                             address: item.address,
-//                             type: selectedTab,
-//                           },
-//                           previousScreen: 'Appointments',
-//                         },
-//                       });
-//                       // }
-//                       setSelectedCard({ id: item._id });
-//                     }}
-//                     activeCardBgColor={AppColors.PRIMARY}
-//                   />
-//                 );
-//               }}
-//             />
-
-//             {/* {selectedTab.id == 2 && (
-//               <FlatList
-//                 data={cardTwoData}
-//                 contentContainerStyle={{
-//                   paddingHorizontal: responsiveWidth(4),
-//                   gap: 15,
-//                 }}
-//                 ListFooterComponent={() => <LineBreak val={2} />}
-//                 renderItem={({ item }) => {
-//                   return (
-//                     <HistoryCard
-//                       item={item}
-//                       selectedCard={selectedCard}
-//                       onCardPress={() => setSelectedCard({ id: item.id })}
-//                       activeCardBgColor={AppColors.PRIMARY}
-//                     />
-//                   );
-//                 }}
-//               />
-//             )} */}
-//           </View>
-//         </>
-//       )}
-//     </Container>
-//   );
-// };
-
-// export default Appointments;

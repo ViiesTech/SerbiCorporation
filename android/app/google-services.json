@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "764990273491",
+    "project_id": "serbi-mobile-application",
+    "storage_bucket": "serbi-mobile-application.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:764990273491:android:e58ea50aed619c48aae126",
+        "android_client_info": {
+          "package_name": "com.serbi.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKYYvoPqbmsqMPF8nYJQGCOpf5KDn25U4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

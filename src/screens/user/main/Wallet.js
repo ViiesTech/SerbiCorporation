@@ -26,6 +26,7 @@ import {
   useCreateSetupIntentMutation,
   useLazyGetAllCardsQuery,
   useSaveCardMutation,
+  useCreateUpdateProfileMutation,
 } from '../../../redux/services';
 import Card from '../../../components/Card';
 import Loader from '../../../components/Loader';
@@ -36,11 +37,13 @@ const Wallet = () => {
   const [cardDetails, setCardDetails] = useState([]);
   const [cardFields, setCardFields] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [addingCard, setAddingCard] = useState(false);
 
   // const [createCustomer] = useCreateCustomerMutation()
   const [createSetupIntent, { isLoading }] = useCreateSetupIntentMutation();
   const [getAllCards, { isLoading: cardLoading }] = useLazyGetAllCardsQuery();
   const [saveCard] = useSaveCardMutation();
+  const [createUpdateProfile] = useCreateUpdateProfileMutation();
 
   const { user, customer_id } = useSelector(state => state.persistedData);
   console.log('email', cardDetails);
@@ -50,24 +53,19 @@ const Wallet = () => {
   const sheetRef = useRef();
 
   useEffect(() => {
-    if (customer_id) {
-      fetchAllCards();
-    }
+    fetchAllCards();
   }, []);
 
   const fetchAllCards = async () => {
-    await getAllCards({ customer_id })
-      .unwrap()
-      .then(res => {
-        console.log('response =====>', res);
-        if (res?.cards) {
-          setCardDetails(res?.cards);
-        }
-      })
-      .catch(error => {
-        console.log('failed to fetch cards =======>', error);
-        // return ShowToast('Some problem occured')
-      });
+    try {
+      const res = await getAllCards().unwrap();
+      console.log('response =====>', res);
+      if (res?.cards) {
+        setCardDetails(res?.cards);
+      }
+    } catch (error) {
+      console.log('failed to fetch cards =======>', error);
+    }
   };
 
   const onOpenCardSheet = async () => {
@@ -90,65 +88,94 @@ const Wallet = () => {
 
   const onAddCard = async () => {
     if (!cardFields?.complete) {
-      sheetRef?.current.close();
       return Toast.show('Please fill in complete card details', Toast.SHORT);
-    } else {
-      await createSetupIntent()
-        .unwrap()
-        .then(async res => {
-          console.log('response of creating customer ======>', res);
-          if (res?.customerId && res?.clientSecret) {
-            const customerId = res.customerId;
-            const clientSecret = res.clientSecret;
-            const { error, setupIntent } = await confirmSetupIntent(
-              clientSecret,
-              {
-                paymentMethodType: 'Card',
-                paymentMethodData: {
-                  billingDetails: { name: user?.fullName },
-                },
-              },
-            );
-            if (error) {
-              console.error('Setup Intent Confirmation Failed:', error);
-              sheetRef?.current.close();
-              return Toast.show('Failed to add card. Try again.', Toast.SHORT);
-            } else if (setupIntent?.status === 'Succeeded') {
-              console.log('Card added successfully:', setupIntent);
-              const methodId = setupIntent?.paymentMethod.id;
-              // return console.log('method id',methodId)
-              await saveCard({ customerId, paymentMethodId: methodId })
-                .unwrap()
-                .then(res => {
-                  console.log('response', res);
-                  if (res?.success) {
-                    sheetRef?.current.close();
-                    fetchAllCards();
-                    // navigation.goBack();
-                    setShowSuccess(true);
-                    setTimeout(() => {
-                      setShowSuccess(false);
-                    }, 2500);
-                    return;
-                    // return Toast.show('Card added successfully!', Toast.SHORT);
-                  } else {
-                    console.log(
-                      'success false condition of attach payment',
-                      res.message,
-                    );
-                  }
-                })
-                .catch(error => {
-                  console.log('failed to attach payment method', error);
-                });
-            }
+    }
+
+    setAddingCard(true);
+    try {
+      let res;
+      try {
+        res = await createSetupIntent().unwrap();
+      } catch (intentErr) {
+        console.log('createSetupIntent error:', intentErr);
+        const errString = JSON.stringify(intentErr || '');
+        if (
+          errString.includes('No such customer') ||
+          intentErr?.data?.error?.includes('No such customer') ||
+          intentErr?.data?.msg?.includes('No such customer')
+        ) {
+          const formData = new FormData();
+          formData.append('userId', user?._id || '');
+          formData.append('stripeCustomerId', '');
+          await createUpdateProfile(formData).unwrap();
+          res = await createSetupIntent().unwrap();
+        } else {
+          throw intentErr;
+        }
+      }
+
+      console.log('response of creating customer ======>', res);
+      if (res?.customerId && res?.clientSecret) {
+        const customerId = res.customerId;
+        const clientSecret = res.clientSecret;
+        const { error, setupIntent } = await confirmSetupIntent(
+          clientSecret,
+          {
+            paymentMethodType: 'Card',
+            paymentMethodData: {
+              billingDetails: { name: user?.fullName || 'User' },
+            },
+          },
+        );
+
+        if (error) {
+          console.error('Setup Intent Confirmation Failed:', error);
+          return Toast.show(error?.message || 'Failed to add card. Try again.', Toast.SHORT);
+        }
+
+        const isSuccess =
+          setupIntent?.status?.toLowerCase() === 'succeeded' ||
+          setupIntent?.status === 'Succeeded';
+
+        if (isSuccess) {
+          console.log('Card added successfully:', setupIntent);
+          const methodId =
+            setupIntent?.paymentMethod?.id || setupIntent?.paymentMethodId;
+
+          if (!methodId) {
+            throw new Error('Payment method ID not found');
           }
-        })
-        .catch(error => {
-          console.log('failed to create customer', error);
-          sheetRef?.current.close();
-          return Toast.show('Some problem occured', Toast.SHORT);
-        });
+
+          const saveRes = await saveCard({ customerId, paymentMethodId: methodId }).unwrap();
+          console.log('saveCard response:', saveRes);
+          if (saveRes?.success) {
+            sheetRef?.current.close();
+            fetchAllCards();
+            setShowSuccess(true);
+            setTimeout(() => {
+              setShowSuccess(false);
+            }, 2500);
+          } else {
+            Toast.show(saveRes?.msg || saveRes?.message || 'Failed to save card.', Toast.SHORT);
+          }
+        } else {
+          Toast.show(`Setup status: ${setupIntent?.status}`, Toast.SHORT);
+        }
+      } else {
+        throw new Error('Invalid setup intent response from server');
+      }
+    } catch (error) {
+      console.log('failed to add card', error);
+      sheetRef?.current.close();
+      const msg =
+        error?.data?.msg ||
+        error?.data?.error ||
+        error?.data?.message ||
+        error?.message ||
+        'Some problem occurred';
+      Toast.show(msg, Toast.SHORT);
+    } finally {
+      setAddingCard(false);
     }
   };
 
@@ -234,7 +261,7 @@ const Wallet = () => {
           />
           <AppButton
             bgColor={colors.primary}
-            isLoading={isLoading}
+            isLoading={isLoading || addingCard}
             loaderColor={colors.white}
             title={'ADD CARD'}
             handlePress={() => onAddCard()}

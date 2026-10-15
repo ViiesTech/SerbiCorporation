@@ -1,4 +1,4 @@
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import Container from '../../components/Container';
 import LineBreak from '../../components/LineBreak';
 import Button from '../../components/Button';
@@ -15,6 +15,7 @@ import {
   statusCodes,
 } from '@react-native-google-signin/google-signin';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { getFcmToken } from '../../config/Firebase';
 
 const Login = () => {
   const [state, setState] = useState({
@@ -35,11 +36,16 @@ const Login = () => {
       Toast.show('Please enter your password', Toast.SHORT);
       return;
     }
-    let data = {
+
+    const fcmToken = await getFcmToken();
+
+    let payload = {
       email: state.email,
       password: state.password,
+      ...(fcmToken ? { fcmToken } : {}),
     };
-    await login(data)
+    console.log('payload:-', payload);
+    await login(payload)
       .unwrap()
       .then(res => {
         console.log('res in Login:-', res);
@@ -75,12 +81,14 @@ const Login = () => {
       }
 
       const user = userInfo?.data?.user || {};
+      const fcmToken = await getFcmToken();
 
       const data = {
         googleId: user.id,
         fullName: user.name,
         email: user.email,
         profileImage: user.photo,
+        ...(fcmToken ? { fcmToken } : {}),
       };
 
       try {
@@ -129,67 +137,69 @@ const Login = () => {
       space={25}
       authHeading={'LOGIN TO CONTINUE'}
     >
-      <LineBreak val={4} />
+      <ScrollView style={{ flex: 1 }}>
+        <LineBreak val={4} />
 
-      <InputField
-        value={state.email}
-        onChangeText={text => onChangeText('email', text)}
-        keyboardType={'email-address'}
-        placeholder={'Email Address'}
-      />
+        <InputField
+          value={state.email}
+          onChangeText={text => onChangeText('email', text)}
+          keyboardType={'email-address'}
+          placeholder={'Email Address'}
+        />
 
-      <LineBreak val={2} />
+        <LineBreak val={2} />
 
-      <InputField
-        value={state.password}
-        onChangeText={text => onChangeText('password', text)}
-        placeholder={'Password'}
-        secureTextEntry={!showPassword}
-        rightIcon={
-          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-            <Ionicons
-              name={showPassword ? 'eye-outline' : 'eye-off-outline'}
-              size={22}
-              color={AppColors.PRIMARY}
-            />
-          </TouchableOpacity>
-        }
-      />
+        <InputField
+          value={state.password}
+          onChangeText={text => onChangeText('password', text)}
+          placeholder={'Password'}
+          secureTextEntry={!showPassword}
+          rightIcon={
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+              <Ionicons
+                name={showPassword ? 'eye-outline' : 'eye-off-outline'}
+                size={22}
+                color={AppColors.PRIMARY}
+              />
+            </TouchableOpacity>
+          }
+        />
 
-      <LineBreak val={1.5} />
+        <LineBreak val={1.5} />
 
-      <View
-        style={{ alignItems: 'flex-end', marginRight: responsiveHeight(3) }}
-      >
-        <TouchableOpacity
-          onPress={() => nav.navigate('ForgetPassword')}
-          style={{ alignItems: 'center' }}
+        <View
+          style={{ alignItems: 'flex-end', marginRight: responsiveHeight(3) }}
         >
-          <AppText fontWeight={'bold'} size={1.8} title={'Forgot Password'} />
+          <TouchableOpacity
+            onPress={() => nav.navigate('ForgetPassword')}
+            style={{ alignItems: 'center' }}
+          >
+            <AppText fontWeight={'bold'} size={1.8} title={'Forgot Password'} />
+          </TouchableOpacity>
+        </View>
+
+        <LineBreak val={3} />
+
+        <Button
+          indicator={isLoading}
+          onPress={() => onLoginPress()}
+          title={'LOGIN'}
+        />
+
+        <LineBreak val={3} />
+
+        <SocialButtons
+          onSocialPress={loginType => onSocialAuth(loginType)}
+          apiLoader={googleLoading}
+          heading={'Or Login With'}
+        />
+
+        <LineBreak val={3} />
+
+        <TouchableOpacity onPress={() => nav.navigate('SelectType')}>
+          <AppText align={'center'} title={`Don't have an account? Signup`} />
         </TouchableOpacity>
-      </View>
-
-      <LineBreak val={3} />
-
-      <Button
-        indicator={isLoading}
-        onPress={() => onLoginPress()}
-        title={'LOGIN'}
-      />
-
-      <LineBreak val={3} />
-
-      <SocialButtons
-        onSocialPress={loginType => onSocialAuth(loginType)}
-        apiLoader={googleLoading}
-        heading={'Or Login With'}
-      />
-
-      <LineBreak val={3} />
-
-      <TouchableOpacity onPress={() => nav.navigate('SelectType')}>
-        <AppText align={'center'} title={`Don't have an account? Signup`} />
-      </TouchableOpacity>
+      </ScrollView>
     </Container>
   );
 };

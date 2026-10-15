@@ -5,7 +5,12 @@ import Container from '../../../components/Container';
 import { useNavigation } from '@react-navigation/native';
 import NormalHeader from '../../../components/NormalHeader';
 import LineBreak from '../../../components/LineBreak';
-import { getProfileImage, responsiveHeight, responsiveWidth } from '../../../utils';
+import {
+  getProfileImage,
+  responsiveHeight,
+  responsiveWidth,
+  openDialer,
+} from '../../../utils';
 import HistoryCard from '../../../components/HistoryCard';
 import { useLazyGetAllWishlistsQuery } from '../../../redux/services';
 import { useSelector } from 'react-redux';
@@ -135,10 +140,18 @@ const Wishlist = () => {
                 onCardPress={() => setSelectedCard({ id: item._id })}
                 favItem={'favItem'}
                 callOnPress={() =>
-                  nav.navigate('CallAndChatHistory', { screen: 'cALL hISTORY' })
+                  openDialer(
+                    item.technicianId?.phoneNumber ||
+                      item.technicianId?.phone,
+                  )
                 }
                 chatOnPress={() =>
-                  nav.navigate('CallAndChatHistory', { screen: 'cHAT hISTORY' })
+                  nav.navigate('Chat', {
+                    otherUserId:
+                      item.technicianId?._id || item.technicianId?.id,
+                    userName: item.technicianId?.fullName,
+                    userImage: item.technicianId?.profileImage,
+                  })
                 }
               />
             );

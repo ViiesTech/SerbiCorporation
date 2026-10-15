@@ -6,6 +6,7 @@ import {
   responsiveFontSize,
   responsiveHeight,
   responsiveWidth,
+  openDialer,
 } from '../utils';
 import { images } from '../assets/images';
 import AppText from '../components/AppText';
@@ -101,6 +102,7 @@ const IncomingCall = () => {
                 borderRadius: 100,
                 backgroundColor: AppColors.WHITE,
               }}
+              onPress={() => openDialer()}
             >
               <FontAwesome6
                 name="phone"
@@ -120,6 +122,7 @@ const IncomingCall = () => {
                 borderRadius: 100,
                 backgroundColor: '#55B7FF',
               }}
+              onPress={() => openDialer()}
             >
               <Feather
                 name="phone-call"

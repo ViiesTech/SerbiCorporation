@@ -1,6 +1,7 @@
 export const colors = {
   white: '#FFFF',
   primary: '#F7C845',
+  secondary: '#A0CCD9',
   secondary_button: '#A0CCD9',
   black: '#000',
   input_color: '#F8F9FD',
