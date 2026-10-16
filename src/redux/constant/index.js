@@ -72,5 +72,6 @@ export const endpoints = {
   STRIPE_CONNECT_DASHBOARD: 'stripeConnect/dashboardLink',
   GET_COMMISSION: 'getCommission',
   UPDATE_COMMISSION: 'updateCommission',
+  DELETE_ACCOUNT: 'deleteAccount',
 };
 

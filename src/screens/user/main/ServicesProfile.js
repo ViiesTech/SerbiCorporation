@@ -56,6 +56,7 @@ const ServicesProfile = ({ route }) => {
   const [createRequestForm, { isLoading }] = useCreateRequestFormMutation();
   const [addToFavourites] = useAddToFavouritesMutation();
   const googlePlacesRef = useRef();
+  const scrollViewRef = useRef(null);
 
   useEffect(() => {
     if (coordinates) {
@@ -151,7 +152,12 @@ const ServicesProfile = ({ route }) => {
       : images.userProfile;
 
   return (
-    <Container extraStyle={styles.safeAreaBg} style={styles.screenBg}>
+    <Container
+      ref={scrollViewRef}
+      extraStyle={styles.safeAreaBg}
+      style={styles.screenBg}
+      contentStyle={{ paddingBottom: 40 }}
+    >
       <NormalHeader
         heading={profileData?.fullName || 'Technician Profile'}
         onBackPress={() => nav.goBack()}
@@ -473,6 +479,11 @@ const ServicesProfile = ({ route }) => {
                 }}
                 textInputProps={{
                   placeholderTextColor: '#94A3B8',
+                  onFocus: () => {
+                    setTimeout(() => {
+                      scrollViewRef.current?.scrollToEnd({ animated: true });
+                    }, 150);
+                  },
                 }}
                 renderRightButton={() => (
                   <View style={{ justifyContent: 'center' }}>
@@ -834,14 +845,19 @@ const styles = StyleSheet.create({
   detailRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 4,
+    alignItems: 'flex-start',
+    paddingVertical: 6,
+    gap: 12,
   },
   detailLabel: {
     fontSize: responsiveFontSize(1.4),
     color: '#64748B',
     fontWeight: '500',
+    minWidth: 70,
   },
   detailValue: {
+    flex: 1,
+    textAlign: 'right',
     fontSize: responsiveFontSize(1.4),
     color: '#0F172A',
     fontWeight: '600',
@@ -850,6 +866,7 @@ const styles = StyleSheet.create({
     fontSize: responsiveFontSize(1.4),
     color: '#10B981',
     fontWeight: '800',
+    textAlign: 'right',
   },
   lottieBox: {
     alignItems: 'center',

@@ -63,6 +63,7 @@ const HistoryCard = ({
         paddingVertical: responsiveHeight(2),
         borderRadius: 10,
         position: 'relative',
+        overflow: 'hidden',
       }}
       onPress={onCardPress}
     >
@@ -113,11 +114,12 @@ const HistoryCard = ({
             backgroundColor: '#Fafafa',
           }}
         />
-        <View style={{ gap: 4 }}>
+        <View style={{ flex: 1, gap: 4 }}>
           <View
             style={{
               flexDirection: 'row',
               justifyContent: 'space-between',
+              alignItems: 'center',
             }}
           >
             <AppText
@@ -235,9 +237,10 @@ const HistoryCard = ({
           ) : null}
           <View
             style={{
-              width: responsiveWidth(62),
+              width: '100%',
               flexDirection: 'row',
               justifyContent: 'space-between',
+              alignItems: 'center',
             }}
           >
             {favItem || services ? (
@@ -348,8 +351,8 @@ const HistoryCard = ({
                   </View>
                 )}
               </View>
-            ) : (
-              <View style={{ gap: 4, width: '65%' }}>
+            ) : item.location || item.date ? (
+              <View style={{ gap: 4, flex: 1, paddingRight: 8 }}>
                 <View
                   style={{
                     flexDirection: 'row',
@@ -384,7 +387,7 @@ const HistoryCard = ({
                   size={1.3}
                 />
               </View>
-            )}
+            ) : null}
             {component || profiles || homeComponent || appointment ? (
               <View style={{ flexDirection: 'row', gap: 15 }}>
                 <TouchableOpacity

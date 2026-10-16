@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,7 +6,9 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
+  ActivityIndicator,
 } from 'react-native';
+import Modal from 'react-native-modal';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import Feather from 'react-native-vector-icons/Feather';
@@ -23,11 +25,14 @@ import {
 import { images } from '../assets/images';
 import { resetUser } from '../redux/slices';
 import { removeDeviceTokenFromBackend } from '../config/Firebase';
+import { useDeleteAccountMutation } from '../redux/services';
 
 const AppSettings = () => {
   const nav = useNavigation();
   const dispatch = useDispatch();
   const { user } = useSelector(state => state.persistedData);
+  const [deleteAccount, { isLoading: isDeleting }] = useDeleteAccountMutation();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const isTechnician = user?.type === 'Technician';
 
@@ -39,6 +44,35 @@ const AppSettings = () => {
     }
     dispatch(resetUser());
     Toast.show('Logged out successfully', Toast.SHORT);
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      const res = await deleteAccount({ userId: user?._id }).unwrap();
+      if (res?.success === false) {
+        Toast.show(res?.msg || 'Could not delete account', Toast.LONG);
+        return;
+      }
+      try {
+        await removeDeviceTokenFromBackend();
+      } catch (tokenErr) {
+        console.log('Error removing device token:', tokenErr);
+      }
+      setShowDeleteModal(false);
+      dispatch(resetUser());
+      Toast.show(
+        res?.msg || 'User is Deleted Successfully!',
+        Toast.LONG,
+      );
+    } catch (err) {
+      console.log('Error deleting account:', err);
+      const errMsg =
+        err?.data?.msg ||
+        err?.data?.error ||
+        err?.error ||
+        'Failed to delete account. Please try again.';
+      Toast.show(errMsg, Toast.LONG);
+    }
   };
 
   const accountItems = [
@@ -238,22 +272,43 @@ const AppSettings = () => {
           })}
         </View>
 
-        {/* Section 3: Logout Action */}
-        <Text style={styles.sectionTitle}>SESSION</Text>
+        {/* Section 3: Session & Account Actions */}
+        <Text style={styles.sectionTitle}>ACCOUNT ACTIONS</Text>
         <View style={styles.cardGroup}>
+          {isTechnician && (
+            <TouchableOpacity
+              activeOpacity={0.7}
+              style={[styles.logoutRow, styles.menuRowDivider]}
+              onPress={handleLogout}
+            >
+              <View style={styles.logoutIconContainer}>
+                <Feather name="log-out" size={18} color="#EF4444" />
+              </View>
+
+              <View style={styles.menuTextContainer}>
+                <Text style={styles.logoutTitle}>Log Out</Text>
+                <Text style={styles.logoutSubtitle}>
+                  Sign out of your account on this device
+                </Text>
+              </View>
+
+              <Feather name="chevron-right" size={18} color="#FCA5A5" />
+            </TouchableOpacity>
+          )}
+
           <TouchableOpacity
             activeOpacity={0.7}
-            style={styles.logoutRow}
-            onPress={handleLogout}
+            style={styles.deleteAccountRow}
+            onPress={() => setShowDeleteModal(true)}
           >
-            <View style={styles.logoutIconContainer}>
-              <Feather name="log-out" size={18} color="#EF4444" />
+            <View style={styles.deleteIconContainer}>
+              <Feather name="trash-2" size={18} color="#DC2626" />
             </View>
 
             <View style={styles.menuTextContainer}>
-              <Text style={styles.logoutTitle}>Log Out</Text>
-              <Text style={styles.logoutSubtitle}>
-                Sign out of your account on this device
+              <Text style={styles.deleteTitle}>Delete Account</Text>
+              <Text style={styles.deleteSubtitle}>
+                Permanently delete account and all data
               </Text>
             </View>
 
@@ -267,6 +322,80 @@ const AppSettings = () => {
           <Text style={styles.footerVersion}>Version 1.0.0 (Build 2026)</Text>
         </View>
       </ScrollView>
+
+      {/* Custom Delete Account Confirmation Modal */}
+      <Modal
+        isVisible={showDeleteModal}
+        animationIn="zoomIn"
+        animationOut="zoomOut"
+        backdropOpacity={0.5}
+        onBackdropPress={() => {
+          if (!isDeleting) setShowDeleteModal(false);
+        }}
+        style={styles.modalOverlay}
+      >
+        <View style={styles.modalCard}>
+          {/* Close X Button */}
+          <TouchableOpacity
+            style={styles.modalCloseBtn}
+            onPress={() => setShowDeleteModal(false)}
+            disabled={isDeleting}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="close" size={20} color="#64748B" />
+          </TouchableOpacity>
+
+          {/* Warning Icon Badge */}
+          <View style={styles.modalIconHalo}>
+            <View style={styles.modalIconCircle}>
+              <Feather name="trash-2" size={26} color="#DC2626" />
+            </View>
+          </View>
+
+          {/* Heading & Details */}
+          <Text style={styles.modalTitle}>Delete Account?</Text>
+          <Text style={styles.modalDesc}>
+            Are you sure you want to permanently delete your account? This
+            action cannot be undone.
+          </Text>
+
+          {/* Warning Callout Notice */}
+          <View style={styles.warningCallout}>
+            <Ionicons name="alert-circle" size={18} color="#DC2626" />
+            <Text style={styles.warningCalloutText}>
+              All your active bookings, messages, and profile data will be
+              permanently wiped from our servers.
+            </Text>
+          </View>
+
+          {/* Action Buttons Row */}
+          <View style={styles.modalActionButtons}>
+            <TouchableOpacity
+              style={styles.cancelBtn}
+              onPress={() => setShowDeleteModal(false)}
+              disabled={isDeleting}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.cancelBtnText}>Keep Account</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.confirmDeleteBtn}
+              onPress={handleConfirmDelete}
+              disabled={isDeleting}
+              activeOpacity={0.8}
+            >
+              {isDeleting ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <Text style={styles.confirmDeleteBtnText}>
+                  Delete Permanently
+                </Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -437,6 +566,31 @@ const styles = StyleSheet.create({
     color: '#F87171',
     marginTop: 2,
   },
+  deleteAccountRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    backgroundColor: '#FEF2F2',
+  },
+  deleteIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: '#FEE2E2',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  deleteTitle: {
+    fontSize: responsiveFontSize(1.6),
+    fontWeight: '700',
+    color: '#DC2626',
+  },
+  deleteSubtitle: {
+    fontSize: responsiveFontSize(1.2),
+    color: '#EF4444',
+    marginTop: 2,
+  },
   footer: {
     alignItems: 'center',
     marginTop: 10,
@@ -451,5 +605,124 @@ const styles = StyleSheet.create({
     fontSize: responsiveFontSize(1.1),
     color: '#CBD5E1',
     marginTop: 3,
+  },
+  modalOverlay: {
+    margin: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: responsiveWidth(5),
+  },
+  modalCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+    width: '100%',
+    maxWidth: 380,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 8,
+    position: 'relative',
+  },
+  modalCloseBtn: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+  },
+  modalIconHalo: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    backgroundColor: '#FEE2E2',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  modalIconCircle: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: '#FECACA',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalTitle: {
+    fontSize: responsiveFontSize(2.2),
+    fontWeight: '800',
+    color: '#0F172A',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  modalDesc: {
+    fontSize: responsiveFontSize(1.4),
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 16,
+  },
+  warningCallout: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    backgroundColor: '#FFF1F2',
+    borderWidth: 1,
+    borderColor: '#FECDD3',
+    borderRadius: 12,
+    padding: 12,
+    width: '100%',
+    marginBottom: 20,
+  },
+  warningCalloutText: {
+    flex: 1,
+    fontSize: responsiveFontSize(1.2),
+    color: '#9F1239',
+    lineHeight: 17,
+  },
+  modalActionButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    width: '100%',
+  },
+  cancelBtn: {
+    flex: 1,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 14,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelBtnText: {
+    fontSize: responsiveFontSize(1.4),
+    fontWeight: '700',
+    color: '#475569',
+  },
+  confirmDeleteBtn: {
+    flex: 1.2,
+    backgroundColor: '#DC2626',
+    borderRadius: 14,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#DC2626',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  confirmDeleteBtnText: {
+    fontSize: responsiveFontSize(1.4),
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 });

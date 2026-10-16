@@ -325,13 +325,16 @@ const Profile = ({ route }) => {
   const isTechnician = user?.type === 'Technician';
 
   return (
-    <Container keyboardShouldPersistTaps="handled">
+    <Container scrollEnabled={false} keyboardShouldPersistTaps="handled">
       <NormalHeader heading="Edit Profile" onBackPress={() => nav.goBack()} />
 
       <ScrollView
+        style={{ flex: 1 }}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        nestedScrollEnabled={true}
       >
         {/* 1. Hero Profile Photo Section */}
         <View style={styles.heroSection}>
@@ -874,7 +877,7 @@ export default Profile;
 
 const styles = StyleSheet.create({
   scrollContent: {
-    paddingBottom: 40,
+    paddingBottom: 100,
     backgroundColor: '#F8FAFC',
   },
   heroSection: {

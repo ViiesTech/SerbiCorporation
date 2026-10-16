@@ -96,6 +96,7 @@ const UserHome = () => {
   const { firstVisit, user } = useSelector(state => state.persistedData);
 
   const mapRef = useRef(null);
+  const scrollViewRef = useRef(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [mapReady, setMapReady] = useState(false);
   const [coordinates, setCoordinates] = useState(null);
@@ -242,6 +243,7 @@ const UserHome = () => {
 
   return (
     <Container
+      ref={scrollViewRef}
       extraStyle={styles.safeAreaBg}
       style={styles.screenBg}
       contentStyle={styles.containerPadding}
@@ -414,6 +416,14 @@ const UserHome = () => {
                     placeholderTextColor="#94A3B8"
                     value={areaValue}
                     onChangeText={setAreaValue}
+                    onFocus={() => {
+                      setTimeout(() => {
+                        scrollViewRef.current?.scrollTo({
+                          y: 420,
+                          animated: true,
+                        });
+                      }, 150);
+                    }}
                     style={styles.textInput}
                   />
                 </View>
@@ -489,6 +499,11 @@ const UserHome = () => {
                     onChangeText={setNote}
                     multiline
                     textAlignVertical="top"
+                    onFocus={() => {
+                      setTimeout(() => {
+                        scrollViewRef.current?.scrollToEnd({ animated: true });
+                      }, 150);
+                    }}
                     style={styles.textArea}
                   />
                 </View>

@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import Plus from 'react-native-vector-icons/AntDesign';
 import RBSheet from 'react-native-raw-bottom-sheet';
 import AppButton from '../../../components/AppButton';
@@ -32,6 +32,7 @@ import Card from '../../../components/Card';
 import Loader from '../../../components/Loader';
 import AppText from '../../../components/AppText';
 import LottieView from 'lottie-react-native';
+import HistoryCard from '../../../components/HistoryCard';
 
 const Wallet = () => {
   const [cardDetails, setCardDetails] = useState([]);
@@ -52,11 +53,7 @@ const Wallet = () => {
 
   const sheetRef = useRef();
 
-  useEffect(() => {
-    fetchAllCards();
-  }, []);
-
-  const fetchAllCards = async () => {
+  const fetchAllCards = useCallback(async () => {
     try {
       const res = await getAllCards().unwrap();
       console.log('response =====>', res);
@@ -66,7 +63,11 @@ const Wallet = () => {
     } catch (error) {
       console.log('failed to fetch cards =======>', error);
     }
-  };
+  }, [getAllCards]);
+
+  useEffect(() => {
+    fetchAllCards();
+  }, [fetchAllCards]);
 
   const onOpenCardSheet = async () => {
     sheetRef?.current.open();

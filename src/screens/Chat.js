@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Keyboard,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -71,6 +72,50 @@ const Chat = () => {
   const [sendMessageMutation, { isLoading: isSending }] =
     useSendMessageMutation();
   const [markMessagesAsRead] = useMarkMessagesAsReadMutation();
+
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [layoutHeight, setLayoutHeight] = useState(0);
+  const maxLayoutHeightRef = useRef(0);
+
+  useEffect(() => {
+    const showEvent =
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent =
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSub = Keyboard.addListener(showEvent, e => {
+      setKeyboardHeight(e.endCoordinates.height);
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    });
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  const handleContainerLayout = e => {
+    const { height } = e.nativeEvent.layout;
+    if (height > maxLayoutHeightRef.current) {
+      maxLayoutHeightRef.current = height;
+    }
+    setLayoutHeight(height);
+  };
+
+  const hasWindowResized =
+    Platform.OS === 'android' &&
+    layoutHeight > 0 &&
+    maxLayoutHeightRef.current - layoutHeight >= keyboardHeight * 0.6;
+
+  const androidInputOffset =
+    Platform.OS === 'android' && keyboardHeight > 0 && !hasWindowResized
+      ? keyboardHeight
+      : 0;
 
   // 1. Fetch Initial Messages (Cursor Pagination)
   const fetchInitialMessages = useCallback(async () => {
@@ -188,7 +233,7 @@ const Chat = () => {
       socket.off('userTyping', onUserTyping);
       socket.off('userStopTyping', onUserStopTyping);
     };
-  }, [token, currentUserId, otherUserId]);
+  }, [token, currentUserId, otherUserId, markMessagesAsRead]);
 
   // 4. Handle Typing Indicators
   const handleTextChange = text => {
@@ -277,6 +322,7 @@ const Chat = () => {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={Platform.OS === 'ios' ? insets.bottom : 0}
+      onLayout={handleContainerLayout}
     >
       <NormalHeader heading={heading} onBackPress={() => nav.goBack()} />
 
@@ -361,7 +407,9 @@ const Chat = () => {
             paddingBottom:
               Platform.OS === 'ios'
                 ? Math.max(insets.bottom, 10)
-                : 10,
+                : androidInputOffset > 0
+                ? androidInputOffset + 10
+                : Math.max(insets.bottom, 15),
           },
         ]}
       >
@@ -392,9 +440,7 @@ const Chat = () => {
             <Ionicons
               name="send"
               size={responsiveFontSize(2.5)}
-              color={
-                inputText.trim() ? AppColors.ThemeBlue : '#B0BEC5'
-              }
+              color={inputText.trim() ? AppColors.ThemeBlue : '#B0BEC5'}
             />
           )}
         </TouchableOpacity>

@@ -316,6 +316,16 @@ export const Apis = createApi({
         method: 'GET',
       }),
     }),
+    deleteAccount: builder.mutation({
+      query: (data = {}) => {
+        const queryParams = data?.userId ? `?userId=${data.userId}` : '';
+        return {
+          url: `${endpoints.DELETE_ACCOUNT}${queryParams}`,
+          method: 'DELETE',
+          body: data?.userId ? { userId: data.userId } : undefined,
+        };
+      },
+    }),
   }),
 });
 
@@ -362,4 +372,5 @@ export const {
   useLazyGetStripeConnectStatusQuery,
   useGetStripeDashboardLinkQuery,
   useLazyGetStripeDashboardLinkQuery,
+  useDeleteAccountMutation,
 } = Apis;

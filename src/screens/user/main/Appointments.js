@@ -155,6 +155,7 @@ const Appointments = () => {
           {/* Status Horizontal Tabs */}
           <FlatList
             horizontal
+            style={styles.statusTabsList}
             keyExtractor={(item, index) => index.toString()}
             data={statusList}
             contentContainerStyle={styles.statusTabsContainer}
@@ -183,10 +184,11 @@ const Appointments = () => {
             }}
           />
 
-          <LineBreak val={2} />
+          <LineBreak val={1} />
 
           {/* Appointments List */}
           <FlatList
+            style={styles.appointmentsList}
             data={filteredAppointments}
             keyExtractor={item => item._id}
             contentContainerStyle={styles.listContainer}
@@ -300,18 +302,22 @@ const styles = StyleSheet.create({
   activeCountBadgeText: {
     color: '#000000',
   },
+  statusTabsList: {
+    flexGrow: 0,
+    height: 44,
+  },
   statusTabsContainer: {
     gap: 8,
     paddingHorizontal: responsiveWidth(4),
-    paddingVertical: 2,
+    alignItems: 'center',
   },
   statusPill: {
+    height: 38,
     paddingHorizontal: 20,
-    paddingVertical: 9,
     backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
     borderColor: '#000000',
-    borderRadius: 25,
+    borderRadius: 19,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -326,6 +332,9 @@ const styles = StyleSheet.create({
   },
   activeStatusPillText: {
     color: '#FFFFFF',
+  },
+  appointmentsList: {
+    flex: 1,
   },
   listContainer: {
     paddingHorizontal: responsiveWidth(4),

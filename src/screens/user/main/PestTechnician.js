@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -61,10 +61,13 @@ const PestTechnician = ({ route }) => {
   const contentFade = useRef(new Animated.Value(0)).current;
   const centeredMapRef = useRef(false);
 
-  const destination = {
-    longitude: user?.location?.coordinates?.[0] || -80.1918,
-    latitude: user?.location?.coordinates?.[1] || 25.7617,
-  };
+  const destination = useMemo(
+    () => ({
+      longitude: user?.location?.coordinates?.[0] || -80.1918,
+      latitude: user?.location?.coordinates?.[1] || 25.7617,
+    }),
+    [user?.location?.coordinates],
+  );
 
   const steps = [1, 2, 3, 4]; // Visual markers
 
@@ -78,7 +81,7 @@ const PestTechnician = ({ route }) => {
     }, 10000);
 
     return () => clearInterval(interval);
-  }, [appointmentId]);
+  }, [appointmentId, getAppointmentDetail]);
 
   // Map Animation Logic (Same as vendor screen)
   useEffect(() => {
@@ -145,7 +148,7 @@ const PestTechnician = ({ route }) => {
         }
       }
     }
-  }, [data, eta]);
+  }, [data, eta, destination]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
