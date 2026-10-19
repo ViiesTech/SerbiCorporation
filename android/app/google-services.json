@@ -12,7 +12,20 @@
           "package_name": "com.serbi.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "764990273491-ekbb1ms0r1aph9nn48h077totlhf7gqi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.serbi.app",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "764990273491-tlgccklm0jpgqjh7dlgb8c9p4q60r8ab.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBKYYvoPqbmsqMPF8nYJQGCOpf5KDn25U4"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "764990273491-tlgccklm0jpgqjh7dlgb8c9p4q60r8ab.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "764990273491-d3qdous5s18nhsmou418stnr8hmmjddr.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.serbi.app"
+              }
+            }
+          ]
         }
       }
     }

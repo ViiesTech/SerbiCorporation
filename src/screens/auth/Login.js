@@ -103,7 +103,7 @@ const Login = () => {
       } catch (apiErr) {
         console.log('Google login API error:', apiErr);
         Toast.show(
-          apiErr?.data?.message || 'Unable to login with Google',
+          apiErr?.data?.msg || 'Unable to login with Google',
           Toast.SHORT,
         );
       }

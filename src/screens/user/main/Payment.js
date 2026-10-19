@@ -208,8 +208,10 @@ const Payment = ({ route }) => {
         customerId: customer_id,
         paymentMethodId: selectedCard.methodId,
       };
+      console.log('Payload of createPayment:-', payload);
 
       const res = await createPayment(payload).unwrap();
+      console.log('Res of createPayment:-', res);
       Toast.show(res.msg, Toast.SHORT);
       if (!res.success) return;
 
@@ -246,6 +248,7 @@ const Payment = ({ route }) => {
         pest_tech: { ...pest_tech, requestPayInfo: paymentInfo },
       });
     } catch (error) {
+      console.log('Error in createPayment:-', error);
       Toast.show('Payment failed, use another card', Toast.SHORT);
     }
   };

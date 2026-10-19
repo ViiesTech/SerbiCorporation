@@ -1,16 +1,12 @@
-// export const BASE_URL = 'https://appsdemo.pro/Serbi-Backend/api/user/';
 export const BASE_URL = 'https://serbi.apiforapp.link/api/user/';
-// export const BASE_URL = 'http://192.168.100.168:4030/api/user/'
 export const IMAGE_URL = 'https://serbi.apiforapp.link/';
 export const ADMIN_URL = 'https://serbi.apiforapp.link/api/admin/';
 export const MAP_API_KEY = 'AIzaSyCq9nyeDdwfJJg5z5se51OxsL19aW4-Vdo';
 export const MAP_API_KEY_IOS = 'AIzaSyCvGycVuu5ijiVfMj6ASBIvJ8oGBrVwmUc';
 export const CLIENT_ID =
-  '584277279555-h1kfoqno737uv4fenrlrcb9felcvhuee.apps.googleusercontent.com';
+  '764990273491-tlgccklm0jpgqjh7dlgb8c9p4q60r8ab.apps.googleusercontent.com';
 export const IOS_CLIENT_ID =
-  '584277279555-5j8a1natp1rpi4dutp1r8fn24p3aovd6.apps.googleusercontent.com';
-// export const STRIPE_KEY =
-//   'pk_test_51SVf2OKEUCMHl0MN7pbyBpYvNlmK5LXpZH0NkS2VVdomB9DX9AwOLjXDsrYfBMYJEvfRjzYVzAC22s1OzqEaT3Gl00yDgNXjqn';
+  '764990273491-d3qdous5s18nhsmou418stnr8hmmjddr.apps.googleusercontent.com';
 export const STRIPE_KEY =
   'pk_test_51SfTtF0wu2sgmNi0bNOv7loJaKHXP9TpnoRQGzaGkolE5zIKes1Kkd0aBVfadwRuLtIemwdZCS0Q5Qt3cw3rt8u700f7Eemxdd';
 export const PDF_URL = 'https://serbi.apiforapp.link/public/license/';
@@ -74,4 +70,3 @@ export const endpoints = {
   UPDATE_COMMISSION: 'updateCommission',
   DELETE_ACCOUNT: 'deleteAccount',
 };
-
