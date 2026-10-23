@@ -8,6 +8,7 @@ import {
   registerDeviceForRemoteMessages,
   isDeviceRegisteredForRemoteMessages,
   getAPNSToken,
+  requestPermission as requestFirebasePermission,
 } from '@react-native-firebase/messaging';
 import { Platform } from 'react-native';
 import notifee, {
@@ -124,11 +125,13 @@ export async function displayLocalNotification(remoteMessage) {
   const title =
     remoteMessage.notification?.title ||
     remoteMessage.data?.title ||
+    remoteMessage.data?.heading ||
     'New Notification';
   const body =
     remoteMessage.notification?.body ||
     remoteMessage.data?.body ||
     remoteMessage.data?.message ||
+    remoteMessage.data?.content ||
     '';
 
   await notifee.displayNotification({
@@ -146,6 +149,13 @@ export async function displayLocalNotification(remoteMessage) {
     },
     ios: {
       sound: 'default',
+      foregroundPresentationOptions: {
+        alert: true,
+        badge: true,
+        sound: true,
+        banner: true,
+        list: true,
+      },
     },
   });
 }
@@ -162,22 +172,21 @@ export async function requestUserPermission() {
   try {
     const settings = await notifee.requestPermission();
 
-    const enabled =
+    let enabled =
       settings.authorizationStatus >= NotifeeAuthorizationStatus.AUTHORIZED ||
       settings.authorizationStatus === NotifeeAuthorizationStatus.PROVISIONAL ||
       settings.authorizationStatus === 1 ||
       settings.authorizationStatus === 2;
 
-    console.log(
-      '[FCM] Authorization status:',
-      settings.authorizationStatus,
-      'Enabled:',
-      enabled,
-    );
-
-    if (enabled && Platform.OS === 'ios') {
+    if (Platform.OS === 'ios') {
       try {
         const messaging = getFirebaseMessaging();
+        const authStatus = await requestFirebasePermission(messaging);
+        enabled =
+          enabled ||
+          authStatus === 1 || // AUTHORIZED
+          authStatus === 2; // PROVISIONAL
+
         const isRegistered = isDeviceRegisteredForRemoteMessages(messaging);
         if (!isRegistered) {
           await registerDeviceForRemoteMessages(messaging);
@@ -188,6 +197,17 @@ export async function requestUserPermission() {
           err?.message || err,
         );
       }
+    }
+
+    console.log(
+      '[FCM] Authorization status:',
+      settings.authorizationStatus,
+      'Enabled:',
+      enabled,
+    );
+
+    if (enabled) {
+      syncDeviceToken();
     }
 
     return enabled;
@@ -230,8 +250,8 @@ export async function getFcmToken() {
       }
 
       let retries = 0;
-      while (!apnsToken && retries < 4) {
-        await new Promise(resolve => setTimeout(resolve, 600));
+      while (!apnsToken && retries < 10) {
+        await new Promise(resolve => setTimeout(resolve, 500));
         try {
           apnsToken = await getAPNSToken(messaging);
         } catch (e) {
@@ -246,7 +266,7 @@ export async function getFcmToken() {
       return fcmToken || null;
     } catch (tokenError) {
       console.log(
-        '[FCM] Notice: Unable to retrieve FCM token (normal on iOS Simulator without APNS):',
+        '[FCM] Notice: Unable to retrieve FCM token:',
         tokenError?.message || tokenError,
       );
       return null;
@@ -258,7 +278,7 @@ export async function getFcmToken() {
 }
 
 // -------------------- Device Token Sync --------------------
-export async function syncDeviceToken(fcmToken) {
+export async function syncDeviceToken(fcmToken, retryCount = 0) {
   try {
     const persisted = store.getState()?.persistedData;
     const userToken = persisted?.token;
@@ -269,13 +289,23 @@ export async function syncDeviceToken(fcmToken) {
 
     const token = fcmToken || (await getFcmToken());
     if (!token) {
+      if (retryCount < 3) {
+        setTimeout(() => {
+          syncDeviceToken(null, retryCount + 1);
+        }, 2500 * (retryCount + 1));
+      }
       return null;
     }
 
     const url = `${BASE_URL}${endpoints.REGISTER_DEVICE_TOKEN}`;
     await axios.post(
       url,
-      { userId, fcmToken: token },
+      {
+        userId,
+        fcmToken: token,
+        deviceToken: token,
+        platform: Platform.OS,
+      },
       {
         headers: {
           'Content-Type': 'application/json',
@@ -306,7 +336,11 @@ export async function removeDeviceTokenFromBackend(fcmToken) {
       const url = `${BASE_URL}${endpoints.LOGOUT}`;
       await axios.post(
         url,
-        { ...(userId ? { userId } : {}), fcmToken: token },
+        {
+          ...(userId ? { userId } : {}),
+          fcmToken: token,
+          deviceToken: token,
+        },
         {
           headers: {
             'Content-Type': 'application/json',
@@ -330,7 +364,11 @@ export async function removeDeviceTokenFromBackend(fcmToken) {
 // -------------------- Initialize Notifications --------------------
 export function initNotifications() {
   try {
-    requestUserPermission();
+    requestUserPermission().then(enabled => {
+      if (enabled) {
+        syncDeviceToken();
+      }
+    });
     createNotificationChannel();
 
     const messaging = getFirebaseMessaging();
