@@ -78,7 +78,12 @@ export function handleNotificationClick(remoteMessage) {
   }
 
   // 2. Service Request / Booking Notifications (Event 1 & 2: type === "request")
-  if (type === 'request' || type === 'booking' || type === 'appointment' || type === 'job') {
+  if (
+    type === 'request' ||
+    type === 'booking' ||
+    type === 'appointment' ||
+    type === 'job'
+  ) {
     if (role === 'Technician') {
       // Event 1: New Service Request -> navigate technician to Home / Requests
       if (action === 'create' || action === 'new') {
@@ -453,3 +458,4 @@ export function initNotifications() {
     return () => {};
   }
 }
+//
