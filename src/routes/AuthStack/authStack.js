@@ -6,6 +6,7 @@ import Login from '../../screens/auth/Login';
 import Otp from '../../screens/auth/Otp';
 import ForgetPassword from '../../screens/auth/ForgetPassword';
 import ResetPassword from '../../screens/auth/ResetPassword';
+import TermsAndCondition from '../../screens/TermsAndCondition';
 import { useSelector } from 'react-redux';
 
 const Stack = createStackNavigator();
@@ -27,6 +28,7 @@ const AuthStack = () => {
       <Stack.Screen name={'ForgetPassword'} component={ForgetPassword} />
       <Stack.Screen name={'ResetPassword'} component={ResetPassword} />
       <Stack.Screen name={'Otp'} component={Otp} />
+      <Stack.Screen name={'TermsAndCondition'} component={TermsAndCondition} />
     </Stack.Navigator>
   );
 };
