@@ -1,35 +1,185 @@
-import { StyleSheet, View } from 'react-native';
-import React from 'react';
-import NormalHeader from '../components/NormalHeader';
+import React, { useRef, useState, useEffect } from 'react';
+import {
+  StyleSheet,
+  View,
+  Text,
+  ActivityIndicator,
+  TouchableOpacity,
+  BackHandler,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import Container from '../components/Container';
-import LineBreak from '../components/LineBreak';
-import AppText from '../components/AppText';
-import { responsiveHeight } from '../utils';
+import { WebView } from 'react-native-webview';
+import Feather from 'react-native-vector-icons/Feather';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
+import NormalHeader from '../components/NormalHeader';
+
+const TERMS_AND_CONDITIONS_URL =
+  'https://serbicorporation.com/terms_and_conditions';
 
 const TermsAndCondition = () => {
   const nav = useNavigation();
+  const webViewRef = useRef(null);
+  const [canGoBack, setCanGoBack] = useState(false);
+
+  // Handle hardware back press on Android
+  useEffect(() => {
+    const onHardwareBack = () => {
+      if (canGoBack && webViewRef.current) {
+        webViewRef.current.goBack();
+        return true;
+      }
+      return false;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      onHardwareBack,
+    );
+    return () => backHandler.remove();
+  }, [canGoBack]);
+
+  const handleHeaderBack = () => {
+    if (canGoBack && webViewRef.current) {
+      webViewRef.current.goBack();
+    } else {
+      nav.goBack();
+    }
+  };
 
   return (
-    <Container>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       <NormalHeader
-        heading={'TERMS AND CONDITIONS'}
-        onBackPress={() => nav.goBack()}
+        heading="TERMS AND CONDITIONS"
+        onBackPress={handleHeaderBack}
       />
-      <LineBreak val={1} />
-     <View style={{padding: responsiveHeight(2)}}> 
-      <AppText
-        title={`Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam malesuada elementum neque at aliquet. Maecenas fringilla sagittis tincidunt. Ut vitae auctor nibh. Nunc sit amet massa diam. Curabitur mattis nibh vitae magna vehicula aliquam. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. In non euismod urna, non laoreet neque. Ut ut risus et ex porttitor ullamcorper. Ut sit amet venenatis nisi. Duis scelerisque placerat enim, a rhoncus nisl tempus posuere. Aliquam erat volutpat. Ut bibendum, tortor ut convallis hendrerit, lorem massa fermentum nisl, nec lobortis erat elit ac ante. Vestibulum sem risus, pharetra in sodales at, ultrices vitae nunc. Suspendisse euismod quam augue, eget scelerisque libero pharetra at. Morbi nec elementum leo, quis vehicula lacus.
 
-Nulla feugiat erat sit amet ipsum convallis fringilla. Ut eget sapien ut enim ultricies venenatis. Etiam gravida turpis diam, sit amet gravida purus scelerisque nec. Nullam arcu arcu, tempor ut felis vel, iaculis fermentum metus. Pellentesque malesuada pharetra elit. Cras ut ipsum vitae ante convallis tincidunt et dictum turpis. Etiam hendrerit vitae lorem ac ultricies. Proin quis erat at lacus fermentum viverra. Sed ultrices ut tellus non tristique. Mauris efficitur orci sed vehicula euismod. Cras at feugiat nisi. Maecenas interdum quam vitae augue varius fringilla. Nunc dolor eros, tristique eu ipsum sit amet, sollicitudin imperdiet mauris. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. In hendrerit interdum tristique.
-
-Phasellus velit quam, ultrices eget felis sit amet, maximus convallis libero. Sed faucibus mi id ornare accumsan. Nulla aliquet, ante sed fringilla sagittis, felis dui bibendum metus, ut tempor libero neque in orci. Suspendisse sit amet mattis sem, sit amet tempus arcu. Quisque vitae sodales quam. Integer nulla est, volutpat eget luctus eget, aliquam eu lectus. Etiam nec dolor scelerisque risus consectetur iaculis. Aliquam pharetra dictum sagittis. Pellentesque sagittis vulputate augue sit amet ornare. Nunc at ante ac purus egestas viverra. In tincidunt diam in dolor iaculis eleifend. In hac habitasse platea dictumst. Integer semper varius mauris, id suscipit metus auctor vel.`}
-      />
+      <View style={styles.webViewContainer}>
+        <WebView
+          ref={webViewRef}
+          source={{ uri: TERMS_AND_CONDITIONS_URL }}
+          startInLoadingState={true}
+          allowsBackForwardNavigationGestures={true}
+          onNavigationStateChange={navState => {
+            setCanGoBack(navState.canGoBack);
+          }}
+          renderLoading={() => (
+            <View style={styles.loaderContainer}>
+              <ActivityIndicator size="large" color="#0D9488" />
+              <Text style={styles.loadingText}>
+                Loading Terms & Conditions...
+              </Text>
+            </View>
+          )}
+          renderError={() => (
+            <View style={styles.errorContainer}>
+              <View style={styles.errorIconCircle}>
+                <Ionicons
+                  name="alert-circle-outline"
+                  size={36}
+                  color="#EF4444"
+                />
+              </View>
+              <Text style={styles.errorTitle}>
+                Unable to Load Terms & Conditions
+              </Text>
+              <Text style={styles.errorSubtitle}>
+                Please check your internet connection and tap retry.
+              </Text>
+              <TouchableOpacity
+                style={styles.retryBtn}
+                onPress={() => webViewRef.current?.reload()}
+                activeOpacity={0.8}
+              >
+                <Feather name="refresh-cw" size={16} color="#FFFFFF" />
+                <Text style={styles.retryBtnText}>Retry</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          style={styles.webView}
+        />
       </View>
-    </Container>
+    </SafeAreaView>
   );
 };
 
 export default TermsAndCondition;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  webViewContainer: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+  },
+  webView: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
+  loaderContainer: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 12,
+    zIndex: 10,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: '#64748B',
+    fontWeight: '500',
+  },
+  errorContainer: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    zIndex: 10,
+  },
+  errorIconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#FEE2E2',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  errorTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 6,
+    textAlign: 'center',
+  },
+  errorSubtitle: {
+    fontSize: 13.5,
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 19,
+    marginBottom: 20,
+  },
+  retryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#0D9488',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    gap: 8,
+    shadowColor: '#0D9488',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  retryBtnText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+});

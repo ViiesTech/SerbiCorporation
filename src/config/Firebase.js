@@ -167,7 +167,7 @@ export async function displayLocalNotification(remoteMessage) {
 
 // Background handler function to be registered in index.js
 export async function backgroundMessageHandler(remoteMessage) {
-  console.log('[FCM] Background message received:', remoteMessage);
+  // console.log('[FCM] Background message received:', remoteMessage);
   if (remoteMessage && !remoteMessage.notification && remoteMessage.data) {
     await displayLocalNotification(remoteMessage);
   }
@@ -204,12 +204,12 @@ export async function requestUserPermission() {
       }
     }
 
-    console.log(
-      '[FCM] Authorization status:',
-      settings.authorizationStatus,
-      'Enabled:',
-      enabled,
-    );
+    // console.log(
+    //   '[FCM] Authorization status:',
+    //   settings.authorizationStatus,
+    //   'Enabled:',
+    //   enabled,
+    // );
 
     if (enabled) {
       syncDeviceToken();

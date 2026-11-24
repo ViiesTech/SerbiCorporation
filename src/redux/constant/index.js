@@ -8,7 +8,9 @@ export const CLIENT_ID =
 export const IOS_CLIENT_ID =
   '764990273491-d3qdous5s18nhsmou418stnr8hmmjddr.apps.googleusercontent.com';
 export const STRIPE_KEY =
-  'pk_test_51SfTtF0wu2sgmNi0bNOv7loJaKHXP9TpnoRQGzaGkolE5zIKes1Kkd0aBVfadwRuLtIemwdZCS0Q5Qt3cw3rt8u700f7Eemxdd';
+  'pk_live_51SQXjZB0DQE8QkJWdenVtEVyXAzmuXgz25d3XCfwn5q7kqXNgDwUXP0EXx8X0AJxMpPxrtOGiuQ8Sa8l3tTori7N00WvNf2GRC';
+// export const STRIPE_KEY =
+//   'pk_test_51SfTtF0wu2sgmNi0bNOv7loJaKHXP9TpnoRQGzaGkolE5zIKes1Kkd0aBVfadwRuLtIemwdZCS0Q5Qt3cw3rt8u700f7Eemxdd';
 export const PDF_URL = 'https://serbi.apiforapp.link/public/license/';
 export const SOCKET_URL = 'https://serbi.apiforapp.link';
 

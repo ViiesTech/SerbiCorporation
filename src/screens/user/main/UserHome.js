@@ -99,7 +99,27 @@ const UserHome = () => {
   const scrollViewRef = useRef(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [mapReady, setMapReady] = useState(false);
-  const [coordinates, setCoordinates] = useState(null);
+
+  // Compute user coordinates safely & memoize
+  const userCoords = useMemo(() => {
+    if (user?.location?.coordinates && Array.isArray(user.location.coordinates)) {
+      return {
+        latitude: Number(user.location.coordinates[1]),
+        longitude: Number(user.location.coordinates[0]),
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      };
+    }
+    if (user?.latitude && user?.longitude) {
+      return {
+        latitude: Number(user.latitude),
+        longitude: Number(user.longitude),
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      };
+    }
+    return DEFAULT_REGION;
+  }, [user?.location?.coordinates, user?.latitude, user?.longitude]);
 
   // Data States
   const [servicesData, setServicesData] = useState([]);
@@ -115,11 +135,6 @@ const UserHome = () => {
   const [areaValue, setAreaValue] = useState('');
   const [note, setNote] = useState('');
 
-  // Animation values
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(40)).current;
-  const scaleAnim = useRef(new Animated.Value(0.97)).current;
-
   const [getServices, { isLoading: serviceLoader }] = useLazyAllServicesQuery();
   const [getPropertyTypes, { isLoading: typeLoader }] =
     useLazyAllPropertyTypesQuery();
@@ -134,76 +149,66 @@ const UserHome = () => {
     [servicesData],
   );
 
-  const fetchInitialData = useCallback(async () => {
-    try {
-      const [serviceRes, propertyRes] = await Promise.all([
-        getServices().unwrap(),
-        getPropertyTypes().unwrap(),
-      ]);
+  // 1. Initial Data Fetch (Runs ONCE on mount)
+  useEffect(() => {
+    let isMounted = true;
 
-      setServicesData(serviceRes?.data || []);
-      setPropertyItems(
-        propertyRes?.data?.map(item => ({
-          label: item.propertyType,
-          value: item.propertyType,
-        })) || [],
-      );
+    const loadData = async () => {
+      try {
+        const [serviceRes, propertyRes] = await Promise.all([
+          getServices().unwrap(),
+          getPropertyTypes().unwrap(),
+        ]);
 
-      if (user?.location?.coordinates) {
-        const region = {
-          latitude: user.location.coordinates[1],
-          longitude: user.location.coordinates[0],
-          latitudeDelta: 0.05,
-          longitudeDelta: 0.05,
-        };
-        setCoordinates(region);
+        if (isMounted) {
+          if (serviceRes?.data) setServicesData(serviceRes.data);
+          if (propertyRes?.data) {
+            setPropertyItems(
+              propertyRes.data.map(item => ({
+                label: item.propertyType,
+                value: item.propertyType,
+              })),
+            );
+          }
+        }
+      } catch (err) {
+        console.error('Data fetch error in UserHome:', err);
       }
-    } catch (err) {
-      console.error('Data fetch error:', err);
-    }
-  }, [getServices, getPropertyTypes, user]);
+    };
 
+    loadData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []); // Empty dependency array: runs only ONCE on mount
+
+  // 2. Handle first visit splash timeout (Runs only if firstVisit is true)
   useEffect(() => {
-    fetchInitialData();
-    const timer = setTimeout(() => dispatch(firstTimeVisit(false)), 5000);
-    return () => clearTimeout(timer);
-  }, [fetchInitialData, dispatch]);
-
-  useEffect(() => {
-    if (!serviceLoader && !typeLoader && !firstVisit) {
-      fadeAnim.setValue(0);
-      slideAnim.setValue(40);
-      scaleAnim.setValue(0.97);
-
-      const animationTimer = setTimeout(() => {
-        Animated.parallel([
-          Animated.timing(fadeAnim, {
-            toValue: 1,
-            duration: 600,
-            useNativeDriver: true,
-          }),
-          Animated.timing(slideAnim, {
-            toValue: 0,
-            duration: 600,
-            useNativeDriver: true,
-          }),
-          Animated.timing(scaleAnim, {
-            toValue: 1,
-            duration: 600,
-            useNativeDriver: true,
-          }),
-        ]).start();
-      }, 100);
-
-      return () => clearTimeout(animationTimer);
+    if (firstVisit) {
+      const timer = setTimeout(() => {
+        dispatch(firstTimeVisit(false));
+      }, 5000);
+      return () => clearTimeout(timer);
     }
-  }, [serviceLoader, typeLoader, firstVisit, fadeAnim, slideAnim, scaleAnim]);
+  }, [firstVisit, dispatch]);
 
+  // 3. Map camera positioning (Only animates once or when coordinates actually change)
+  const prevCoordsRef = useRef(null);
   useEffect(() => {
-    if (coordinates && mapReady) {
-      mapRef.current?.animateToRegion(coordinates, 1000);
+    if (mapReady && userCoords) {
+      const prev = prevCoordsRef.current;
+      const isDifferent =
+        !prev ||
+        prev.latitude !== userCoords.latitude ||
+        prev.longitude !== userCoords.longitude;
+
+      if (isDifferent) {
+        prevCoordsRef.current = userCoords;
+        mapRef.current?.animateToRegion(userCoords, 800);
+      }
     }
-  }, [coordinates, mapReady]);
+  }, [mapReady, userCoords]);
 
   const validateAndSubmit = () => {
     if (!selectedServiceId) {
@@ -227,8 +232,8 @@ const UserHome = () => {
 
     nav.navigate('Services', {
       service: selectedServiceId,
-      lat: coordinates?.latitude,
-      long: coordinates?.longitude,
+      lat: userCoords?.latitude,
+      long: userCoords?.longitude,
       requestData: {
         propertyType: propertyValue,
         residential: residentialValue,
@@ -272,11 +277,11 @@ const UserHome = () => {
               provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
               ref={mapRef}
               style={StyleSheet.absoluteFillObject}
-              initialRegion={DEFAULT_REGION}
+              initialRegion={userCoords}
               onMapReady={() => setMapReady(true)}
             >
-              {coordinates && (
-                <Marker coordinate={coordinates}>
+              {userCoords && (
+                <Marker coordinate={userCoords}>
                   <Image source={images.pin_marker} style={styles.markerIcon} />
                 </Marker>
               )}
@@ -290,12 +295,7 @@ const UserHome = () => {
           </View>
 
           {/* Services Section */}
-          <Animated.View
-            style={[
-              styles.sectionWrapper,
-              { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
-            ]}
-          >
+          <View style={styles.sectionWrapper}>
             <View style={styles.sectionHeader}>
               <View>
                 <Text style={styles.sectionTitle}>Pest Services</Text>
@@ -327,15 +327,10 @@ const UserHome = () => {
               }}
               contentContainerStyle={styles.servicesListContainer}
             />
-          </Animated.View>
+          </View>
 
           {/* Request Form Section */}
-          <Animated.View
-            style={[
-              styles.formSectionWrapper,
-              { opacity: fadeAnim, transform: [{ scale: scaleAnim }] },
-            ]}
-          >
+          <View style={styles.formSectionWrapper}>
             <View style={styles.formCard}>
               {/* Form Card Header */}
               <View style={styles.formCardHeader}>
@@ -521,7 +516,7 @@ const UserHome = () => {
                 </View>
               </TouchableOpacity>
             </View>
-          </Animated.View>
+          </View>
         </>
       )}
     </Container>

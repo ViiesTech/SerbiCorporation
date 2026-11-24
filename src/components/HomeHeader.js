@@ -56,7 +56,6 @@ const HomeHeader = ({
   const displayName = getGreetingName(user?.fullName);
 
   const handleChat = () => {
-    console.log('Chat icon clicked in HomeHeader!');
     if (chatIconOnPress) {
       chatIconOnPress();
     } else {
@@ -69,7 +68,6 @@ const HomeHeader = ({
   };
 
   const handleNotification = () => {
-    console.log('Notification icon clicked in HomeHeader!');
     if (notificationOnPress) {
       notificationOnPress();
     } else {

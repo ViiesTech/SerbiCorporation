@@ -10,6 +10,7 @@ import {
   Modal,
   TextInput,
   ActivityIndicator,
+  Keyboard,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import moment from 'moment';
@@ -33,7 +34,7 @@ import {
   getProfileImage,
   getShortFileName,
 } from '../utils';
-import { IMAGE_URL, MAP_API_KEY } from '../redux/constant';
+import { IMAGE_URL, MAP_API_KEY, MAP_API_KEY_IOS } from '../redux/constant';
 import { useCreateUpdateProfileMutation } from '../redux/services/index';
 import { useLazyGetAllServicesQuery } from '../redux/services/adminApis';
 
@@ -51,8 +52,10 @@ const isLocalFileUri = uri => {
 const Profile = ({ route }) => {
   const { user } = route?.params || {};
   const nav = useNavigation();
-  const MAP_KEY = MAP_API_KEY;
+  const MAP_KEY = Platform.OS === 'ios' ? MAP_API_KEY_IOS : MAP_API_KEY;
   const googlePlacesRef = useRef();
+  const scrollViewRef = useRef(null);
+  const [isAddressFocused, setIsAddressFocused] = useState(false);
 
   // --- States ---
   const [state, setState] = useState({
@@ -101,7 +104,10 @@ const Profile = ({ route }) => {
   }, [getAllServices]);
 
   useEffect(() => {
-    if (state.location?.name) {
+    if (
+      state.location?.name &&
+      googlePlacesRef.current?.getAddressText() !== state.location.name
+    ) {
       googlePlacesRef.current?.setAddressText(state.location.name);
     }
   }, [state.location?.name]);
@@ -329,11 +335,14 @@ const Profile = ({ route }) => {
       <NormalHeader heading="Edit Profile" onBackPress={() => nav.goBack()} />
 
       <ScrollView
+        ref={scrollViewRef}
         style={{ flex: 1 }}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          isAddressFocused && { paddingBottom: 400 },
+        ]}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="on-drag"
+        keyboardShouldPersistTaps="always"
         nestedScrollEnabled={true}
       >
         {/* 1. Hero Profile Photo Section */}
@@ -378,7 +387,15 @@ const Profile = ({ route }) => {
         </View>
 
         {/* 2. Personal Information Card */}
-        <View style={styles.formCard}>
+        <View
+          style={[
+            styles.formCard,
+            isAddressFocused && {
+              zIndex: 10000,
+              elevation: Platform.OS === 'android' ? 25 : 10000,
+            },
+          ]}
+        >
           <View style={styles.cardHeader}>
             <Ionicons name="person-outline" size={18} color="#A0CCD9" />
             <Text style={styles.cardTitle}>Personal Details</Text>
@@ -470,28 +487,74 @@ const Profile = ({ route }) => {
           </View>
 
           {/* Home Address (Google Places Autocomplete) */}
-          <View style={styles.fieldGroup}>
+          <View
+            style={[
+              styles.fieldGroup,
+              { zIndex: 10000, position: 'relative' },
+            ]}
+          >
             <Text style={styles.fieldLabel}>Home Address</Text>
-            <View style={styles.addressWrapper}>
+            <View style={[styles.addressWrapper, { zIndex: 10000 }]}>
               <GooglePlacesAutocomplete
                 ref={googlePlacesRef}
                 placeholder="Search or enter address"
                 fetchDetails={true}
-                keyboardShouldPersistTaps="handled"
+                keyboardShouldPersistTaps="always"
+                keepResultsAfterBlur={true}
+                enablePoweredByContainer={false}
+                debounce={300}
+                minLength={2}
                 onPress={(data, details = null) => {
-                  setState(prev => ({
-                    ...prev,
-                    location: {
-                      name: data.description || details?.formatted_address,
-                      lat: details?.geometry?.location?.lat,
-                      long: details?.geometry?.location?.lng,
-                    },
-                  }));
+                  const selectedAddress =
+                    data.description || details?.formatted_address;
+                  handleInputChange('location', {
+                    name: selectedAddress,
+                    lat: details?.geometry?.location?.lat,
+                    long: details?.geometry?.location?.lng,
+                  });
+                  setIsAddressFocused(false);
+                  Keyboard.dismiss();
                 }}
                 query={{
                   key: MAP_KEY,
                   language: 'en',
                   components: 'country:us',
+                }}
+                requestUrl={{
+                  useOnPlatform: 'all',
+                  url: 'https://maps.googleapis.com/maps/api',
+                  headers: {
+                    [Platform.OS === 'ios'
+                      ? 'X-Ios-Bundle-Identifier'
+                      : 'X-Android-Package']:
+                      Platform.OS === 'ios'
+                        ? 'com.app.serbicorp'
+                        : 'com.serbicorporation',
+                  },
+                }}
+                onFail={error => {
+                  console.log('Google Places Autocomplete error:', error);
+                }}
+                textInputProps={{
+                  placeholderTextColor: '#94A3B8',
+                  onFocus: () => {
+                    setIsAddressFocused(true);
+                    setTimeout(() => {
+                      scrollViewRef.current?.scrollTo({
+                        y: 320,
+                        animated: true,
+                      });
+                    }, 150);
+                  },
+                  onBlur: () => {
+                    setIsAddressFocused(false);
+                  },
+                  onChangeText: text => {
+                    handleInputChange('location', {
+                      ...state.location,
+                      name: text,
+                    });
+                  },
                 }}
                 styles={autoCompleteStyles}
                 renderRightButton={() => (
@@ -952,6 +1015,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.04,
     shadowRadius: 6,
     elevation: 2,
+    overflow: 'visible',
   },
   cardHeader: {
     flexDirection: 'row',
@@ -1007,6 +1071,7 @@ const styles = StyleSheet.create({
   },
   addressWrapper: {
     position: 'relative',
+    zIndex: 10000,
   },
   gpsLocateBtn: {
     position: 'absolute',
@@ -1357,6 +1422,11 @@ const styles = StyleSheet.create({
 const autoCompleteStyles = {
   container: {
     flex: 0,
+    zIndex: 10000,
+  },
+  textInputContainer: {
+    position: 'relative',
+    zIndex: 10000,
   },
   textInput: {
     height: 50,
@@ -1371,16 +1441,41 @@ const autoCompleteStyles = {
   },
   listView: {
     backgroundColor: '#FFFFFF',
-    elevation: 8,
-    zIndex: 9999,
+    elevation: 25,
+    zIndex: 99999,
     position: 'absolute',
     top: 52,
+    left: 0,
+    right: 0,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#CBD5E1',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.15,
     shadowRadius: 10,
+    maxHeight: 220,
+  },
+  row: {
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  description: {
+    fontSize: 13.5,
+    color: '#0F172A',
+    fontWeight: '500',
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#F1F5F9',
+  },
+  loader: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    height: 40,
+    alignItems: 'center',
   },
 };

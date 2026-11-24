@@ -60,10 +60,7 @@ const AppSettings = () => {
       }
       setShowDeleteModal(false);
       dispatch(resetUser());
-      Toast.show(
-        res?.msg || 'User is Deleted Successfully!',
-        Toast.LONG,
-      );
+      Toast.show(res?.msg || 'User is Deleted Successfully!', Toast.LONG);
     } catch (err) {
       console.log('Error deleting account:', err);
       const errMsg =
