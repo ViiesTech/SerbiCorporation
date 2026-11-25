@@ -12,7 +12,7 @@ import {
   Keyboard,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import moment from 'moment';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useSelector } from 'react-redux';
@@ -318,13 +318,14 @@ const Chat = () => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? insets.bottom : 0}
-      onLayout={handleContainerLayout}
-    >
-      <NormalHeader heading={heading} onBackPress={() => nav.goBack()} />
+    <SafeAreaView style={{ flex: 1, backgroundColor: AppColors.WHITE }} edges={['top']}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? insets.bottom : 0}
+        onLayout={handleContainerLayout}
+      >
+        <NormalHeader heading={heading} onBackPress={() => nav.goBack()} />
 
       {loadingInitial ? (
         <View style={styles.loaderContainer}>
@@ -446,6 +447,7 @@ const Chat = () => {
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 

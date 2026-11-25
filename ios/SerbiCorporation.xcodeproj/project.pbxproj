@@ -25,9 +25,9 @@
 		5DCACB8F33CDC322A6C60F78 /* libPods-SerbiCorporation.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-SerbiCorporation.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = SerbiCorporation/AppDelegate.swift; sourceTree = "<group>"; };
 		76A1B2C32CA45674006654EE /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "SerbiCorporation/GoogleService-Info.plist"; sourceTree = "<group>"; };
+		76E1A8B22D65432100123456 /* SerbiCorporation.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = SerbiCorporation.entitlements; path = SerbiCorporation/SerbiCorporation.entitlements; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = SerbiCorporation/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		76E1A8B22D65432100123456 /* SerbiCorporation.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = SerbiCorporation.entitlements; path = SerbiCorporation/SerbiCorporation.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -176,6 +176,7 @@
 /* Begin PBXShellScriptBuildPhase section */
 		00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
@@ -282,7 +283,7 @@
 				CODE_SIGN_ENTITLEMENTS = SerbiCorporation/SerbiCorporation.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = FX68R23W8V;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = SerbiCorporation/Info.plist;
@@ -316,7 +317,7 @@
 				CODE_SIGN_ENTITLEMENTS = SerbiCorporation/SerbiCorporation.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = FX68R23W8V;
 				INFOPLIST_FILE = SerbiCorporation/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Serbi Corporation";

@@ -26,15 +26,12 @@ const Container = forwardRef(
     const maxLayoutHeightRef = useRef(0);
 
     useEffect(() => {
-      const showEvent =
-        Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
-      const hideEvent =
-        Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+      if (Platform.OS !== 'android') return;
 
-      const showSub = Keyboard.addListener(showEvent, e => {
+      const showSub = Keyboard.addListener('keyboardDidShow', e => {
         setKeyboardHeight(e.endCoordinates.height);
       });
-      const hideSub = Keyboard.addListener(hideEvent, () => {
+      const hideSub = Keyboard.addListener('keyboardDidHide', () => {
         setKeyboardHeight(0);
       });
 

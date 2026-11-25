@@ -173,22 +173,54 @@ const Services = ({ route, navigation }) => {
   }, [data, currentForm, isDiscussion]);
 
   // 3. Map Animation Logic
+  const STANDARD_DELTA = 0.04;
+
   const fitMap = useCallback(() => {
     if (!mapRef.current) return;
+    const cardOffset = 0.006;
+
     if (technicianLocation?.latitude && destinationCoords) {
-      mapRef.current.fitToCoordinates([technicianLocation, destinationCoords], {
-        edgePadding: { top: 100, right: 60, bottom: 320, left: 60 },
-        animated: true,
-      });
+      const latDiff = Math.abs(
+        technicianLocation.latitude - destinationCoords.latitude,
+      );
+      const lngDiff = Math.abs(
+        technicianLocation.longitude - destinationCoords.longitude,
+      );
+
+      // If coordinates are identical or within ~2-3 km, fitToCoordinates causes extreme over-zoom.
+      // Instead, animate to standard comfortable street/neighborhood zoom level.
+      if (latDiff < 0.025 && lngDiff < 0.025) {
+        const centerLat =
+          (technicianLocation.latitude + destinationCoords.latitude) / 2;
+        const centerLng =
+          (technicianLocation.longitude + destinationCoords.longitude) / 2;
+        mapRef.current.animateToRegion(
+          {
+            latitude: centerLat - cardOffset,
+            longitude: centerLng,
+            latitudeDelta: STANDARD_DELTA,
+            longitudeDelta: STANDARD_DELTA,
+          },
+          800,
+        );
+      } else {
+        mapRef.current.fitToCoordinates(
+          [technicianLocation, destinationCoords],
+          {
+            edgePadding: { top: 120, right: 60, bottom: 320, left: 60 },
+            animated: true,
+          },
+        );
+      }
     } else if (destinationCoords) {
       mapRef.current.animateToRegion(
         {
-          latitude: destinationCoords.latitude,
+          latitude: destinationCoords.latitude - cardOffset,
           longitude: destinationCoords.longitude,
-          latitudeDelta: 0.08,
-          longitudeDelta: 0.08,
+          latitudeDelta: STANDARD_DELTA,
+          longitudeDelta: STANDARD_DELTA,
         },
-        1000,
+        800,
       );
     }
   }, [technicianLocation, destinationCoords]);
@@ -296,8 +328,8 @@ const Services = ({ route, navigation }) => {
           shouldNavigateBack !== undefined
             ? shouldNavigateBack
             : isDiscussion
-            ? status === 'Completed'
-            : false;
+              ? status === 'Completed'
+              : false;
 
         if (mustGoBack) {
           setTimeout(() => navigation.goBack(), 600);
@@ -385,14 +417,15 @@ const Services = ({ route, navigation }) => {
           ref={mapRef}
           onMapReady={() => setMapReady(true)}
           style={styles.map}
+          maxZoomLevel={17.5}
           initialRegion={
             destinationCoords
               ? {
-                  latitude: destinationCoords.latitude,
-                  longitude: destinationCoords.longitude,
-                  latitudeDelta: 0.08,
-                  longitudeDelta: 0.08,
-                }
+                latitude: destinationCoords.latitude - 0.006,
+                longitude: destinationCoords.longitude,
+                latitudeDelta: STANDARD_DELTA,
+                longitudeDelta: STANDARD_DELTA,
+              }
               : DEFAULT_REGION
           }
         >

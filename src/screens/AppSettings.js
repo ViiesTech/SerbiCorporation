@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import Modal from 'react-native-modal';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import Feather from 'react-native-vector-icons/Feather';
@@ -147,7 +148,10 @@ const AppSettings = () => {
   ];
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: '#FFFFFF' }]}
+      edges={['top', 'bottom']}
+    >
       <NormalHeader heading="Settings" onBackPress={() => nav.goBack()} />
 
       <ScrollView
@@ -393,7 +397,7 @@ const AppSettings = () => {
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 };
 

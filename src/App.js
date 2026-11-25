@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import Routes from './routes';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider } from 'react-redux';
 import { persistor, store } from './redux/store';
 import { PersistGate } from 'redux-persist/integration/react';
-import { LogBox } from 'react-native';
+import { LogBox, View } from 'react-native';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { CLIENT_ID, IOS_CLIENT_ID, STRIPE_KEY } from './redux/constant';
 import { StripeProvider } from '@stripe/stripe-react-native';
@@ -41,16 +41,18 @@ const App = () => {
   }, []);
 
   return (
-    <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <SafeAreaView style={{ flex: 1, backgroundColor: AppColors.WHITE }}>
-          <StripeProvider publishableKey={STRIPE_KEY}>
-            <Routes />
-            <OfflineModal visible={isOffline} />
-          </StripeProvider>
-        </SafeAreaView>
-      </PersistGate>
-    </Provider>
+    <SafeAreaProvider>
+      <Provider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <View style={{ flex: 1, backgroundColor: AppColors.WHITE }}>
+            <StripeProvider publishableKey={STRIPE_KEY}>
+              <Routes />
+              <OfflineModal visible={isOffline} />
+            </StripeProvider>
+          </View>
+        </PersistGate>
+      </Provider>
+    </SafeAreaProvider>
   );
 };
 

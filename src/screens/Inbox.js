@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -261,7 +262,7 @@ const Inbox = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <NormalHeader heading="Messages" onBackPress={() => nav.goBack()} />
 
       {/* Search Bar */}
@@ -341,7 +342,7 @@ const Inbox = () => {
           }
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 

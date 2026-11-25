@@ -17,6 +17,8 @@ const Button = ({
 }) => {
   return (
     <TouchableOpacity
+      activeOpacity={0.8}
+      delayPressIn={0}
       disabled={indicator}
       style={[
         styles.buttonStyle,

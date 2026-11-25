@@ -130,10 +130,24 @@ const PestTechnician = ({ route }) => {
 
         // Auto-fit map to show both markers
         if (mapRef.current) {
-          mapRef.current.fitToCoordinates([destination, newLoc], {
-            edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
-            animated: true,
-          });
+          const latDiff = Math.abs(destination.latitude - lat);
+          const lngDiff = Math.abs(destination.longitude - lng);
+          if (latDiff < 0.025 && lngDiff < 0.025) {
+            mapRef.current.animateToRegion(
+              {
+                latitude: (destination.latitude + lat) / 2,
+                longitude: (destination.longitude + lng) / 2,
+                latitudeDelta: 0.04,
+                longitudeDelta: 0.04,
+              },
+              800,
+            );
+          } else {
+            mapRef.current.fitToCoordinates([destination, newLoc], {
+              edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
+              animated: true,
+            });
+          }
         }
 
         // Fallback ETA calculation
@@ -270,9 +284,9 @@ const PestTechnician = ({ route }) => {
                 onPress={() =>
                   openDialer(
                     technicianData?.phoneNumber ||
-                      technicianData?.phone ||
-                      technicianData?.appointmentData?.phoneNumber ||
-                      technicianData?.appointmentData?.phone,
+                    technicianData?.phone ||
+                    technicianData?.appointmentData?.phoneNumber ||
+                    technicianData?.appointmentData?.phone,
                   )
                 }
               >
@@ -389,6 +403,7 @@ const PestTechnician = ({ route }) => {
               ref={mapRef}
               onMapReady={() => setMapReady(true)}
               style={styles.map}
+              maxZoomLevel={17.5}
               initialRegion={{
                 latitude:
                   (destination.latitude + technicianLocation.latitude) / 2,
@@ -418,10 +433,34 @@ const PestTechnician = ({ route }) => {
                 onReady={result => {
                   setEta(Math.round(result.duration));
                   if (mapRef.current) {
-                    mapRef.current.fitToCoordinates(result.coordinates, {
-                      edgePadding: { top: 70, right: 50, bottom: 70, left: 50 },
-                      animated: true,
-                    });
+                    const latDiff = Math.abs(
+                      destination.latitude - technicianLocation.latitude,
+                    );
+                    const lngDiff = Math.abs(
+                      destination.longitude - technicianLocation.longitude,
+                    );
+                    if (latDiff < 0.025 && lngDiff < 0.025) {
+                      mapRef.current.animateToRegion(
+                        {
+                          latitude:
+                            (destination.latitude +
+                              technicianLocation.latitude) /
+                            2,
+                          longitude:
+                            (destination.longitude +
+                              technicianLocation.longitude) /
+                            2,
+                          latitudeDelta: 0.04,
+                          longitudeDelta: 0.04,
+                        },
+                        800,
+                      );
+                    } else {
+                      mapRef.current.fitToCoordinates(result.coordinates, {
+                        edgePadding: { top: 70, right: 50, bottom: 70, left: 50 },
+                        animated: true,
+                      });
+                    }
                   }
                 }}
               />

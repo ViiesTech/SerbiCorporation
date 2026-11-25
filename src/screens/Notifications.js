@@ -10,6 +10,7 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import Feather from 'react-native-vector-icons/Feather';
@@ -341,7 +342,10 @@ const Notifications = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: '#FFFFFF' }]}
+      edges={['top', 'bottom']}
+    >
       <NormalHeader
         heading="Notifications"
         onBackPress={() => nav.goBack()}
@@ -479,7 +483,7 @@ const Notifications = () => {
           }
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 

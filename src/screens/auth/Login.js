@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Keyboard, StyleSheet, TouchableOpacity, View } from 'react-native';
 import Container from '../../components/Container';
 import LineBreak from '../../components/LineBreak';
 import Button from '../../components/Button';
@@ -23,11 +23,14 @@ const Login = () => {
     password: '',
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [login, { isLoading }] = useLoginMutation();
   const [googleLogin, { isLoading: googleLoading }] = useGoogleLoginMutation();
   const nav = useNavigation();
 
   const onLoginPress = async () => {
+    Keyboard.dismiss();
+
     if (!state.email) {
       Toast.show('Please enter your email', Toast.SHORT);
       return;
@@ -37,7 +40,17 @@ const Login = () => {
       return;
     }
 
-    const fcmToken = await getFcmToken();
+    setIsSubmitting(true);
+
+    let fcmToken = null;
+    try {
+      fcmToken = await Promise.race([
+        getFcmToken(),
+        new Promise(resolve => setTimeout(() => resolve(null), 1000)),
+      ]);
+    } catch (e) {
+      // ignore token error
+    }
 
     let payload = {
       email: state.email,
@@ -45,16 +58,16 @@ const Login = () => {
       ...(fcmToken ? { fcmToken } : {}),
     };
     console.log('payload:-', payload);
-    await login(payload)
-      .unwrap()
-      .then(res => {
-        console.log('res in Login:-', res);
-        Toast.show(res.msg, Toast.SHORT);
-      })
-      .catch(err => {
-        console.log('err in Login:-', err);
-        Toast.show(err?.data?.msg || 'Some problem occured', Toast.SHORT);
-      });
+    try {
+      const res = await login(payload).unwrap();
+      console.log('res in Login:-', res);
+      Toast.show(res.msg, Toast.SHORT);
+    } catch (err) {
+      console.log('err in Login:-', err);
+      Toast.show(err?.data?.msg || 'Some problem occured', Toast.SHORT);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const onChangeText = (state, value) => {
@@ -133,73 +146,72 @@ const Login = () => {
 
   return (
     <Container
+      keyboardShouldPersistTaps="always"
       contentStyle={{ paddingBottom: responsiveHeight(5) }}
       space={25}
       authHeading={'LOGIN TO CONTINUE'}
     >
-      <ScrollView style={{ flex: 1 }}>
-        <LineBreak val={4} />
+      <LineBreak val={4} />
 
-        <InputField
-          value={state.email}
-          onChangeText={text => onChangeText('email', text)}
-          keyboardType={'email-address'}
-          placeholder={'Email Address'}
-        />
+      <InputField
+        value={state.email}
+        onChangeText={text => onChangeText('email', text)}
+        keyboardType={'email-address'}
+        placeholder={'Email Address'}
+      />
 
-        <LineBreak val={2} />
+      <LineBreak val={2} />
 
-        <InputField
-          value={state.password}
-          onChangeText={text => onChangeText('password', text)}
-          placeholder={'Password'}
-          secureTextEntry={!showPassword}
-          rightIcon={
-            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-              <Ionicons
-                name={showPassword ? 'eye-outline' : 'eye-off-outline'}
-                size={22}
-                color={AppColors.PRIMARY}
-              />
-            </TouchableOpacity>
-          }
-        />
-
-        <LineBreak val={1.5} />
-
-        <View
-          style={{ alignItems: 'flex-end', marginRight: responsiveHeight(3) }}
-        >
-          <TouchableOpacity
-            onPress={() => nav.navigate('ForgetPassword')}
-            style={{ alignItems: 'center' }}
-          >
-            <AppText fontWeight={'bold'} size={1.8} title={'Forgot Password'} />
+      <InputField
+        value={state.password}
+        onChangeText={text => onChangeText('password', text)}
+        placeholder={'Password'}
+        secureTextEntry={!showPassword}
+        rightIcon={
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            <Ionicons
+              name={showPassword ? 'eye-outline' : 'eye-off-outline'}
+              size={22}
+              color={AppColors.PRIMARY}
+            />
           </TouchableOpacity>
-        </View>
+        }
+      />
 
-        <LineBreak val={3} />
+      <LineBreak val={1.5} />
 
-        <Button
-          indicator={isLoading}
-          onPress={() => onLoginPress()}
-          title={'LOGIN'}
-        />
-
-        <LineBreak val={3} />
-
-        <SocialButtons
-          onSocialPress={loginType => onSocialAuth(loginType)}
-          apiLoader={googleLoading}
-          heading={'Or Login With'}
-        />
-
-        <LineBreak val={3} />
-
-        <TouchableOpacity onPress={() => nav.navigate('SelectType')}>
-          <AppText align={'center'} title={`Don't have an account? Signup`} />
+      <View
+        style={{ alignItems: 'flex-end', marginRight: responsiveHeight(3) }}
+      >
+        <TouchableOpacity
+          onPress={() => nav.navigate('ForgetPassword')}
+          style={{ alignItems: 'center' }}
+        >
+          <AppText fontWeight={'bold'} size={1.8} title={'Forgot Password'} />
         </TouchableOpacity>
-      </ScrollView>
+      </View>
+
+      <LineBreak val={3} />
+
+      <Button
+        indicator={isLoading || isSubmitting}
+        onPress={() => onLoginPress()}
+        title={'LOGIN'}
+      />
+
+      <LineBreak val={3} />
+
+      <SocialButtons
+        onSocialPress={loginType => onSocialAuth(loginType)}
+        apiLoader={googleLoading}
+        heading={'Or Login With'}
+      />
+
+      <LineBreak val={3} />
+
+      <TouchableOpacity onPress={() => nav.navigate('SelectType')}>
+        <AppText align={'center'} title={`Don't have an account? Signup`} />
+      </TouchableOpacity>
     </Container>
   );
 };

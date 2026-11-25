@@ -444,10 +444,9 @@ const Home = ({ navigation }) => {
               <Text style={styles.emptySubTitle}>
                 {search
                   ? 'Try searching with a different client name or address.'
-                  : `No appointments under "${
-                      currentStatusConfig?.display ||
-                      currentStatusConfig?.sub_title
-                    }".`}
+                  : `No appointments under "${currentStatusConfig?.display ||
+                  currentStatusConfig?.sub_title
+                  }".`}
               </Text>
             </View>
           ) : (
