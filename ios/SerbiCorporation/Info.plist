@@ -32,18 +32,22 @@
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
+		<false/>
+		<key>NSAllowsArbitraryLoadsInWebContent</key>
 		<true/>
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Serbi needs access to your location to find nearby services and technicians.</string>
+	<string>Serbi Corporation requires your location to discover available pest control technicians in your area and accurately navigate to your service address.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Serbi needs access to your location to find nearby services and technicians even when the app is in the background.</string>
+	<string>Serbi Corporation uses your location to provide real-time updates and navigate technicians to your service location.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Serbi needs access to your photo library to upload images for your profile and portfolio.</string>
+	<string>Serbi Corporation requires access to your photo library to select and upload photos of pest infestations, property areas, or profile pictures.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Serbi Corporation requires access to save photos to your photo library.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Serbi needs access to your camera to take photos for your profile and portfolio.</string>
+	<string>Serbi Corporation requires access to your camera to capture and upload photos of pest issues, property damage, and profile pictures.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
